@@ -119,7 +119,6 @@ class MessageSource extends Component
                 return $this->_messages[$key][$message] = $event->translatedMessage;
             }
         }
-
         return $this->_messages[$key][$message] = false;
     }
 }

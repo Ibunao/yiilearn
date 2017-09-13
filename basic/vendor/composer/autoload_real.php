@@ -5,7 +5,7 @@
 class ComposerAutoloaderInit4c8cf14541264db6f6c4584946aba683
 {
     private static $loader;
-
+    //实例化ClassLoader类时调用的方法
     public static function loadClassLoader($class)
     {
         if ('Composer\Autoload\ClassLoader' === $class) {
@@ -18,27 +18,30 @@ class ComposerAutoloaderInit4c8cf14541264db6f6c4584946aba683
         if (null !== self::$loader) {
             return self::$loader;
         }
-
+        //注册自动加载方法，只是为了引入 ClassLoader
         spl_autoload_register(array('ComposerAutoloaderInit4c8cf14541264db6f6c4584946aba683', 'loadClassLoader'), true, true);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
+        //注销已注册的自动加载，这样的目的可以实现第一次加载，加载一个更详细的自动加载文件，由更详细的加载文件实现具体的加载  
         spl_autoload_unregister(array('ComposerAutoloaderInit4c8cf14541264db6f6c4584946aba683', 'loadClassLoader'));
-
+        //如果php版本大于5.6并且未定义HHVM_VERSION常量
         $useStaticLoader = PHP_VERSION_ID >= 50600 && !defined('HHVM_VERSION') && (!function_exists('zend_loader_file_encoded') || !zend_loader_file_encoded());
         if ($useStaticLoader) {
             require_once __DIR__ . '/autoload_static.php';
-
+            //调用方法 ComposerStaticInit4c8cf14541264db6f6c4584946aba683::getInitializer($loader)
+            //将映射关系加载到$loader里
             call_user_func(\Composer\Autoload\ComposerStaticInit4c8cf14541264db6f6c4584946aba683::getInitializer($loader));
         } else {
+            //设置单独namespace对于的文件夹位置的映射关系  
             $map = require __DIR__ . '/autoload_namespaces.php';
             foreach ($map as $namespace => $path) {
                 $loader->set($namespace, $path);
             }
-
+            //符合psr4命名规范的namespace对于的文件夹位置的映射关系
             $map = require __DIR__ . '/autoload_psr4.php';
             foreach ($map as $namespace => $path) {
                 $loader->setPsr4($namespace, $path);
             }
-
+            //加载类和类文件位置的映射关系 
             $classMap = require __DIR__ . '/autoload_classmap.php';
             if ($classMap) {
                 $loader->addClassMap($classMap);
@@ -46,8 +49,9 @@ class ComposerAutoloaderInit4c8cf14541264db6f6c4584946aba683
         }
 
         $loader->register(true);
-
+        // 加载全局函数
         if ($useStaticLoader) {
+            //静态初始化
             $includeFiles = Composer\Autoload\ComposerStaticInit4c8cf14541264db6f6c4584946aba683::$files;
         } else {
             $includeFiles = require __DIR__ . '/autoload_files.php';

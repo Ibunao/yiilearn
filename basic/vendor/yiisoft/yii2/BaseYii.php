@@ -130,6 +130,7 @@ class BaseYii
      */
     public static function getAlias($alias, $throwException = true)
     {
+        //$alias 的第一个字符和 @ 比较，如果相等返回0进入if，不相等返回的结果可能是1或-1
         if (strncmp($alias, '@', 1)) {
             // not an alias
             return $alias;
@@ -142,7 +143,6 @@ class BaseYii
             if (is_string(static::$aliases[$root])) {
                 return $pos === false ? static::$aliases[$root] : static::$aliases[$root] . substr($alias, $pos);
             }
-
             foreach (static::$aliases[$root] as $name => $path) {
                 if (strpos($alias . '/', $name . '/') === 0) {
                     return $path . substr($alias, strlen($name));
@@ -216,12 +216,14 @@ class BaseYii
      */
     public static function setAlias($alias, $path)
     {
+        //如果不是以 @ 开头的添加 @
         if (strncmp($alias, '@', 1)) {
             $alias = '@' . $alias;
         }
         $pos = strpos($alias, '/');
         $root = $pos === false ? $alias : substr($alias, 0, $pos);
         if ($path !== null) {
+            //设置
             $path = strncmp($path, '@', 1) ? rtrim($path, '\\/') : static::getAlias($path);
             if (!isset(static::$aliases[$root])) {
                 if ($pos === false) {
@@ -243,6 +245,7 @@ class BaseYii
                 krsort(static::$aliases[$root]);
             }
         } elseif (isset(static::$aliases[$root])) {
+            //删除
             if (is_array(static::$aliases[$root])) {
                 unset(static::$aliases[$root][$alias]);
             } elseif ($pos === false) {
@@ -508,12 +511,11 @@ class BaseYii
         if (static::$app !== null) {
             return static::$app->getI18n()->translate($category, $message, $params, $language ?: static::$app->language);
         }
-
         $placeholders = [];
         foreach ((array) $params as $name => $value) {
             $placeholders['{' . $name . '}'] = $value;
         }
-
+        //字符串替换
         return ($placeholders === []) ? $message : strtr($message, $placeholders);
     }
 
@@ -533,6 +535,7 @@ class BaseYii
     }
 
     /**
+     * 返回由对象属性组成的关联数组
      * Returns the public member variables of an object.
      * This method is provided such that we can get the public member variables of an object.
      * It is different from "get_object_vars()" because the latter will return private

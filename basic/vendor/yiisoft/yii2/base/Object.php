@@ -82,6 +82,7 @@ class Object implements Configurable
      */
     public static function className()
     {
+        //后期绑定的类的名称，也就是继承Object类的子类调用此方法是获取的是子类的类名
         return get_called_class();
     }
 

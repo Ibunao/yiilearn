@@ -21,7 +21,9 @@ require(__DIR__ . '/BaseYii.php');
 class Yii extends \yii\BaseYii
 {
 }
-
+//注册自动加载
 spl_autoload_register(['Yii', 'autoload'], true, true);
+//设置类与路径的加载映射
 Yii::$classMap = require(__DIR__ . '/classes.php');
+// 容器
 Yii::$container = new yii\di\Container();

@@ -193,15 +193,19 @@ abstract class Application extends Module
      */
     public function __construct($config = [])
     {
+        //赋值$app
         Yii::$app = $this;
+        //将对象填充到Yii::$app->loadedModules[]数组
+        // Yii::$app->loadedModules['yii\web\Application'] == Yii::$app
         static::setInstance($this);
-
+        //设置$app状态
         $this->state = self::STATE_BEGIN;
+        //预初始化，初始化配置信息  加载配置文件的框架信息 如：设置别名，设置框架路径等等 最为重要的是给加载默认组件
 
         $this->preInit($config);
-
+        //加载配置文件中的异常组件
         $this->registerErrorHandler($config);
-
+        //将配置文件中的所有信息赋值给Object，也就是Yii::$app->配置文件参数可以直接调用配置文件的内容 如：Yii::$app->vendorPath//输出框架路径  Yii::$app->components['redis']//输出redis配置信息
         Component::__construct($config);
     }
 

@@ -14,8 +14,7 @@ class TestController extends Controller
 
 		//别名alisas
 		Yii::setAlias('@ding/ran/bunao', 'basic/ding/ran/bunao');
-		// var_dump(Yii::$aliases);
-
+		var_dump($this->aliases());
 		echo Yii::t('app', 'ding');
 	}
 

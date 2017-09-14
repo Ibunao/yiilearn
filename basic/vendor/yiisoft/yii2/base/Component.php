@@ -480,10 +480,12 @@ class Component extends Object
      */
     public function on($name, $handler, $data = null, $append = true)
     {
+        //确定行为已将绑定
         $this->ensureBehaviors();
         if ($append || empty($this->_events[$name])) {
             $this->_events[$name][] = [$handler, $data];
         } else {
+            //在数组开头插入
             array_unshift($this->_events[$name], [$handler, $data]);
         }
     }

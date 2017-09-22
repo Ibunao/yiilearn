@@ -42,24 +42,29 @@ use yii\di\ServiceLocator;
 class Module extends ServiceLocator
 {
     /**
+     * 定义在执行 action之前触发的事件方法
      * @event ActionEvent an event raised before executing a controller action.
      * You may set [[ActionEvent::isValid]] to be `false` to cancel the action execution.
      */
     const EVENT_BEFORE_ACTION = 'beforeAction';
     /**
+     * 定义在执行 action之后触发的事件方法
      * @event ActionEvent an event raised after executing a controller action.
      */
     const EVENT_AFTER_ACTION = 'afterAction';
 
     /**
+     * 定义的参数
      * @var array custom module parameters (name => value).
      */
     public $params = [];
     /**
+     *
      * @var string an ID that uniquely identifies this module among other modules which have the same [[module|parent]].
      */
     public $id;
     /**
+     * 父module
      * @var Module the parent module of this module. `null` if this module does not have a parent.
      */
     public $module;
@@ -124,6 +129,7 @@ class Module extends ServiceLocator
      */
     private $_layoutPath;
     /**
+     * 存放配置文件里的modules信息
      * @var array child modules of this module
      */
     private $_modules = [];
@@ -171,6 +177,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 设置当前请求模块的实例
      * Sets the currently requested instance of this module class.
      * @param Module|null $instance the currently requested instance of this module class.
      * If it is `null`, the instance of the calling class will be removed, if any.
@@ -229,6 +236,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 设置根目录
      * Sets the root directory of the module.
      * This method can only be invoked at the beginning of the constructor.
      * @param string $path the root directory of the module. This can be either a directory name or a [path alias](guide:concept-aliases).
@@ -238,6 +246,12 @@ class Module extends ServiceLocator
     {
         $path = Yii::getAlias($path);
         $p = strncmp($path, 'phar://', 7) === 0 ? $path : realpath($path);
+        //$path = D:\ding\wamp64\www\learn\yii\yiilearn\basic;进入到 $ding = $path;
+        // if (strncmp($path, 'phar://', 7) === 0) {
+        //     $ding = $path;
+        // }else {
+        //     $ding = realpath($path);
+        // }
         if ($p !== false && is_dir($p)) {
             $this->_basePath = $p;
         } else {

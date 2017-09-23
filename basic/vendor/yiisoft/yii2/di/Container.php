@@ -157,7 +157,7 @@ class Container extends Component
         }
 
         $definition = $this->_definitions[$class];
-
+        // 匿名函数
         if (is_callable($definition, true)) {
             $params = $this->resolveDependencies($this->mergeParams($class, $params));
             $object = call_user_func($definition, $this, $params, $config);

@@ -654,6 +654,7 @@ class BaseArrayHelper
     }
 
     /**
+     * 判断是否是关联数组
      * Returns a value indicating whether the given array is an associative array.
      *
      * An array is associative if all its keys are strings. If `$allStrings` is false,

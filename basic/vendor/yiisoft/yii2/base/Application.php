@@ -49,13 +49,16 @@ use Yii;
 abstract class Application extends Module
 {
     /**
+     * 请求之前事件方法
      * @event Event an event raised before the application starts to handle a request.
      */
     const EVENT_BEFORE_REQUEST = 'beforeRequest';
     /**
+     * 请求之后的事件方法
      * @event Event an event raised after the application successfully handles a request (before the response is sent out).
      */
     const EVENT_AFTER_REQUEST = 'afterRequest';
+    //设置 application 声明周期中的状态码
     /**
      * Application state used by [[state]]: application just started.
      */
@@ -86,6 +89,7 @@ abstract class Application extends Module
     const STATE_END = 6;
 
     /**
+     * 要加载的 控制器
      * @var string the namespace that controller classes are located in.
      * This namespace will be used to load controller classes by prepending it to the controller class name.
      * The default namespace is `app\controllers`.
@@ -102,6 +106,7 @@ abstract class Application extends Module
      */
     public $charset = 'UTF-8';
     /**
+     * 目标语言
      * @var string the language that is meant to be used for end users. It is recommended that you
      * use [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag). For example, `en` stands
      * for English, while `en-US` stands for English (United States).
@@ -109,29 +114,35 @@ abstract class Application extends Module
      */
     public $language = 'en-US';
     /**
+     * 源语言
      * @var string the language that the application is written in. This mainly refers to
      * the language that the messages and view files are written in.
      * @see language
      */
     public $sourceLanguage = 'en-US';
     /**
+     * 当前请求控制器的实例
      * @var Controller the currently active controller instance
      */
     public $controller;
     /**
+     * 
      * @var string|bool the layout that should be applied for views in this application. Defaults to 'main'.
      * If this is false, layout will be disabled.
      */
     public $layout = 'main';
     /**
+     * 请求route
      * @var string the requested route
      */
     public $requestedRoute;
     /**
+     * 请求的action
      * @var Action the requested Action. If null, it means the request cannot be resolved into an action.
      */
     public $requestedAction;
     /**
+     * 请求的参数
      * @var array the parameters supplied to the requested action.
      */
     public $requestedParams;
@@ -175,11 +186,13 @@ abstract class Application extends Module
      */
     public $bootstrap = [];
     /**
+     * 当前application状态
      * @var int the current application state during a request handling life cycle.
      * This property is managed by the application. Do not modify this property.
      */
     public $state;
     /**
+     * 存放module实例，以module类名为键
      * @var array list of loaded modules indexed by their class names.
      */
     public $loadedModules = [];
@@ -205,7 +218,10 @@ abstract class Application extends Module
         $this->preInit($config);
         //加载配置文件中的异常组件
         $this->registerErrorHandler($config);
-        //将配置文件中的所有信息赋值给Object，也就是Yii::$app->配置文件参数可以直接调用配置文件的内容 如：Yii::$app->vendorPath//输出框架路径  Yii::$app->components['redis']//输出redis配置信息
+        //将配置文件中的所有信息赋值给Object，也就是Yii::$app->配置文件参数可以直接调用配置文件的内容 如：Yii::$app->vendorPath
+        //输出框架路径  Yii::$app->components['redis']//输出redis配置信息
+        //将定义的配置文件从的 components数组中的组件注册到服务定位器  
+        // 将modules数组中的模块注册到Module中的module数组中
         Component::__construct($config);
     }
 
@@ -219,16 +235,18 @@ abstract class Application extends Module
      */
     public function preInit(&$config)
     {
+        //必须设置id
         if (!isset($config['id'])) {
             throw new InvalidConfigException('The "id" configuration for the Application is required.');
         }
+        //必须设置基础路径
         if (isset($config['basePath'])) {
             $this->setBasePath($config['basePath']);
             unset($config['basePath']);
         } else {
             throw new InvalidConfigException('The "basePath" configuration for the Application is required.');
         }
-
+        //设置vendor目录路径
         if (isset($config['vendorPath'])) {
             $this->setVendorPath($config['vendorPath']);
             unset($config['vendorPath']);
@@ -236,6 +254,7 @@ abstract class Application extends Module
             // set "@vendor"
             $this->getVendorPath();
         }
+        // 设置runtime目录
         if (isset($config['runtimePath'])) {
             $this->setRuntimePath($config['runtimePath']);
             unset($config['runtimePath']);
@@ -243,20 +262,20 @@ abstract class Application extends Module
             // set "@runtime"
             $this->getRuntimePath();
         }
-
+        // 设置时区
         if (isset($config['timeZone'])) {
             $this->setTimeZone($config['timeZone']);
             unset($config['timeZone']);
         } elseif (!ini_get('date.timezone')) {
             $this->setTimeZone('UTC');
         }
-
+        // 设置容器
         if (isset($config['container'])) {
             $this->setContainer($config['container']);
 
             unset($config['container']);
         }
-
+        // 合并核心模块
         // merge core components with custom components
         foreach ($this->coreComponents() as $id => $component) {
             if (!isset($config['components'][$id])) {
@@ -268,6 +287,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 构造函数中调用
      * @inheritdoc
      */
     public function init()
@@ -277,22 +297,26 @@ abstract class Application extends Module
     }
 
     /**
+     * 引导方法，加载需要预先加载的模块
      * Initializes extensions and executes bootstrap components.
      * This method is called by [[init()]] after the application has been fully configured.
      * If you override this method, make sure you also call the parent implementation.
      */
     protected function bootstrap()
     {
+        // 预先加载extensions文件中的数据
         if ($this->extensions === null) {
             $file = Yii::getAlias('@vendor/yiisoft/extensions.php');
             $this->extensions = is_file($file) ? include($file) : [];
         }
         foreach ($this->extensions as $extension) {
+            //设置别名
             if (!empty($extension['alias'])) {
                 foreach ($extension['alias'] as $name => $path) {
                     Yii::setAlias($name, $path);
                 }
             }
+            //创建对象
             if (isset($extension['bootstrap'])) {
                 $component = Yii::createObject($extension['bootstrap']);
                 if ($component instanceof BootstrapInterface) {
@@ -303,10 +327,11 @@ abstract class Application extends Module
                 }
             }
         }
-
+        // 配置文件设置的 bootstrap 模块
         foreach ($this->bootstrap as $class) {
             $component = null;
             if (is_string($class)) {
+                // 服务定位器判断是否有
                 if ($this->has($class)) {
                     $component = $this->get($class);
                 } elseif ($this->hasModule($class)) {
@@ -329,6 +354,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 注册错误处理程序
      * Registers the errorHandler component as a PHP error handler.
      * @param array $config application config
      */
@@ -339,8 +365,10 @@ abstract class Application extends Module
                 echo "Error: no errorHandler component is configured.\n";
                 exit(1);
             }
+            // 服务定位器 set
             $this->set('errorHandler', $config['components']['errorHandler']);
             unset($config['components']['errorHandler']);
+            // 服务定位器get 并调用对象的 register()方法
             $this->getErrorHandler()->register();
         }
     }
@@ -356,6 +384,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 设置根目录
      * Sets the root directory of the application and the @app alias.
      * This method can only be invoked at the beginning of the constructor.
      * @param string $path the root directory of the application.
@@ -441,6 +470,7 @@ abstract class Application extends Module
     private $_vendorPath;
 
     /**
+     * 设置默认 vendor 目录
      * Returns the directory that stores vendor files.
      * @return string the directory that stores vendor files.
      * Defaults to "vendor" directory under [[basePath]].
@@ -455,6 +485,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 定义vandor目录
      * Sets the directory that stores vendor files.
      * @param string $path the directory that stores vendor files.
      */
@@ -467,6 +498,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 返回时区
      * Returns the time zone used by this application.
      * This is a simple wrapper of PHP function date_default_timezone_get().
      * If time zone is not configured in php.ini or application config,
@@ -480,6 +512,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 设置时区
      * Sets the time zone used by this application.
      * This is a simple wrapper of PHP function date_default_timezone_set().
      * Refer to the [php manual](http://www.php.net/manual/en/timezones.php) for available timezones.

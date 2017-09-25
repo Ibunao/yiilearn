@@ -320,6 +320,7 @@ abstract class Application extends Module
             if (isset($extension['bootstrap'])) {
                 $component = Yii::createObject($extension['bootstrap']);
                 if ($component instanceof BootstrapInterface) {
+                    // 记录日志
                     Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
                     $component->bootstrap($this);
                 } else {

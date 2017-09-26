@@ -126,7 +126,7 @@ abstract class Application extends Module
      */
     public $controller;
     /**
-     * 
+     *
      * @var string|bool the layout that should be applied for views in this application. Defaults to 'main'.
      * If this is false, layout will be disabled.
      */
@@ -220,9 +220,9 @@ abstract class Application extends Module
         $this->registerErrorHandler($config);
         //将配置文件中的所有信息赋值给Object，也就是Yii::$app->配置文件参数可以直接调用配置文件的内容 如：Yii::$app->vendorPath
         //输出框架路径  Yii::$app->components['redis']//输出redis配置信息
-        //将定义的配置文件从的 components数组中的组件注册到服务定位器  
+        //将定义的配置文件从的 components数组中的组件注册到服务定位器
         // 将modules数组中的模块注册到Module中的module数组中
-        Component::__construct($config);
+        Component::__construct($config);//之后调用init()
     }
 
     /**
@@ -316,7 +316,7 @@ abstract class Application extends Module
                     Yii::setAlias($name, $path);
                 }
             }
-            //创建对象
+            //创建配置中bootstrap的对象
             if (isset($extension['bootstrap'])) {
                 $component = Yii::createObject($extension['bootstrap']);
                 if ($component instanceof BootstrapInterface) {
@@ -328,25 +328,31 @@ abstract class Application extends Module
                 }
             }
         }
-        // 配置文件设置的 bootstrap 模块
+        // 配置文件设置的 bootstrap 中定义的模块
         foreach ($this->bootstrap as $class) {
             $component = null;
             if (is_string($class)) {
-                // 服务定位器判断是否有
+                // 服务定位器 ServiceLocator判断是否有
                 if ($this->has($class)) {
+                    // ServiceLocator 获取
                     $component = $this->get($class);
+                // 是否存在这个 Module
                 } elseif ($this->hasModule($class)) {
+                    // 获取模块
                     $component = $this->getModule($class);
                 } elseif (strpos($class, '\\') === false) {
                     throw new InvalidConfigException("Unknown bootstrapping component ID: $class");
                 }
             }
+            // 不是组件components和 Modules 中的数组
             if (!isset($component)) {
                 $component = Yii::createObject($class);
             }
 
             if ($component instanceof BootstrapInterface) {
                 Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
+                // debug 模块有用，并在里边进行了事件的绑定
+                // 加载模块前需要预先处理的
                 $component->bootstrap($this);
             } else {
                 Yii::trace('Bootstrap with ' . get_class($component), __METHOD__);
@@ -399,6 +405,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 执行
      * Runs the application.
      * This is the main entrance of an application.
      * @return int the exit status (0 means normal, non-zero values mean abnormal)
@@ -406,19 +413,24 @@ abstract class Application extends Module
     public function run()
     {
         try {
-
+            // 更改状态 相应前
             $this->state = self::STATE_BEFORE_REQUEST;
+            // 触发事件
             $this->trigger(self::EVENT_BEFORE_REQUEST);
 
             $this->state = self::STATE_HANDLING_REQUEST;
+            // 适应请求request对象处理相应
             $response = $this->handleRequest($this->getRequest());
 
+            // 相应后
             $this->state = self::STATE_AFTER_REQUEST;
+            // 触发事件
             $this->trigger(self::EVENT_AFTER_REQUEST);
-
+            //发送
             $this->state = self::STATE_SENDING_RESPONSE;
-            $response->send();
 
+            $response->send();
+            // 结束
             $this->state = self::STATE_END;
 
             return $response->exitStatus;
@@ -432,6 +444,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 处理请求
      * Handles the specified request.
      *
      * This method should return an instance of [[Response]] or its child class

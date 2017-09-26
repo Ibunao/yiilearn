@@ -393,6 +393,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 检查是否存在module 可以检查多级的
      * Checks whether the child module of the specified ID exists.
      * This method supports checking the existence of both child and grand child modules.
      * @param string $id module ID. For grand child modules, use ID path relative to this module (e.g. `admin/content`).
@@ -401,6 +402,7 @@ class Module extends ServiceLocator
      */
     public function hasModule($id)
     {
+        // 检查是否存在 / 也就是多级模块 
         if (($pos = strpos($id, '/')) !== false) {
             // sub-module
             $module = $this->getModule(substr($id, 0, $pos));
@@ -411,6 +413,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 获取模块对象，可以是多级模块
      * Retrieves the child module of the specified ID.
      * This method supports retrieving both child modules and grand child modules.
      * @param string $id module ID (case-sensitive). To retrieve grand child modules,
@@ -421,20 +424,23 @@ class Module extends ServiceLocator
      */
     public function getModule($id, $load = true)
     {
+        //多级， 递归创建
         if (($pos = strpos($id, '/')) !== false) {
             // sub-module
             $module = $this->getModule(substr($id, 0, $pos));
 
             return $module === null ? null : $module->getModule(substr($id, $pos + 1), $load);
         }
-
+        // 一级模块
         if (isset($this->_modules[$id])) {
             if ($this->_modules[$id] instanceof Module) {
                 return $this->_modules[$id];
             } elseif ($load) {
                 Yii::trace("Loading module: $id", __METHOD__);
+                //创建模块 并通过构造函数配置 $id $this
                 /* @var $module Module */
                 $module = Yii::createObject($this->_modules[$id], [$id, $this]);
+                // 放进Yii::$app->loadedModules 数组中
                 $module->setInstance($module);
                 return $this->_modules[$id] = $module;
             }

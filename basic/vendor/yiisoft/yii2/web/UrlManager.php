@@ -49,6 +49,7 @@ use yii\helpers\Url;
 class UrlManager extends Component
 {
     /**
+     * 是否开启美化
      * @var bool whether to enable pretty URLs. Instead of putting all parameters in the query
      * string part of a URL, pretty URLs allow using path info to represent some of the parameters
      * and can thus produce more user-friendly URLs, such as "/news/Yii-is-released", instead of
@@ -56,6 +57,7 @@ class UrlManager extends Component
      */
     public $enablePrettyUrl = false;
     /**
+     * 是否启用了严格的解析。如果启用了严格的解析，则传入被请求的URL必须至少匹配一个规则，才能被当作有效的请求对待。否则，请求的路径信息部分将被当作请求的路由。该属性仅在启用prettyurl为真时才使用
      * @var bool whether to enable strict parsing. If strict parsing is enabled, the incoming
      * requested URL must match at least one of the [[rules]] in order to be treated as a valid request.
      * Otherwise, the path info part of the request will be treated as the requested route.
@@ -63,6 +65,7 @@ class UrlManager extends Component
      */
     public $enableStrictParsing = false;
     /**
+     * 定义规则
      * @var array the rules for creating and parsing URLs when [[enablePrettyUrl]] is `true`.
      * This property is used only if [[enablePrettyUrl]] is `true`. Each element in the array
      * is the configuration array for creating a single URL rule. The configuration will
@@ -103,21 +106,25 @@ class UrlManager extends Component
      */
     public $rules = [];
     /**
+     * 后缀
      * @var string the URL suffix used when [[enablePrettyUrl]] is `true`.
      * For example, ".html" can be used so that the URL looks like pointing to a static HTML page.
      * This property is used only if [[enablePrettyUrl]] is `true`.
      */
     public $suffix;
     /**
+     * 是否显示脚本名 如index.php
      * @var bool whether to show entry script name in the constructed URL. Defaults to `true`.
      * This property is used only if [[enablePrettyUrl]] is `true`.
      */
     public $showScriptName = true;
     /**
+     * 路由参数 r=xxxx/xxxx/xxx
      * @var string the GET parameter name for route. This property is used only if [[enablePrettyUrl]] is `false`.
      */
     public $routeParam = 'r';
     /**
+     * 缓存路由规则
      * @var Cache|string the cache object or the application component ID of the cache object.
      * Compiled URL rules will be cached through this cache object, if it is available.
      *
@@ -127,6 +134,7 @@ class UrlManager extends Component
      */
     public $cache = 'cache';
     /**
+     *
      * @var array the default configuration of URL rules. Individual rule configurations
      * specified via [[rules]] will take precedence when the same property of the rule is configured.
      */
@@ -167,18 +175,20 @@ class UrlManager extends Component
     public function init()
     {
         parent::init();
-
+        //
         if ($this->normalizer !== false) {
             $this->normalizer = Yii::createObject($this->normalizer);
             if (!$this->normalizer instanceof UrlNormalizer) {
                 throw new InvalidConfigException('`' . get_class($this) . '::normalizer` should be an instance of `' . UrlNormalizer::className() . '` or its DI compatible configuration.');
             }
         }
-
+        // 如果美化没开启 或者 没有定义 rules
         if (!$this->enablePrettyUrl || empty($this->rules)) {
             return;
         }
+        // 如果设置了缓存
         if (is_string($this->cache)) {
+            // 获取缓存
             $this->cache = Yii::$app->get($this->cache, false);
         }
         if ($this->cache instanceof Cache) {
@@ -256,6 +266,7 @@ class UrlManager extends Component
     }
 
     /**
+     * 解析请求
      * Parses the user request.
      * @param Request $request the request component
      * @return array|bool the route and the associated parameters. The latter is always empty
@@ -263,8 +274,10 @@ class UrlManager extends Component
      */
     public function parseRequest($request)
     {
+        // 开启路由美化
         if ($this->enablePrettyUrl) {
             /* @var $rule UrlRule */
+            // 定义的规则
             foreach ($this->rules as $rule) {
                 $result = $rule->parseRequest($this, $request);
                 if (YII_DEBUG) {
@@ -311,6 +324,7 @@ class UrlManager extends Component
             } else {
                 return [$pathInfo, []];
             }
+        // 没有开启路由美化
         } else {
             Yii::trace('Pretty URL not enabled. Using default URL parsing logic.', __METHOD__);
             $route = $request->getQueryParam($this->routeParam, '');

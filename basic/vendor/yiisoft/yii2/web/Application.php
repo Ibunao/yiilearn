@@ -64,13 +64,18 @@ class Application extends \yii\base\Application
     {
         // 获取Request组件
         $request = $this->getRequest();
+        // 获取根目录 D:/ding/wamp64/www/learn/yii/yiilearn/basic/web
+        // $ding = dirname($request->getScriptFile());
         Yii::setAlias('@webroot', dirname($request->getScriptFile()));
+        // 为空 ""
+        $ding = dirname($request->getBaseUrl());
         Yii::setAlias('@web', $request->getBaseUrl());
 
         parent::bootstrap();
     }
 
     /**
+     * 处理请求
      * Handles the specified request.
      * @param Request $request the request to be handled
      * @return Response the resulting response
@@ -78,6 +83,7 @@ class Application extends \yii\base\Application
      */
     public function handleRequest($request)
     {
+        // 如果没有定义 catchAll 即捕捉所有的方法
         if (empty($this->catchAll)) {
             try {
                 list ($route, $params) = $request->resolve();

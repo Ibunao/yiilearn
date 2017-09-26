@@ -175,6 +175,7 @@ class Request extends \yii\base\Request
 
 
     /**
+     * 解析请求
      * Resolves the current request into a route and the associated parameters.
      * @return array the first element is the route, and the second is the associated parameters.
      * @throws NotFoundHttpException if the request cannot be resolved.
@@ -610,6 +611,7 @@ class Request extends \yii\base\Request
     private $_baseUrl;
 
     /**
+     * 获取相对url
      * Returns the relative URL for the application.
      * This is similar to [[scriptUrl]] except that it does not include the script file name,
      * and the ending slashes are removed.
@@ -639,6 +641,7 @@ class Request extends \yii\base\Request
     private $_scriptUrl;
 
     /**
+     * 获取请求的相对路径
      * Returns the relative URL of the entry script.
      * The implementation of this method referenced Zend_Controller_Request_Http in Zend Framework.
      * @return string the relative URL of the entry script.
@@ -647,7 +650,9 @@ class Request extends \yii\base\Request
     public function getScriptUrl()
     {
         if ($this->_scriptUrl === null) {
+            // 获取执行文件
             $scriptFile = $this->getScriptFile();
+            // 获取脚本名称 入口文件 index.php
             $scriptName = basename($scriptFile);
             if (isset($_SERVER['SCRIPT_NAME']) && basename($_SERVER['SCRIPT_NAME']) === $scriptName) {
                 $this->_scriptUrl = $_SERVER['SCRIPT_NAME'];
@@ -681,6 +686,7 @@ class Request extends \yii\base\Request
     private $_scriptFile;
 
     /**
+     * 获取当前执行脚本的文件
      * Returns the entry script file path.
      * The default implementation will simply return `$_SERVER['SCRIPT_FILENAME']`.
      * @return string the entry script file path
@@ -691,7 +697,7 @@ class Request extends \yii\base\Request
         if (isset($this->_scriptFile)) {
             return $this->_scriptFile;
         }
-
+        // 指向当前执行脚本的绝对路径 D:/ding/wamp64/www/learn/yii/yiilearn/basic/web/index.php
         if (isset($_SERVER['SCRIPT_FILENAME'])) {
             return $_SERVER['SCRIPT_FILENAME'];
         }

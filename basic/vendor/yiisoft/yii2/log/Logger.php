@@ -164,6 +164,7 @@ class Logger extends Component
     }
 
     /**
+     * 将内存中的写入到文件
      * Flushes log messages from memory to targets.
      * @param bool $final whether this is a final call during a request.
      */

@@ -375,7 +375,7 @@ abstract class Application extends Module
             // 服务定位器 set
             $this->set('errorHandler', $config['components']['errorHandler']);
             unset($config['components']['errorHandler']);
-            // 服务定位器get 并调用对象的 register()方法
+            // 服务定位器get 并调用对象的 register()方法 注册异常、错误处理函数
             $this->getErrorHandler()->register();
         }
     }

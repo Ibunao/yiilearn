@@ -10,6 +10,7 @@ namespace yii\base;
 use Yii;
 
 /**
+ * 定义控制器的方法
  * InlineAction represents an action that is defined as a controller method.
  *
  * The name of the controller method is available via [[actionMethod]] which
@@ -41,6 +42,7 @@ class InlineAction extends Action
     }
 
     /**
+     * 运行Action
      * Runs this action with the specified parameters.
      * This method is mainly invoked by the controller.
      * @param array $params action parameters

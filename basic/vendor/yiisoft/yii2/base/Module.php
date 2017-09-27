@@ -185,6 +185,7 @@ class Module extends ServiceLocator
     public static function setInstance($instance)
     {
         if ($instance === null) {
+            // 后期静态绑定（"Late Static Binding"）类的名称
             unset(Yii::$app->loadedModules[get_called_class()]);
         } else {
             Yii::$app->loadedModules[get_class($instance)] = $instance;
@@ -192,6 +193,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 创建控制器的路径
      * Initializes the module.
      *
      * This method is called after the module is created and initialized with property values
@@ -211,6 +213,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 返回模块的id
      * Returns an ID that uniquely identifies this module among all modules within the current application.
      * Note that if the module is an application, an empty string will be returned.
      * @return string the unique ID of the module.
@@ -402,7 +405,7 @@ class Module extends ServiceLocator
      */
     public function hasModule($id)
     {
-        // 检查是否存在 / 也就是多级模块 
+        // 检查是否存在 / 也就是多级模块
         if (($pos = strpos($id, '/')) !== false) {
             // sub-module
             $module = $this->getModule(substr($id, 0, $pos));
@@ -523,6 +526,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 执行路由的动作
      * Runs a controller action specified by a route.
      * This method parses the specified route and creates the corresponding child module(s), controller and action
      * instances. It then calls [[Controller::runAction()]] to run the action with the given parameters.
@@ -538,6 +542,7 @@ class Module extends ServiceLocator
         if (is_array($parts)) {
             /* @var $controller Controller */
             list($controller, $actionID) = $parts;
+            // 暂用Yii::$app->controller
             $oldController = Yii::$app->controller;
             Yii::$app->controller = $controller;
             $result = $controller->runAction($actionID, $params);
@@ -553,6 +558,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 创建一个控制器实例根据路由
      * Creates a controller instance based on the given route.
      *
      * The route should be relative to this module. The method implements the following algorithm
@@ -582,33 +588,40 @@ class Module extends ServiceLocator
 
         // double slashes or leading/ending slashes may cause substr problem
         $route = trim($route, '/');
+        // 格式错误的
         if (strpos($route, '//') !== false) {
             return false;
         }
 
         if (strpos($route, '/') !== false) {
+            // 根据 /分割成两个 如：api/site/index 分割成 api aite/index
             list ($id, $route) = explode('/', $route, 2);
         } else {
+            // 如果省略了 action
             $id = $route;
             $route = '';
         }
-
+        // 是否存在控制器映射中
         // module and controller map take precedence
         if (isset($this->controllerMap[$id])) {
             $controller = Yii::createObject($this->controllerMap[$id], [$id, $this]);
             return [$controller, $route];
         }
+        // 看是否存在module，这就要求控制器不能和Module重名
         $module = $this->getModule($id);
         if ($module !== null) {
+            // 通过此 Modules创建控制器，递归调用，可以有多个module嵌套
             return $module->createController($route);
         }
-
+        // / 最后一次出现的位置
+        // 控制器 控制器文件夹 controllers中又创建了一个文件夹，请求里层文件夹内的控制器
         if (($pos = strrpos($route, '/')) !== false) {
             $id .= '/' . substr($route, 0, $pos);
             $route = substr($route, $pos + 1);
         }
 
         $controller = $this->createControllerByID($id);
+        // 如果没有写 action
         if ($controller === null && $route !== '') {
             $controller = $this->createControllerByID($id . '/' . $route);
             $route = '';
@@ -632,6 +645,7 @@ class Module extends ServiceLocator
      */
     public function createControllerByID($id)
     {
+        // 判断是否带有 module
         $pos = strrpos($id, '/');
         if ($pos === false) {
             $prefix = '';
@@ -640,21 +654,25 @@ class Module extends ServiceLocator
             $prefix = substr($id, 0, $pos + 1);
             $className = substr($id, $pos + 1);
         }
-
+        // 过滤不合格的类名
         if (!preg_match('%^[a-z][a-z0-9\\-_]*$%', $className)) {
             return null;
         }
         if ($prefix !== '' && !preg_match('%^[a-z0-9_/]+$%i', $prefix)) {
             return null;
         }
-
+        // 拼接控制器名
+        // 把 ding-ran 转换成 ding ran 再转换成 Ding Ran 在转换成 DingRan 再拼接 DingRanController
         $className = str_replace(' ', '', ucwords(str_replace('-', ' ', $className))) . 'Controller';
+        // 拼接控制器路径
         $className = ltrim($this->controllerNamespace . '\\' . str_replace('/', '\\', $prefix)  . $className, '\\');
+        // 包含 - 或 类不存在(会自动调用autoload)
         if (strpos($className, '-') !== false || !class_exists($className)) {
             return null;
         }
-
+        // 是否是 'yii\base\Controller' 的子类
         if (is_subclass_of($className, 'yii\base\Controller')) {
+            // 创建控制器 保存 id 和 module
             $controller = Yii::createObject($className, [$id, $this]);
             return get_class($controller) === $className ? $controller : null;
         } elseif (YII_DEBUG) {

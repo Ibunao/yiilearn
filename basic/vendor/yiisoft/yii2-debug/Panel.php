@@ -13,6 +13,7 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 
 /**
+ * Panel是调试器面板类的基类。它定义了如何收集数据，在调试工具栏和调试器细节视图中应该显示什么
  * Panel is a base class for debugger panel classes. It defines how data should be collected,
  * what should be displayed at debug toolbar and on debugger details view.
  *

@@ -280,6 +280,7 @@ class UrlManager extends Component
             // 定义的规则
             foreach ($this->rules as $rule) {
                 $result = $rule->parseRequest($this, $request);
+                // 开启debug模式时记录日志
                 if (YII_DEBUG) {
                     Yii::trace([
                         'rule' => method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule),
@@ -291,13 +292,13 @@ class UrlManager extends Component
                     return $result;
                 }
             }
-
+            // 如果定义必须按照自定义的规则，则不会往下执行
             if ($this->enableStrictParsing) {
                 return false;
             }
 
             Yii::trace('No matching URL rules. Using default URL parsing logic.', __METHOD__);
-
+            // 请求后缀 如.html
             $suffix = (string) $this->suffix;
             $pathInfo = $request->getPathInfo();
             $normalized = false;
@@ -327,7 +328,9 @@ class UrlManager extends Component
         // 没有开启路由美化
         } else {
             Yii::trace('Pretty URL not enabled. Using default URL parsing logic.', __METHOD__);
+            // 定义的 r
             $route = $request->getQueryParam($this->routeParam, '');
+
             if (is_array($route)) {
                 $route = '';
             }

@@ -12,6 +12,7 @@ use yii\base\InvalidConfigException;
 use yii\base\Object;
 
 /**
+ * UrlRule表示UrlManager用于解析和生成url的规则。
  * UrlRule represents a rule used by [[UrlManager]] for parsing and generating URLs.
  *
  * To define your own URL parsing and creation logic you can extend from this class
@@ -33,10 +34,12 @@ use yii\base\Object;
 class UrlRule extends Object implements UrlRuleInterface
 {
     /**
+     * 只解析
      * Set [[mode]] with this value to mark that this rule is for URL parsing only
      */
     const PARSING_ONLY = 1;
     /**
+     * 只创建
      * Set [[mode]] with this value to mark that this rule is for URL creation only
      */
     const CREATION_ONLY = 2;
@@ -68,10 +71,13 @@ class UrlRule extends Object implements UrlRuleInterface
     const CREATE_STATUS_PARAMS_MISMATCH = 4;
 
     /**
+     * 路由规则名称
+     * 
      * @var string the name of this rule. If not set, it will use [[pattern]] as the name.
      */
     public $name;
     /**
+     * 用于解析请求或生成URL的模式，通常是正则表达式
      * On the rule initialization, the [[pattern]] matching parameters names will be replaced with [[placeholders]].
      * @var string the pattern used to parse and create the path info part of a URL.
      * @see host
@@ -84,6 +90,7 @@ class UrlRule extends Object implements UrlRuleInterface
      */
     public $host;
     /**
+     * 指向controller 和 action 的路由
      * @var string the route to the controller action
      */
     public $route;
@@ -100,6 +107,10 @@ class UrlRule extends Object implements UrlRuleInterface
      */
     public $suffix;
     /**
+     * 指定当前规则适用的HTTP方法，如 GET, POST, DELETE 等。
+      可以使用数组表示同时适用于多个方法。
+      如果未设定，表明当前规则适用于所有方法。
+      当然，这个属性仅在解析请求时有效，在生成URL时是无效的。
      * @var string|array the HTTP verb (e.g. GET, POST, DELETE) that this rule should match.
      * Use array to represent multiple verbs that this rule may match.
      * If this property is not set, the rule can match any verb.
@@ -119,6 +130,7 @@ class UrlRule extends Object implements UrlRuleInterface
      */
     public $encodeParams = true;
     /**
+     * 如果为对象则是配置 UrlNormalizer 的参数后的 URLNormalizer
      * @var UrlNormalizer|array|false|null the configuration for [[UrlNormalizer]] used by this rule.
      * If `null`, [[UrlManager::normalizer]] will be used, if `false`, normalization will be skipped
      * for this rule.
@@ -187,12 +199,17 @@ class UrlRule extends Object implements UrlRuleInterface
      */
     public function init()
     {
+        // 一个路由规则必定要有 pattern ，否则是没有意义的，
+        // 一个什么都没规定的规定，要来何用？
         if ($this->pattern === null) {
             throw new InvalidConfigException('UrlRule::pattern must be set.');
         }
+        // 不指定规则匹配后所要指派的路由，Yii怎么知道将请求交给谁来处理？
+        // 不指定路由，Yii怎么知道这个规则可以为谁创建URL？
         if ($this->route === null) {
             throw new InvalidConfigException('UrlRule::route must be set.');
         }
+        // 定义 $this->normalizer
         if (is_array($this->normalizer)) {
             $normalizerConfig = array_merge(['class' => UrlNormalizer::className()], $this->normalizer);
             $this->normalizer = Yii::createObject($normalizerConfig);
@@ -200,6 +217,7 @@ class UrlRule extends Object implements UrlRuleInterface
         if ($this->normalizer !== null && $this->normalizer !== false && !$this->normalizer instanceof UrlNormalizer) {
             throw new InvalidConfigException('Invalid config for UrlRule::normalizer.');
         }
+        // 转大写
         if ($this->verb !== null) {
             if (is_array($this->verb)) {
                 foreach ($this->verb as $i => $verb) {
@@ -209,10 +227,11 @@ class UrlRule extends Object implements UrlRuleInterface
                 $this->verb = [strtoupper($this->verb)];
             }
         }
+        // 路由规则名称
         if ($this->name === null) {
             $this->name = $this->pattern;
         }
-
+        // 解析请求
         $this->preparePattern();
     }
 
@@ -221,33 +240,44 @@ class UrlRule extends Object implements UrlRuleInterface
      */
     private function preparePattern()
     {
+        // trim两边的 /
         $this->pattern = $this->trimSlashes($this->pattern);
         $this->route = trim($this->route, '/');
 
+        // 设置了 host 则拼接 pattern
         if ($this->host !== null) {
             $this->host = rtrim($this->host, '/');
             $this->pattern = rtrim($this->host . '/' . $this->pattern, '/');
+        // 如果没有设置 pattern 直接 return
         } elseif ($this->pattern === '') {
             $this->_template = '';
             $this->pattern = '#^$#u';
 
             return;
+        // pattern中存在 :// 如http://
         } elseif (($pos = strpos($this->pattern, '://')) !== false) {
+            // 处理 :// 后还包含 /
             if (($pos2 = strpos($this->pattern, '/', $pos + 3)) !== false) {
+                // 域名
                 $this->host = substr($this->pattern, 0, $pos2);
             } else {
                 $this->host = $this->pattern;
             }
+        // 以 // 开头
         } elseif (strpos($this->pattern, '//') === 0) {
+            // 除了 // 还有 /
             if (($pos2 = strpos($this->pattern, '/', 2)) !== false) {
                 $this->host = substr($this->pattern, 0, $pos2);
             } else {
                 $this->host = $this->pattern;
             }
+        // pattern 不是空串，且不包含主机信息，两端加上 '/' ，形成一个正则
         } else {
             $this->pattern = '/' . $this->pattern . '/';
         }
-
+        // route 中含有 <参数> ，则将所有参数提取成 [参数 => <参数>]
+        // 获取 route 参数
+        // route 中存在 < 平匹配 <任意字符>
         if (strpos($this->route, '<') !== false && preg_match_all('/<([\w._-]+)>/', $this->route, $matches)) {
             foreach ($matches[1] as $name) {
                 $this->_routeParams[$name] = "<$name>";
@@ -279,6 +309,8 @@ class UrlRule extends Object implements UrlRuleInterface
         $tr2 = [];
         $requiredPatternPart = $this->pattern;
         $oldOffset = 0;
+        // pattern 中含有 <参数名:参数pattern> ，
+        // 其中 ':参数pattern' 部分是可选的。
         if (preg_match_all('/<([\w._-]+):?([^>]+)?>/', $this->pattern, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
             $appendSlash = false;
             foreach ($matches as $match) {
@@ -582,6 +614,8 @@ class UrlRule extends Object implements UrlRuleInterface
     }
 
     /**
+     * 去除字符串的两边的 /。如果字符串以'//'开头，则会留下两个斜杠
+在字符串的开头。
      * Trim slashes in passed string. If string begins with '//', two slashes are left as is
      * in the beginning of a string.
      *

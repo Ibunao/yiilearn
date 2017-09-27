@@ -148,6 +148,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
     }
 
     /**
+     * 初始化模块
      * Initializes panels.
      */
     protected function initPanels()
@@ -176,6 +177,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
     }
 
     /**
+     * 实例化 module的时候调用
      * @inheritdoc
      */
     public function bootstrap($app)
@@ -187,7 +189,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
             $app->getView()->on(View::EVENT_END_BODY, [$this, 'renderToolbar']);
             $app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'setDebugHeaders']);
         });
-
+        // 添加路由规则
         $app->getUrlManager()->addRules([
             [
                 'class' => 'yii\web\UrlRule',

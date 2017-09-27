@@ -12,6 +12,7 @@ use yii\helpers\VarDumper;
 use yii\web\HttpException;
 
 /**
+ * ErrorHandler 处理未捕捉的错误或异常
  * ErrorHandler handles uncaught PHP errors and exceptions.
  *
  * ErrorHandler is configured as an application component in [[\yii\base\Application]] by default.
@@ -53,12 +54,16 @@ abstract class ErrorHandler extends Component
 
 
     /**
+     * 注册错误处理机制
      * Register this error handler
      */
     public function register()
     {
+        // 关闭php 报错
         ini_set('display_errors', false);
+        // 设置用户自定义的异常处理函数
         set_exception_handler([$this, 'handleException']);
+        // 设置用户自定义的错误处理函数
         if (defined('HHVM_VERSION')) {
             set_error_handler([$this, 'handleHhvmError']);
         } else {
@@ -67,6 +72,7 @@ abstract class ErrorHandler extends Component
         if ($this->memoryReserveSize > 0) {
             $this->_memoryReserve = str_repeat('x', $this->memoryReserveSize);
         }
+        // 注册一个会在php中止时执行的函数
         register_shutdown_function([$this, 'handleFatalError']);
     }
 
@@ -75,11 +81,13 @@ abstract class ErrorHandler extends Component
      */
     public function unregister()
     {
+        // 释放自定义错误和异常处理函数
         restore_error_handler();
         restore_exception_handler();
     }
 
     /**
+     * 处理未捕捉到的异常
      * Handles uncaught PHP exceptions.
      *
      * This method is implemented as a PHP exception handler.
@@ -88,27 +96,32 @@ abstract class ErrorHandler extends Component
      */
     public function handleException($exception)
     {
+        // 如果是继承 ExitException的异常不管
         if ($exception instanceof ExitException) {
             return;
         }
 
         $this->exception = $exception;
-
+        // 释放注册的异常处理函数
         // disable error capturing to avoid recursive errors while handling exceptions
         $this->unregister();
 
         // set preventive HTTP status code to 500 in case error handling somehow fails and headers are sent
         // HTTP exceptions will override this value in renderException()
         if (PHP_SAPI !== 'cli') {
+            // 设置响应的 HTTP 状态码
             http_response_code(500);
         }
 
         try {
+            // 记录日志
             $this->logException($exception);
             if ($this->discardExistingOutput) {
+                // 清 ob
                 $this->clearOutput();
             }
             $this->renderException($exception);
+            // 如果是 test环境,将错误信息输出
             if (!YII_ENV_TEST) {
                 \Yii::getLogger()->flush(true);
                 if (defined('HHVM_VERSION')) {
@@ -116,6 +129,7 @@ abstract class ErrorHandler extends Component
                 }
                 exit(1);
             }
+        // 如果在处理异常的时候又 throw 出异常
         } catch (\Exception $e) {
             // an other exception could be thrown while displaying the exception
             $this->handleFallbackExceptionMessage($e, $exception);
@@ -274,6 +288,7 @@ abstract class ErrorHandler extends Component
     abstract protected function renderException($exception);
 
     /**
+     * 记录异常
      * Logs the given exception
      * @param \Exception $exception the exception to be logged
      * @since 2.0.3 this method is now public.
@@ -290,6 +305,7 @@ abstract class ErrorHandler extends Component
     }
 
     /**
+     * 清除所有的 ob缓存
      * Removes all output echoed before calling this method.
      */
     public function clearOutput()

@@ -112,6 +112,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 执行 action
      * Runs an action within this controller with the specified action ID and parameters.
      * If the action ID is empty, the method will use [[defaultAction]].
      * @param string $id the ID of the action to be executed.
@@ -122,6 +123,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public function runAction($id, $params = [])
     {
+        // 创建 action对象
         $action = $this->createAction($id);
         if ($action === null) {
             throw new InvalidRouteException('Unable to resolve the request: ' . $this->getUniqueId() . '/' . $id);
@@ -141,22 +143,26 @@ class Controller extends Component implements ViewContextInterface
 
         // call beforeAction on modules
         foreach ($this->getModules() as $module) {
+            // 调用 module中的 beforeAction 触发执行前的事件
             if ($module->beforeAction($action)) {
+                // 插入到头部
                 array_unshift($modules, $module);
             } else {
+                //如果返回false则不往下执行
                 $runAction = false;
                 break;
             }
         }
 
         $result = null;
-
+        // 调用控制器的 beforeAction
         if ($runAction && $this->beforeAction($action)) {
+            // 运行 action
             // run the action
             $result = $action->runWithParams($params);
-
+            //调用 控制器的 afterAction
             $result = $this->afterAction($action, $result);
-
+            // 调用module 的 afterAction
             // call afterAction on modules
             foreach ($modules as $module) {
                 /* @var $module Module */
@@ -193,6 +199,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 绑定参数
      * Binds the parameters to the action.
      * This method is invoked by [[Action]] when it begins to run with the given parameters.
      * @param Action $action the action to be bound with parameters.
@@ -205,6 +212,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 创建action
      * Creates an action based on the given action ID.
      * The method first checks if the action ID has been declared in [[actions()]]. If so,
      * it will use the configuration declared there to create the action object.
@@ -217,17 +225,23 @@ class Controller extends Component implements ViewContextInterface
     public function createAction($id)
     {
         if ($id === '') {
+            // 获取配置的默认action
             $id = $this->defaultAction;
         }
-
+        // 获取控制器中在 actions() 方法中配置的 Action对象
         $actionMap = $this->actions();
         if (isset($actionMap[$id])) {
+            // 创建
             return Yii::createObject($actionMap[$id], [$id, $this]);
+        // 定义在控制器的 action
         } elseif (preg_match('/^[a-z0-9\\-_]+$/', $id) && strpos($id, '--') === false && trim($id, '-') === $id) {
+            //转换
             $methodName = 'action' . str_replace(' ', '', ucwords(implode(' ', explode('-', $id))));
+            // 方法存在
             if (method_exists($this, $methodName)) {
                 $method = new \ReflectionMethod($this, $methodName);
                 if ($method->isPublic() && $method->getName() === $methodName) {
+                    // 创建action 对象 可能是为了和 actions 中的统一吧
                     return new InlineAction($id, $this, $methodName);
                 }
             }
@@ -303,6 +317,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 获取控制器的module
      * Returns all ancestor modules of this controller.
      * The first module in the array is the outermost one (i.e., the application instance),
      * while the last is the innermost one.

@@ -86,6 +86,7 @@ class Application extends \yii\base\Application
         // 如果没有定义 catchAll 即捕捉所有的方法
         if (empty($this->catchAll)) {
             try {
+                // 解析请求
                 list ($route, $params) = $request->resolve();
             } catch (UrlNormalizerRedirectException $e) {
                 $url = $e->url;
@@ -106,6 +107,7 @@ class Application extends \yii\base\Application
         try {
             Yii::trace("Route requested: '$route'", __METHOD__);
             $this->requestedRoute = $route;
+            // 执行动作
             $result = $this->runAction($route, $params);
             if ($result instanceof Response) {
                 return $result;

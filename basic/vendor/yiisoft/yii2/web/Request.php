@@ -182,6 +182,8 @@ class Request extends \yii\base\Request
      */
     public function resolve()
     {
+        // 使用UrlManager类解析请求
+        // 获取路由地址
         $result = Yii::$app->getUrlManager()->parseRequest($this);
         if ($result !== false) {
             list ($route, $params) = $result;
@@ -469,6 +471,7 @@ class Request extends \yii\base\Request
     private $_queryParams;
 
     /**
+     * return $_GET
      * Returns the request parameters given in the [[queryString]].
      *
      * This method will return the contents of `$_GET` if params where not explicitly set.
@@ -512,9 +515,10 @@ class Request extends \yii\base\Request
     }
 
     /**
+     *
      * Returns the named GET parameter value.
      * If the GET parameter does not exist, the second parameter passed to this method will be returned.
-     * @param string $name the GET parameter name.
+     * @param string $name the GET parameter name.    r
      * @param mixed $defaultValue the default parameter value if the GET parameter does not exist.
      * @return mixed the GET parameter value
      * @see getBodyParam()
@@ -522,7 +526,7 @@ class Request extends \yii\base\Request
     public function getQueryParam($name, $defaultValue = null)
     {
         $params = $this->getQueryParams();
-
+        // 如果没有传递 r= xxx 则返回配置的默认路由
         return isset($params[$name]) ? $params[$name] : $defaultValue;
     }
 
@@ -720,6 +724,7 @@ class Request extends \yii\base\Request
     private $_pathInfo;
 
     /**
+     * 返回pathInfo
      * Returns the path info of the currently requested URL.
      * A path info refers to the part that is after the entry script and before the question mark (query string).
      * The starting and ending slashes are both removed.
@@ -747,6 +752,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 获取pathInfo
      * Resolves the path info part of the currently requested URL.
      * A path info refers to the part that is after the entry script and before the question mark (query string).
      * The starting slashes are both removed (ending slashes will be kept).
@@ -756,14 +762,15 @@ class Request extends \yii\base\Request
      */
     protected function resolvePathInfo()
     {
+        // 获取pathInfo
         $pathInfo = $this->getUrl();
 
         if (($pos = strpos($pathInfo, '?')) !== false) {
             $pathInfo = substr($pathInfo, 0, $pos);
         }
-
+        // 解析url
         $pathInfo = urldecode($pathInfo);
-
+        // 如果不是urf8 转成utf8
         // try to encode in UTF8 if not so
         // http://w3.org/International/questions/qa-forms-utf-8.html
         if (!preg_match('%^(?:
@@ -779,9 +786,11 @@ class Request extends \yii\base\Request
         ) {
             $pathInfo = utf8_encode($pathInfo);
         }
-
+        // /index.php
         $scriptUrl = $this->getScriptUrl();
+        // ""
         $baseUrl = $this->getBaseUrl();
+        // 截取掉 index.php
         if (strpos($pathInfo, $scriptUrl) === 0) {
             $pathInfo = substr($pathInfo, strlen($scriptUrl));
         } elseif ($baseUrl === '' || strpos($pathInfo, $baseUrl) === 0) {
@@ -812,6 +821,7 @@ class Request extends \yii\base\Request
     private $_url;
 
     /**
+     * 获取请求的Url
      * Returns the currently requested relative URL.
      * This refers to the portion of the URL that is after the [[hostInfo]] part.
      * It includes the [[queryString]] part if any.
@@ -839,6 +849,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 解析请求的Url
      * Resolves the request URI portion for the currently requested URL.
      * This refers to the portion that is after the [[hostInfo]] part. It includes the [[queryString]] part if any.
      * The implementation of this method referenced Zend_Controller_Request_Http in Zend Framework.
@@ -850,9 +861,11 @@ class Request extends \yii\base\Request
     {
         if (isset($_SERVER['HTTP_X_REWRITE_URL'])) { // IIS
             $requestUri = $_SERVER['HTTP_X_REWRITE_URL'];
+        //$_SERVER['REQUEST_URI'] 这是取得当前URL的 路径地址 域名后面的信息 如 /site/about
         } elseif (isset($_SERVER['REQUEST_URI'])) {
             $requestUri = $_SERVER['REQUEST_URI'];
             if ($requestUri !== '' && $requestUri[0] !== '/') {
+                // 去掉 http:// 或 https://
                 $requestUri = preg_replace('/^(http|https):\/\/[^\/]+/i', '', $requestUri);
             }
         } elseif (isset($_SERVER['ORIG_PATH_INFO'])) { // IIS 5.0 CGI

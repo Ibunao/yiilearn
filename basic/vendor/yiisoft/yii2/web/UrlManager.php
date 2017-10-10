@@ -140,6 +140,7 @@ class UrlManager extends Component
      */
     public $ruleConfig = ['class' => 'yii\web\UrlRule'];
     /**
+     * 标准化
      * @var UrlNormalizer|array|string|false the configuration for [[UrlNormalizer]] used by this UrlManager.
      * The default value is `false`, which means normalization will be skipped.
      * If you wish to enable URL normalization, you should configure this property manually.
@@ -175,7 +176,7 @@ class UrlManager extends Component
     public function init()
     {
         parent::init();
-        //
+        // 检查标准化属性配置是否正确
         if ($this->normalizer !== false) {
             $this->normalizer = Yii::createObject($this->normalizer);
             if (!$this->normalizer instanceof UrlNormalizer) {
@@ -201,6 +202,7 @@ class UrlManager extends Component
                 $this->cache->set($cacheKey, [$this->rules, $hash]);
             }
         } else {
+            // 创建路由规则
             $this->rules = $this->buildRules($this->rules);
         }
     }
@@ -231,6 +233,7 @@ class UrlManager extends Component
     }
 
     /**
+     * 创建了路由规则
      * Builds URL rule objects from the given rule declarations.
      * @param array $rules the rule declarations. Each array element represents a single rule declaration.
      * Please refer to [[rules]] for the acceptable rule formats.
@@ -277,7 +280,7 @@ class UrlManager extends Component
         // 开启路由美化
         if ($this->enablePrettyUrl) {
             /* @var $rule UrlRule */
-            // 定义的规则
+            // 定义的规则 进行解析
             foreach ($this->rules as $rule) {
                 $result = $rule->parseRequest($this, $request);
                 // 开启debug模式时记录日志
@@ -292,7 +295,7 @@ class UrlManager extends Component
                     return $result;
                 }
             }
-            // 如果定义必须按照自定义的规则，则不会往下执行
+            // 如果定义必须按照自定义的规则，又没有则不会往下执行
             if ($this->enableStrictParsing) {
                 return false;
             }
@@ -328,7 +331,7 @@ class UrlManager extends Component
         // 没有开启路由美化
         } else {
             Yii::trace('Pretty URL not enabled. Using default URL parsing logic.', __METHOD__);
-            // 定义的 r
+            // 定义的 路径 r 
             $route = $request->getQueryParam($this->routeParam, '');
 
             if (is_array($route)) {

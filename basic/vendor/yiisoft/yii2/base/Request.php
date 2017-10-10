@@ -22,26 +22,32 @@ use Yii;
  */
 abstract class Request extends Component
 {
+    // 表示入口脚本
     private $_scriptFile;
+    // 表示是否是命令行应用
     private $_isConsoleRequest;
 
 
     /**
+     * 这个函数的功能主要是为了把Request解析成路由和相应的参数
      * Resolves the current request into a route and the associated parameters.
      * @return array the first element is the route, and the second is the associated parameters.
      */
     abstract public function resolve();
 
     /**
+     * 使用 PHP_SAPI 常量判断当前应用是否是命令行应用
      * Returns a value indicating whether the current request is made via command line
      * @return bool the value indicating whether the current request is made via console
      */
     public function getIsConsoleRequest()
     {
+        // 一切 PHP_SAPI 不为 'cli' 的，都不是命令行
         return $this->_isConsoleRequest !== null ? $this->_isConsoleRequest : PHP_SAPI === 'cli';
     }
 
     /**
+     * 设置属性值
      * Sets the value indicating whether the current request is made via command line
      * @param bool $value the value indicating whether the current request is made via command line
      */
@@ -51,6 +57,7 @@ abstract class Request extends Component
     }
 
     /**
+     * 获取并设置入口脚本名
      * Returns entry script file path.
      * @return string entry script file path (processed w/ realpath())
      * @throws InvalidConfigException if the entry script file path cannot be determined automatically.
@@ -69,6 +76,7 @@ abstract class Request extends Component
     }
 
     /**
+     * 设置入口文件名
      * Sets the entry script file path.
      * The entry script file path can normally be determined based on the `SCRIPT_FILENAME` SERVER variable.
      * However, for some server configurations, this may not be correct or feasible.
@@ -78,6 +86,7 @@ abstract class Request extends Component
      */
     public function setScriptFile($value)
     {
+        // realpath 返回绝对路径
         $scriptFile = realpath(Yii::getAlias($value));
         if ($scriptFile !== false && is_file($scriptFile)) {
             $this->_scriptFile = $scriptFile;

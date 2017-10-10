@@ -9,7 +9,9 @@ namespace yii\web;
 
 use Yii;
 use yii\base\InvalidConfigException;
-
+/*
+将所有的请求参数划分为两类， 一类是包含在URL中的，称为查询参数（Query Parameter），或GET参数。 另一类是包含在请求体中的，需要根据请求体的内容类型（Content Type）进行解析，称为POST参数。
+ */
 /**
  * The web Request class represents an HTTP request
  *
@@ -187,6 +189,7 @@ class Request extends \yii\base\Request
         $result = Yii::$app->getUrlManager()->parseRequest($this);
         if ($result !== false) {
             list ($route, $params) = $result;
+            // 将参数信息赋值个 _queryParams
             if ($this->_queryParams === null) {
                 $_GET = $params + $_GET; // preserve numeric keys
             } else {
@@ -199,6 +202,8 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 请求头
+     * 其实是一个 yii\web\HeaderCollection ，这是一个集合类的基本数据结构， 实现了SPL的 IteratorAggregate , ArrayAccess 和 Countable 等接口。 因此，这个集合可以进行迭代、像数组一样进行访问、可被用于 conut() 函数等。
      * Returns the header collection.
      * The header collection contains incoming HTTP headers.
      * @return HeaderCollection the header collection
@@ -207,12 +212,15 @@ class Request extends \yii\base\Request
     {
         if ($this->_headers === null) {
             $this->_headers = new HeaderCollection;
+            // 使用 getallheaders() 获取请求头部，以数组形式返回
             if (function_exists('getallheaders')) {
                 $headers = getallheaders();
+            // 使用 http_get_request_headers() 获取请求头部，以数组形式返回
             } elseif (function_exists('http_get_request_headers')) {
                 $headers = http_get_request_headers();
             } else {
                 foreach ($_SERVER as $name => $value) {
+                    // 针对所有 $_SERVER['HTTP_*'] 元素
                     if (strncmp($name, 'HTTP_', 5) === 0) {
                         $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
                         $this->_headers->add($name, $value);
@@ -230,20 +238,23 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 返回当前请求的方法
      * Returns the method of the current request (e.g. GET, POST, HEAD, PUT, PATCH, DELETE).
      * @return string request method, such as GET, POST, HEAD, PUT, PATCH, DELETE.
      * The value returned is turned into upper case.
      */
     public function getMethod()
     {
+        // 如果指定 $_POST['_method'] ，表示使用POST请求来模拟其他方法的请求。
+        // 此时 $_POST['_method'] 即为所模拟的请求类型。 
         if (isset($_POST[$this->methodParam])) {
             return strtoupper($_POST[$this->methodParam]);
         }
-
+        // 作为方法名
         if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
             return strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']);
         }
-
+        // 作为方法名
         if (isset($_SERVER['REQUEST_METHOD'])) {
             return strtoupper($_SERVER['REQUEST_METHOD']);
         }
@@ -349,6 +360,7 @@ class Request extends \yii\base\Request
     private $_rawBody;
 
     /**
+     * 返回请求体
      * Returns the raw HTTP request body.
      * @return string the request body
      */
@@ -373,6 +385,7 @@ class Request extends \yii\base\Request
     private $_bodyParams;
 
     /**
+     * 
      * Returns the request parameters given in the request body.
      *
      * Request parameters are determined using the parsers configured in [[parsers]] property.
@@ -387,21 +400,26 @@ class Request extends \yii\base\Request
     public function getBodyParams()
     {
         if ($this->_bodyParams === null) {
+            // 如果POST中定义了 _method ,表示使用POST模拟其他请求方式
             if (isset($_POST[$this->methodParam])) {
                 $this->_bodyParams = $_POST;
                 unset($this->_bodyParams[$this->methodParam]);
                 return $this->_bodyParams;
             }
-
+            // 获取Content Type
+            // 对于 'application/json; charset=UTF-8'，
             $rawContentType = $this->getContentType();
+            // 得到的是 'application/json'
             if (($pos = strpos($rawContentType, ';')) !== false) {
                 // e.g. application/json; charset=UTF-8
                 $contentType = substr($rawContentType, 0, $pos);
             } else {
                 $contentType = $rawContentType;
             }
-
+            // 根据Content Type 选择相应的解析器对请求体进行解析
             if (isset($this->parsers[$contentType])) {
+                // 创建解析器实例
+                // 目前yii只自带了一个json的解析器，其他的需要自己写
                 $parser = Yii::createObject($this->parsers[$contentType]);
                 if (!($parser instanceof RequestParserInterface)) {
                     throw new InvalidConfigException("The '$contentType' request parser is invalid. It must implement the yii\\web\\RequestParserInterface.");
@@ -417,6 +435,20 @@ class Request extends \yii\base\Request
                 // PHP has already parsed the body so we have all params in $_POST
                 $this->_bodyParams = $_POST;
             } else {
+/**
+$str = 'email=kehaovista@qq.com&city=shanghai&job=Phper';
+mb_parse_str($str, $result);
+print_r($result);
+
+//结果
+Array
+(
+    [email] => kehaovista@qq.com
+    [city] => shanghai
+    [job] => Phper
+) 
+
+ */
                 $this->_bodyParams = [];
                 mb_parse_str($this->getRawBody(), $this->_bodyParams);
             }
@@ -437,6 +469,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 获取 请求 参数
      * Returns the named request body parameter value.
      * If the parameter does not exist, the second parameter passed to this method will be returned.
      * @param string $name the parameter name
@@ -453,6 +486,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 获取 POST 参数
      * Returns POST parameter with a given name. If name isn't specified, returns an array of all POST parameters.
      *
      * @param string $name the parameter name
@@ -471,6 +505,7 @@ class Request extends \yii\base\Request
     private $_queryParams;
 
     /**
+     * 返回 $_GET 的所有的值
      * return $_GET
      * Returns the request parameters given in the [[queryString]].
      *
@@ -499,6 +534,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 获取GET参数，可以指定参数名和默认值
      * Returns GET parameter with a given name. If name isn't specified, returns an array of all GET parameters.
      *
      * @param string $name the parameter name
@@ -515,7 +551,7 @@ class Request extends \yii\base\Request
     }
 
     /**
-     *
+     * 获取GET请求参数
      * Returns the named GET parameter value.
      * If the GET parameter does not exist, the second parameter passed to this method will be returned.
      * @param string $name the GET parameter name.    r
@@ -526,7 +562,7 @@ class Request extends \yii\base\Request
     public function getQueryParam($name, $defaultValue = null)
     {
         $params = $this->getQueryParams();
-        // 如果没有传递 r= xxx 则返回配置的默认路由
+        // 如果没有，则返回提供的默认值
         return isset($params[$name]) ? $params[$name] : $defaultValue;
     }
 
@@ -1082,6 +1118,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 获取 content-type
      * Returns request content-type
      * The Content-Type header field indicates the MIME type of the data
      * contained in [[getRawBody()]] or, in the case of the HEAD method, the

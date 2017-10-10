@@ -60,6 +60,7 @@ defined('STDERR') or define('STDERR', fopen('php://stderr', 'w'));
 class Application extends \yii\base\Application
 {
     /**
+     * 配置选项 配置配置文件
      * The option name for specifying the application configuration file path.
      */
     const OPTION_APPCONFIG = 'appconfig';
@@ -85,11 +86,13 @@ class Application extends \yii\base\Application
      */
     public function __construct($config = [])
     {
+        // 加载配置
         $config = $this->loadConfig($config);
         parent::__construct($config);
     }
 
     /**
+     * 如果执行脚本的时候添加了 --appconfig= '配置文件路径' ;则会使用配置的配置文件进行配置 
      * Loads the configuration.
      * This method will check if the command line option [[OPTION_APPCONFIG]] is specified.
      * If so, the corresponding file will be loaded as the application configuration.

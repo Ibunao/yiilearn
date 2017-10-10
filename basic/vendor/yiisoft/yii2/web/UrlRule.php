@@ -175,6 +175,7 @@ class UrlRule extends Object implements UrlRuleInterface
      */
     protected $createStatus;
     /**
+     * 占位符
      * @var array list of placeholders for matching parameters names. Used in [[parseRequest()]], [[createUrl()]].
      * On the rule initialization, the [[pattern]] parameters names will be replaced with placeholders.
      * This array contains relations between the original parameters names and their placeholders.
@@ -288,13 +289,19 @@ class UrlRule extends Object implements UrlRuleInterface
         if ($this->host !== null) {
             $this->host = rtrim($this->host, '/');
             $this->pattern = rtrim($this->host . '/' . $this->pattern, '/');
-        // 如果没有设置 pattern 直接 return
+        //  pattern 为空直接 return
+        // 既未定义 host ，pattern 又是空的，那么 pattern 匹配任意字符串。
+        // 而基于这个pattern的，用于生成的URL的template就是空的，
+        // 意味着使用该规则生成所有URL都是空的。
+        // 后续也无需再作其他初始化工作了。
         } elseif ($this->pattern === '') {
+            // 生成url模板为空
             $this->_template = '';
+            // 随便的字符串
             $this->pattern = '#^$#u';
 
             return;
-        // pattern中存在 :// 如http://
+        // pattern中存在 :// 如http://   获取域名
         } elseif (($pos = strpos($this->pattern, '://')) !== false) {
             // 处理 :// 后还包含 /
             if (($pos2 = strpos($this->pattern, '/', $pos + 3)) !== false) {
@@ -303,7 +310,7 @@ class UrlRule extends Object implements UrlRuleInterface
             } else {
                 $this->host = $this->pattern;
             }
-        // 以 // 开头
+        // 以 // 开头    获取域名
         } elseif (strpos($this->pattern, '//') === 0) {
             // 除了 // 还有 /
             if (($pos2 = strpos($this->pattern, '/', 2)) !== false) {
@@ -316,6 +323,7 @@ class UrlRule extends Object implements UrlRuleInterface
             $this->pattern = '/' . $this->pattern . '/';
         }
         // route 中含有 <参数> ，则将所有参数提取成 [参数 => <参数>]
+        // 如 ['controller' => '<controller>', 'action' => '<action>'],
         // 获取 route 参数
         // route 中存在 < 平匹配 <任意字符>
         if (strpos($this->route, '<') !== false && preg_match_all('/<([\w._-]+)>/', $this->route, $matches)) {
@@ -328,14 +336,16 @@ class UrlRule extends Object implements UrlRuleInterface
     }
 
     /**
+     * 转换
      * Prepares [[$pattern]] on rule initialization - replace parameter names by placeholders.
      *
-     * @param bool $allowAppendSlash Defines position of slash in the param pattern in [[$pattern]].
+     * @param bool $allowAppendSlash Defines position of slash in the param pattern in [[$pattern]]. 允许有斜线/
      * If `false` slash will be placed at the beginning of param pattern. If `true` slash position will be detected
      * depending on non-optional pattern part.
      */
     private function translatePattern($allowAppendSlash)
     {
+        // 这个 $tr[] 和 $tr2[] 用于字符串的转换
         $tr = [
             '.' => '\\.',
             '*' => '\\*',
@@ -350,24 +360,79 @@ class UrlRule extends Object implements UrlRuleInterface
         $requiredPatternPart = $this->pattern;
         $oldOffset = 0;
         // pattern 中含有 <参数名:参数pattern> ，
-        // 其中 ':参数pattern' 部分是可选的。
+        // 其中 ':参数pattern' 部分是可选的。 ? 前面的原子重复0次或1次  [^>] 表示除了 > 以外的任意字符
+/**
+如  '/post/<ding:\w>/<id:\d+>/<ran>' 
+结果 ： json_encode($matches)
+[
+    [
+        [
+            "<ding:\\w>",
+            6
+        ],
+        [
+            "ding",
+            7
+        ],
+        [
+            "\\w",
+            12
+        ]
+    ],
+    [
+        [
+            "<id:\\d+>",
+            16
+        ],
+        [
+            "id",
+            17
+        ],
+        [
+            "\\d+",
+            20
+        ]
+    ],
+    [
+        [
+            "<ran>",
+            25
+        ],
+        [
+            "ran",
+            26
+        ]
+    ]
+]
+ */
         if (preg_match_all('/<([\w._-]+):?([^>]+)?>/', $this->pattern, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER)) {
             $appendSlash = false;
             foreach ($matches as $match) {
+                //([\w._-]+)匹配到的
                 $name = $match[1][0];
+                //([^>]+)匹配到的
+                //如果没有匹配到则 使用[^\/]+ 表示匹配除了 '/' 以外的所有字符
                 $pattern = isset($match[2][0]) ? $match[2][0] : '[^\/]+';
+                // 占位符
                 $placeholder = 'a' . hash('crc32b', $name); // placeholder must begin with a letter
                 $this->placeholders[$placeholder] = $name;
                 if (array_key_exists($name, $this->defaults)) {
+                    // 匹配到整体的长度
                     $length = strlen($match[0][0]);
+                    // 开始位置
                     $offset = $match[0][1];
+                    // 将 $requiredPatternPart 中的 /{$match[0][0]}/ 替换成 //
                     $requiredPatternPart = str_replace("/{$match[0][0]}/", '//', $requiredPatternPart);
                     if (
-                        $allowAppendSlash
+                        //允许有斜线 /
+                        $allowAppendSlash  
+                        // 是否是最开始的位置
                         && ($appendSlash || $offset === 1)
                         && (($offset - $oldOffset) === 1)
+                        // 判断是否有 后/
                         && isset($this->pattern[$offset + $length])
                         && $this->pattern[$offset + $length] === '/'
+                        // 后/ 还有内容
                         && isset($this->pattern[$offset + $length + 1])
                     ) {
                         // if pattern starts from optional params, put slash at the end of param pattern

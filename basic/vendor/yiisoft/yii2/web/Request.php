@@ -651,7 +651,7 @@ Array
     private $_baseUrl;
 
     /**
-     * 获取相对url
+     * 获取相对url   为空 ''
      * Returns the relative URL for the application.
      * This is similar to [[scriptUrl]] except that it does not include the script file name,
      * and the ending slashes are removed.
@@ -681,7 +681,7 @@ Array
     private $_scriptUrl;
 
     /**
-     * 获取请求的相对路径
+     * 获取请求入口文件的相对路径   /index.php
      * Returns the relative URL of the entry script.
      * The implementation of this method referenced Zend_Controller_Request_Http in Zend Framework.
      * @return string the relative URL of the entry script.
@@ -798,15 +798,16 @@ Array
      */
     protected function resolvePathInfo()
     {
-        // 获取pathInfo
+        // 获取当前的url 域名后的所有
         $pathInfo = $this->getUrl();
-
+         // 取出URL中的查询参数部分，即 ? 及之后的内容
         if (($pos = strpos($pathInfo, '?')) !== false) {
             $pathInfo = substr($pathInfo, 0, $pos);
         }
         // 解析url
         $pathInfo = urldecode($pathInfo);
         // 如果不是urf8 转成utf8
+        // 这个正则列举了各种编码方式，通过排除这些编码，来确认是 UTF-8 编码
         // try to encode in UTF8 if not so
         // http://w3.org/International/questions/qa-forms-utf-8.html
         if (!preg_match('%^(?:
@@ -822,21 +823,24 @@ Array
         ) {
             $pathInfo = utf8_encode($pathInfo);
         }
+        // 获取当前
         // /index.php
         $scriptUrl = $this->getScriptUrl();
         // ""
         $baseUrl = $this->getBaseUrl();
-        // 截取掉 index.php
+        // 以/index.php开头 截取掉 /index.php
         if (strpos($pathInfo, $scriptUrl) === 0) {
             $pathInfo = substr($pathInfo, strlen($scriptUrl));
+        // 
         } elseif ($baseUrl === '' || strpos($pathInfo, $baseUrl) === 0) {
             $pathInfo = substr($pathInfo, strlen($baseUrl));
+        // 去除  /index.php
         } elseif (isset($_SERVER['PHP_SELF']) && strpos($_SERVER['PHP_SELF'], $scriptUrl) === 0) {
             $pathInfo = substr($_SERVER['PHP_SELF'], strlen($scriptUrl));
         } else {
             throw new InvalidConfigException('Unable to determine the path info of the current request.');
         }
-
+        // 截取掉 开头的 /
         if (substr($pathInfo, 0, 1) === '/') {
             $pathInfo = substr($pathInfo, 1);
         }
@@ -857,7 +861,7 @@ Array
     private $_url;
 
     /**
-     * 获取请求的Url
+     * 获取请求的Url  获取域名后的所有
      * Returns the currently requested relative URL.
      * This refers to the portion of the URL that is after the [[hostInfo]] part.
      * It includes the [[queryString]] part if any.
@@ -885,6 +889,7 @@ Array
     }
 
     /**
+     * 获取当前URL的URI部分，即主机或主机名之后的内容，包括查询参数。
      * 解析请求的Url
      * Resolves the request URI portion for the currently requested URL.
      * This refers to the portion that is after the [[hostInfo]] part. It includes the [[queryString]] part if any.

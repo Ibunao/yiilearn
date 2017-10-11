@@ -93,6 +93,7 @@ class UrlNormalizer extends Object
     }
 
     /**
+     * 标准化 pathinfo
      * Normalizes specified pathInfo.
      * @param string $pathInfo pathInfo for normalization
      * @param string $suffix current rule suffix

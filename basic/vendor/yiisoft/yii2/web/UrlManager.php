@@ -282,6 +282,7 @@ class UrlManager extends Component
             /* @var $rule UrlRule */
             // 定义的规则 进行解析
             foreach ($this->rules as $rule) {
+                // 根据规则进行解析
                 $result = $rule->parseRequest($this, $request);
                 // 开启debug模式时记录日志
                 if (YII_DEBUG) {
@@ -303,11 +304,14 @@ class UrlManager extends Component
             Yii::trace('No matching URL rules. Using default URL parsing logic.', __METHOD__);
             // 请求后缀 如.html
             $suffix = (string) $this->suffix;
+            // 获取路径信息
             $pathInfo = $request->getPathInfo();
             $normalized = false;
+            // 标准化url 标准化配置，没用过
             if ($this->normalizer !== false) {
                 $pathInfo = $this->normalizer->normalizePathInfo($pathInfo, $suffix, $normalized);
             }
+            // 确保 $pathInfo 不能仅仅是包含一个 ".html"
             if ($suffix !== '' && $pathInfo !== '') {
                 $n = strlen($this->suffix);
                 if (substr_compare($pathInfo, $this->suffix, -$n, $n) === 0) {
@@ -321,7 +325,7 @@ class UrlManager extends Component
                     return false;
                 }
             }
-
+            // 是否标准化
             if ($normalized) {
                 // pathInfo was changed by normalizer - we need also normalize route
                 return $this->normalizer->normalizeRoute([$pathInfo, []]);

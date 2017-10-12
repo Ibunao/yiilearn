@@ -682,6 +682,7 @@ Array
 
     /**
      * 获取请求入口文件的相对路径   /index.php
+     * 
      * Returns the relative URL of the entry script.
      * The implementation of this method referenced Zend_Controller_Request_Http in Zend Framework.
      * @return string the relative URL of the entry script.

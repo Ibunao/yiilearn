@@ -58,6 +58,7 @@ abstract class Request extends Component
 
     /**
      * 获取并设置入口脚本名
+     * 当前脚本的实际物理路径
      * Returns entry script file path.
      * @return string entry script file path (processed w/ realpath())
      * @throws InvalidConfigException if the entry script file path cannot be determined automatically.

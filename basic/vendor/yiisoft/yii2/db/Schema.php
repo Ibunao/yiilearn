@@ -37,6 +37,7 @@ use yii\caching\TagDependency;
  */
 abstract class Schema extends Object
 {
+    // 映射关系， 不同的数据库根据这些值映射成数据库自己的类型 ，见 QueryBuilder 中的$typeMap
     // The following are the supported abstract column data types.
     const TYPE_PK = 'pk';
     const TYPE_UPK = 'upk';

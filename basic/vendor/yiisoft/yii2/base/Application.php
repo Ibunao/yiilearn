@@ -213,14 +213,14 @@ abstract class Application extends Module
         static::setInstance($this);
         //设置$app状态
         $this->state = self::STATE_BEGIN;
-        //预初始化，初始化配置信息  加载配置文件的框架信息 如：设置别名，设置框架路径等等 最为重要的是给加载默认组件
 
+        //预初始化，初始化配置信息  加载配置文件的框架信息 如：设置别名，设置框架路径等等 最为重要的是给加载默认组件
         $this->preInit($config);
         //加载配置文件中的异常组件
         $this->registerErrorHandler($config);
         //将配置文件中的所有信息赋值给Object，也就是Yii::$app->配置文件参数可以直接调用配置文件的内容 如：Yii::$app->vendorPath
         //输出框架路径  Yii::$app->components['redis']//输出redis配置信息
-        //将定义的配置文件从的 components数组中的组件注册到服务定位器
+        //将定义的配置文件从的 components数组中的组件注册到服务定位器 ServiceLocator
         // 将modules数组中的模块注册到Module中的module数组中
         Component::__construct($config);//之后调用init()
     }
@@ -246,12 +246,11 @@ abstract class Application extends Module
         } else {
             throw new InvalidConfigException('The "basePath" configuration for the Application is required.');
         }
-        //设置vendor目录路径
+        //设置vendor目录路径  // set "@vendor"
         if (isset($config['vendorPath'])) {
             $this->setVendorPath($config['vendorPath']);
             unset($config['vendorPath']);
         } else {
-            // set "@vendor"
             $this->getVendorPath();
         }
         // 设置runtime目录
@@ -259,7 +258,7 @@ abstract class Application extends Module
             $this->setRuntimePath($config['runtimePath']);
             unset($config['runtimePath']);
         } else {
-            // set "@runtime"
+            // 使用默认的
             $this->getRuntimePath();
         }
         // 设置时区
@@ -269,17 +268,18 @@ abstract class Application extends Module
         } elseif (!ini_get('date.timezone')) {
             $this->setTimeZone('UTC');
         }
-        // 设置容器
+        // 配置容器属性参数
         if (isset($config['container'])) {
             $this->setContainer($config['container']);
 
             unset($config['container']);
         }
-        // 合并核心模块
+        // 合并配置中与核心的模块
         // merge core components with custom components
         foreach ($this->coreComponents() as $id => $component) {
             if (!isset($config['components'][$id])) {
                 $config['components'][$id] = $component;
+            // 配置核心模块类
             } elseif (is_array($config['components'][$id]) && !isset($config['components'][$id]['class'])) {
                 $config['components'][$id]['class'] = $component['class'];
             }
@@ -322,6 +322,7 @@ abstract class Application extends Module
                 if ($component instanceof BootstrapInterface) {
                     // 记录日志
                     Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
+                    // debug 模块可以参考
                     $component->bootstrap($this);
                 } else {
                     Yii::trace('Bootstrap with ' . get_class($component), __METHOD__);
@@ -367,6 +368,7 @@ abstract class Application extends Module
      */
     protected function registerErrorHandler(&$config)
     {
+        // 如果开启yii错误处理机制
         if (YII_ENABLE_ERROR_HANDLER) {
             if (!isset($config['components']['errorHandler']['class'])) {
                 echo "Error: no errorHandler component is configured.\n";
@@ -401,6 +403,7 @@ abstract class Application extends Module
     public function setBasePath($path)
     {
         parent::setBasePath($path);
+        // 设置别名
         Yii::setAlias('@app', $this->getBasePath());
     }
 
@@ -415,7 +418,9 @@ abstract class Application extends Module
         try {
             // 更改状态 相应前
             $this->state = self::STATE_BEFORE_REQUEST;
-            // 触发事件
+            // 触发事件  
+            // 配置中bootstop模块如果有bootstop 或者 extentions 中的bootstop  
+            // 例如debug 模块的bootstop方法就注册on了事件
             $this->trigger(self::EVENT_BEFORE_REQUEST);
 
             $this->state = self::STATE_HANDLING_REQUEST;
@@ -712,6 +717,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 配置容器
      * Configures [[Yii::$container]] with the $config
      *
      * @param array $config values given in terms of name-value pairs

@@ -68,7 +68,8 @@ class Application extends \yii\base\Application
         // $ding = dirname($request->getScriptFile());
         Yii::setAlias('@webroot', dirname($request->getScriptFile()));
         // 为空 ""
-        $ding = dirname($request->getBaseUrl());
+        // $ding = dirname($request->getBaseUrl());
+        // 设置别名 获取入口文件相对域名的位置
         Yii::setAlias('@web', $request->getBaseUrl());
 
         parent::bootstrap();
@@ -160,6 +161,7 @@ class Application extends \yii\base\Application
     }
 
     /**
+     * 服务定位器获取 request 组件
      * Returns the request component.
      * @return Request the request component.
      */

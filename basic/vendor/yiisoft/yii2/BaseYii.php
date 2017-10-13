@@ -14,18 +14,22 @@ use yii\log\Logger;
 use yii\di\Container;
 
 /**
+ * 访问开始时间
  * Gets the application start timestamp.
  */
 defined('YII_BEGIN_TIME') or define('YII_BEGIN_TIME', microtime(true));
 /**
+ * 框架路径
  * This constant defines the framework installation directory.
  */
 defined('YII2_PATH') or define('YII2_PATH', __DIR__);
 /**
+ * 运行debug模式
  * This constant defines whether the application should be in debug mode or not. Defaults to false.
  */
 defined('YII_DEBUG') or define('YII_DEBUG', false);
 /**
+ * 运行环境
  * This constant defines in which environment the application is running. Defaults to 'prod', meaning production environment.
  * You may define this constant in the bootstrap script. The value could be 'prod' (production), 'dev' (development), 'test', 'staging', etc.
  */
@@ -44,6 +48,7 @@ defined('YII_ENV_DEV') or define('YII_ENV_DEV', YII_ENV === 'dev');
 defined('YII_ENV_TEST') or define('YII_ENV_TEST', YII_ENV === 'test');
 
 /**
+ * yii注册自己的错误处理
  * This constant defines whether error handling should be enabled. Defaults to true.
  */
 defined('YII_ENABLE_ERROR_HANDLER') or define('YII_ENABLE_ERROR_HANDLER', true);
@@ -60,6 +65,7 @@ defined('YII_ENABLE_ERROR_HANDLER') or define('YII_ENABLE_ERROR_HANDLER', true);
 class BaseYii
 {
     /**
+     * 映射，类与文件位置的映射，方便自动加载
      * @var array class map used by the Yii autoloading mechanism.
      * The array keys are the class names (without leading backslashes), and the array values
      * are the corresponding class file paths (or [path aliases](guide:concept-aliases)). This property mainly affects
@@ -68,16 +74,19 @@ class BaseYii
      */
     public static $classMap = [];
     /**
+     * 应用主体
      * @var \yii\console\Application|\yii\web\Application the application instance
      */
     public static $app;
     /**
+     * 别名
      * @var array registered path aliases
      * @see getAlias()
      * @see setAlias()
      */
     public static $aliases = ['@yii' => __DIR__];
     /**
+     * 容器
      * @var Container the dependency injection (DI) container used by [[createObject()]].
      * You may use [[Container::set()]] to set up the needed dependencies of classes and
      * their initial property values.
@@ -88,6 +97,7 @@ class BaseYii
 
 
     /**
+     * 版本号
      * Returns a string representing the current version of the Yii framework.
      * @return string the version of Yii framework
      */
@@ -97,6 +107,8 @@ class BaseYii
     }
 
     /**
+     * 获取别名的真实路径
+     * 获取别名对应的路径
      * Translates a path alias into an actual path.
      *
      * The translation is done according to the following procedure:
@@ -135,15 +147,19 @@ class BaseYii
             // not an alias
             return $alias;
         }
-
+        // 如果存在 / 则截取 @到第一个 / 只获取别名部分
+        // 例如：@yii/ding 取 @yii
         $pos = strpos($alias, '/');
         $root = $pos === false ? $alias : substr($alias, 0, $pos);
-
+        // 判断是否在别名存储数组中  
         if (isset(static::$aliases[$root])) {
+            // 如果对应的是一个 ，一个字符串
             if (is_string(static::$aliases[$root])) {
+                // 拼接上 / 以后的路径
                 return $pos === false ? static::$aliases[$root] : static::$aliases[$root] . substr($alias, $pos);
             }
             foreach (static::$aliases[$root] as $name => $path) {
+                // 在 $alias/ 中匹配 $name/ ,如果存在，就截取路径
                 if (strpos($alias . '/', $name . '/') === 0) {
                     return $path . substr($alias, strlen($name));
                 }
@@ -158,6 +174,7 @@ class BaseYii
     }
 
     /**
+     * 返回定义的别名部分
      * Returns the root alias part of a given alias.
      * A root alias is an alias that has been registered via [[setAlias()]] previously.
      * If a given alias matches multiple root aliases, the longest one will be returned.
@@ -173,7 +190,7 @@ class BaseYii
             if (is_string(static::$aliases[$root])) {
                 return $root;
             }
-
+            // 如果定义的是 @yii/ding 的形式
             foreach (static::$aliases[$root] as $name => $path) {
                 if (strpos($alias . '/', $name . '/') === 0) {
                     return $name;
@@ -185,6 +202,7 @@ class BaseYii
     }
 
     /**
+     * 设置别名
      * Registers a path alias.
      *
      * A path alias is a short name representing a long path (a file path, a URL, etc.)
@@ -220,32 +238,43 @@ class BaseYii
         if (strncmp($alias, '@', 1)) {
             $alias = '@' . $alias;
         }
+        // 设置的别名中是否有 / 
+        // 如：@yii/ding
         $pos = strpos($alias, '/');
+        // 获取 @yii
         $root = $pos === false ? $alias : substr($alias, 0, $pos);
         if ($path !== null) {
-            //设置
+            //$alias 的第一个字符和 @ 比较，如果相等返回0，不相等返回的结果可能是1或-1 为 true
+            // 如果 $path 中含有别名，获取别名路径
             $path = strncmp($path, '@', 1) ? rtrim($path, '\\/') : static::getAlias($path);
+            // 如果别名数组中还没有
             if (!isset(static::$aliases[$root])) {
+                // 如果为 如@yii 的形式，直接存
                 if ($pos === false) {
                     static::$aliases[$root] = $path;
+                // 如果为 如@yii/ding 的形式，存数组
                 } else {
                     static::$aliases[$root] = [$alias => $path];
                 }
+            // 已存在并且为字符串，进行修改
             } elseif (is_string(static::$aliases[$root])) {
+                // 如果为 如@yii 的形式，添加
                 if ($pos === false) {
                     static::$aliases[$root] = $path;
+                // 如果为 如@yii/ding 的形式
                 } else {
                     static::$aliases[$root] = [
                         $alias => $path,
                         $root => static::$aliases[$root],
                     ];
                 }
+            // 数组的情况下
             } else {
                 static::$aliases[$root][$alias] = $path;
                 krsort(static::$aliases[$root]);
             }
+        // 删除别名
         } elseif (isset(static::$aliases[$root])) {
-            //删除
             if (is_array(static::$aliases[$root])) {
                 unset(static::$aliases[$root][$alias]);
             } elseif ($pos === false) {
@@ -255,6 +284,8 @@ class BaseYii
     }
 
     /**
+     * 自动加载 
+     * 要符合 psr-4 标准
      * Class autoload loader.
      * This method is invoked automatically when PHP sees an unknown class.
      * The method will attempt to include the class file according to the following procedure:
@@ -278,28 +309,34 @@ class BaseYii
      */
     public static function autoload($className)
     {
+        // 判断是否在类映射中
         if (isset(static::$classMap[$className])) {
             $classFile = static::$classMap[$className];
+            // 如果使用别名 获取别名的真实路径
             if ($classFile[0] === '@') {
                 $classFile = static::getAlias($classFile);
             }
+        // 如果有命名空间  如 app\controllers\TestController  
+        // 获取开头的别名 @app/controllers/TestController.php
         } elseif (strpos($className, '\\') !== false) {
             $classFile = static::getAlias('@' . str_replace('\\', '/', $className) . '.php', false);
+            // 如果没有 或不是一个文件
             if ($classFile === false || !is_file($classFile)) {
                 return;
             }
         } else {
             return;
         }
-
+        // 加载文件
         include($classFile);
-
+        // 如果开启debug模式并且检测到加载的类不存在则报错
         if (YII_DEBUG && !class_exists($className, false) && !interface_exists($className, false) && !trait_exists($className, false)) {
             throw new UnknownClassException("Unable to find '$className' in file: $classFile. Namespace missing?");
         }
     }
 
     /**
+     * 使用配置数组的方式创建对象
      * Creates a new object using the given configuration.
      *
      * You may view this method as an enhanced version of the `new` operator.
@@ -343,13 +380,18 @@ class BaseYii
      */
     public static function createObject($type, array $params = [])
     {
+        // 字符串，代表一个类名、接口名、别名。
         if (is_string($type)) {
+            // 全局容器获取实例，并解决其依赖关系
             return static::$container->get($type, $params);
+        // 是个数组，代表配置数组，必须含有 class 元素。
         } elseif (is_array($type) && isset($type['class'])) {
             $class = $type['class'];
             unset($type['class']);
             return static::$container->get($class, $params, $type);
+        // 是个PHP callable则调用其返回一个具体实例。
         } elseif (is_callable($type, true)) {
+            // 解决回调函数的依赖
             return static::$container->invoke($type, $params);
         } elseif (is_array($type)) {
             throw new InvalidConfigException('Object configuration must be an array containing a "class" element.');
@@ -382,6 +424,7 @@ class BaseYii
     }
 
     /**
+     * debug开启是记录trace日志
      * Logs a trace message.
      * Trace messages are logged mainly for development purpose to see
      * the execution work flow of some code.
@@ -397,6 +440,7 @@ class BaseYii
     }
 
     /**
+     * 错误日志
      * Logs an error message.
      * An error message is typically logged when an unrecoverable error occurs
      * during the execution of an application.
@@ -410,6 +454,7 @@ class BaseYii
     }
 
     /**
+     * 警告日志
      * Logs a warning message.
      * A warning message is typically logged when an error occurs while the execution
      * can still continue.
@@ -423,6 +468,7 @@ class BaseYii
     }
 
     /**
+     * 
      * Logs an informative message.
      * An informative message is typically logged by an application to keep record of
      * something important (e.g. an administrator logs in).
@@ -470,6 +516,7 @@ class BaseYii
     }
 
     /**
+     * 携带yii
      * Returns an HTML hyperlink that can be displayed on your Web page showing "Powered by Yii Framework" information.
      * @return string an HTML hyperlink that can be displayed on your Web page showing "Powered by Yii Framework" information
      */
@@ -520,6 +567,7 @@ class BaseYii
     }
 
     /**
+     * 根据数组为对象配置属性值
      * Configures an object with the initial property values.
      * @param object $object the object to be configured
      * @param array $properties the property initial values given in terms of name-value pairs.

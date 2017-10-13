@@ -224,6 +224,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 获取根目录
      * Returns the root directory of the module.
      * It defaults to the directory containing the module class file.
      * @return string the root directory of the module.
@@ -231,6 +232,7 @@ class Module extends ServiceLocator
     public function getBasePath()
     {
         if ($this->_basePath === null) {
+            // 反射获取文件目录
             $class = new \ReflectionClass($this);
             $this->_basePath = dirname($class->getFileName());
         }
@@ -582,13 +584,14 @@ class Module extends ServiceLocator
      */
     public function createController($route)
     {
+        // 默认路由
         if ($route === '') {
             $route = $this->defaultRoute;
         }
 
         // double slashes or leading/ending slashes may cause substr problem
         $route = trim($route, '/');
-        // 格式错误的
+        // 如果存在 // 格式错误的 
         if (strpos($route, '//') !== false) {
             return false;
         }
@@ -607,7 +610,7 @@ class Module extends ServiceLocator
             $controller = Yii::createObject($this->controllerMap[$id], [$id, $this]);
             return [$controller, $route];
         }
-        // 看是否存在module，这就要求控制器不能和Module重名
+        // 看是否存在module， 这就要求控制器不能和Module重名
         $module = $this->getModule($id);
         if ($module !== null) {
             // 通过此 Modules创建控制器，递归调用，可以有多个module嵌套

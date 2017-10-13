@@ -364,6 +364,14 @@ class Request extends \yii\base\Request
      * Returns the raw HTTP request body.
      * @return string the request body
      */
+/*
+使用了 php://input 来获取请求体，这个 php://input 有这么几个特点：
+
+php://input 是个只读流，用于获取请求体。
+php://input 是返回整个HTTP请求中，除去HTTP头部的全部原始内容， 而不管是什么Content Type（或称为编码方式）。 相比较之下， $_POST 只支持 application/x-www-form-urlencoded 和 multipart/form-data-encoded 两种Content Type。其中前一种就是简单的HTML表单以 method="post" 提交时的形式， 后一种主要是用于上传文档。因此，对于诸如 application/json 等Content Type，这往往是在AJAX场景下使用， 那么使用 $_POST 得到的是空的内容，这时就必须使用 php://input 。
+相比较于 $HTTP_RAW_POST_DATA ， php://input 无需额外地在php.ini中 激活 always-populate-raw-post-data ，而且对于内存的压力也比较小。
+当编码方式为 multipart/form-data-encoded 时， php://input 是无效的。这种情况一般为上传文档。 这种情况可以使用传统的 $_FILES 或者 yii\web\UploadedFile 
+ */
     public function getRawBody()
     {
         if ($this->_rawBody === null) {
@@ -695,6 +703,7 @@ Array
             $scriptFile = $this->getScriptFile();
             // 获取脚本名称 入口文件 index.php
             $scriptName = basename($scriptFile);
+            // 如 http://www.digapge.com/path/index.php 中的 /path/index.php
             if (isset($_SERVER['SCRIPT_NAME']) && basename($_SERVER['SCRIPT_NAME']) === $scriptName) {
                 $this->_scriptUrl = $_SERVER['SCRIPT_NAME'];
             } elseif (isset($_SERVER['PHP_SELF']) && basename($_SERVER['PHP_SELF']) === $scriptName) {

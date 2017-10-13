@@ -77,6 +77,7 @@ use Yii;
 class Object implements Configurable
 {
     /**
+     * 获取类名
      * Returns the fully qualified name of this class.
      * @return string the fully qualified name of this class.
      */

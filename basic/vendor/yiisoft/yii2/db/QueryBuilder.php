@@ -40,6 +40,8 @@ class QueryBuilder extends \yii\base\Object
      */
     public $separator = ' ';
     /**
+     * $typeMap用于定义抽象数据类型到DBMS数据类型的映射关系，
+     * 具体由各QueryBuilder子类实现。
      * @var array the abstract column types mapped to physical column types.
      * This is mainly used to support creating/modifying tables using DB-independent data type specifications.
      * Child classes should override this property to declare supported type mappings.
@@ -691,6 +693,7 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
+     * 将抽象数据类型转换成合适的DBMS数据类型
      * Converts an abstract column type into a physical column type.
      * The conversion is done using the type map specified in [[typeMap]].
      * The following abstract column types are supported (using MySQL as an example to explain the corresponding
@@ -734,13 +737,16 @@ class QueryBuilder extends \yii\base\Object
         if ($type instanceof ColumnSchemaBuilder) {
             $type = $type->__toString();
         }
-
+        // 映射表中已经有的，直接使用映射的类型
         if (isset($this->typeMap[$type])) {
             return $this->typeMap[$type];
+        // 映射表中没有的类型，看看是不是形如 "Schema::TYPE_INT(11) DEFAULT 0" 之类的
         } elseif (preg_match('/^(\w+)\((.+?)\)(.*)$/', $type, $matches)) {
             if (isset($this->typeMap[$matches[1]])) {
                 return preg_replace('/\(.+\)/', '(' . $matches[2] . ')', $this->typeMap[$matches[1]]) . $matches[3];
             }
+        // 看看是不是形如 "Schema::TYPE_INT NOT NULL" 之类的，
+        // 注意这一分支在第二分支之后
         } elseif (preg_match('/^(\w+)\s+/', $type, $matches)) {
             if (isset($this->typeMap[$matches[1]])) {
                 return preg_replace('/^\w+/', $this->typeMap[$matches[1]], $type);

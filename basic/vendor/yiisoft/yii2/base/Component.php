@@ -110,6 +110,7 @@ class Component extends Object
 
 
     /**
+     * 重写了Object的 __get方法 为了兼用行为
      * Returns the value of a component property.
      * This method will check in the following order and act accordingly:
      *
@@ -131,10 +132,14 @@ class Component extends Object
             // read property, e.g. getName()
             return $this->$getter();
         }
-
+        /* 
+        检查绑定的behavior是否含有此属性
+        */
+        // 将behavior()中配置的behavior添加到_behaviors数组
         // behavior property
         $this->ensureBehaviors();
         foreach ($this->_behaviors as $behavior) {
+            // 是否存在属性
             if ($behavior->canGetProperty($name)) {
                 return $behavior->$name;
             }
@@ -148,6 +153,7 @@ class Component extends Object
     }
 
     /**
+     * 设置属性
      * Sets the value of a component property.
      * This method will check in the following order and act accordingly:
      *
@@ -172,11 +178,13 @@ class Component extends Object
             $this->$setter($value);
 
             return;
+        // 如果以 on 开头，进行事件绑定
         } elseif (strncmp($name, 'on ', 3) === 0) {
             // on event: attach event handler
             $this->on(trim(substr($name, 3)), $value);
 
             return;
+        // 如果以 as 开头 绑定行为
         } elseif (strncmp($name, 'as ', 3) === 0) {
             // as behavior: attach behavior
             $name = trim(substr($name, 3));
@@ -184,7 +192,7 @@ class Component extends Object
 
             return;
         }
-
+        // 看绑定的行为中是否存在此属性
         // behavior property
         $this->ensureBehaviors();
         foreach ($this->_behaviors as $behavior) {
@@ -202,6 +210,7 @@ class Component extends Object
     }
 
     /**
+     * 检查是否存在属性
      * Checks if a property is set, i.e. defined and not null.
      * This method will check in the following order and act accordingly:
      *
@@ -234,6 +243,7 @@ class Component extends Object
     }
 
     /**
+     * 将属性值设置为null
      * Sets a component property to be null.
      * This method will check in the following order and act accordingly:
      *
@@ -267,6 +277,7 @@ class Component extends Object
     }
 
     /**
+     * 访问不存在的方法时调用
      * Calls the named method which is not a class method.
      *
      * This method will check if any attached behavior has
@@ -301,6 +312,7 @@ class Component extends Object
     }
 
     /**
+     * 是否存在属性
      * Returns a value indicating whether a property is defined for this component.
      * A property is defined if:
      *
@@ -382,6 +394,7 @@ class Component extends Object
     }
 
     /**
+     * 是否存在方法
      * Returns a value indicating whether a method is defined.
      * A method is defined if:
      *
@@ -438,6 +451,7 @@ class Component extends Object
     }
 
     /**
+     * 是否绑定有事件
      * Returns a value indicating whether there is any handler attached to the named event.
      * @param string $name the event name
      * @return bool whether there is any handler attached to the event.
@@ -449,6 +463,7 @@ class Component extends Object
     }
 
     /**
+     * 绑定事件
      * Attaches an event handler to an event.
      *
      * The event handler must be a valid PHP callback. The following are
@@ -469,11 +484,11 @@ class Component extends Object
      *
      * where `$event` is an [[Event]] object which includes parameters associated with the event.
      *
-     * @param string $name the event name
-     * @param callable $handler the event handler
+     * @param string $name the event name 事件名
+     * @param callable $handler the event handler 事件处理器 
      * @param mixed $data the data to be passed to the event handler when the event is triggered.
-     * When the event handler is invoked, this data can be accessed via [[Event::data]].
-     * @param bool $append whether to append new event handler to the end of the existing
+     * When the event handler is invoked, this data can be accessed via [[Event::data]]. 绑定时传递的数据
+     * @param bool $append whether to append new event handler to the end of the existing 是否追加到最后
      * handler list. If false, the new handler will be inserted at the beginning of the existing
      * handler list.
      * @see off()
@@ -491,6 +506,7 @@ class Component extends Object
     }
 
     /**
+     * 解绑
      * Detaches an existing event handler from this component.
      * This method is the opposite of [[on()]].
      * @param string $name event name
@@ -524,6 +540,7 @@ class Component extends Object
     }
 
     /**
+     * 触发事件
      * Triggers an event.
      * This method represents the happening of an event. It invokes
      * all attached handlers for the event including class-level handlers.
@@ -545,12 +562,14 @@ class Component extends Object
             foreach ($this->_events[$name] as $handler) {
                 $event->data = $handler[1];
                 call_user_func($handler[0], $event);
+                // 如果在handler中将handled设置为true他后面的处理器将不会执行
                 // stop further handling if the event is handled
                 if ($event->handled) {
                     return;
                 }
             }
         }
+        // 触发类级别的事件
         // invoke class-level attached handlers
         Event::trigger($this, $name, $event);
     }
@@ -577,6 +596,7 @@ class Component extends Object
     }
 
     /**
+     * 绑定行为到$this组件 component
      * Attaches a behavior to this component.
      * This method will create the behavior object based on the given
      * configuration. After that, the behavior object will be attached to
@@ -613,6 +633,7 @@ class Component extends Object
     }
 
     /**
+     * 解绑行为
      * Detaches a behavior from the component.
      * The behavior's [[Behavior::detach()]] method will be invoked.
      * @param string $name the behavior's name.
@@ -624,6 +645,7 @@ class Component extends Object
         if (isset($this->_behaviors[$name])) {
             $behavior = $this->_behaviors[$name];
             unset($this->_behaviors[$name]);
+            // 解绑事件
             $behavior->detach();
             return $behavior;
         }
@@ -643,6 +665,7 @@ class Component extends Object
     }
 
     /**
+     * 确定行为绑定到组件component 就是将行为存进 _behaviors 数组
      * Makes sure that the behaviors declared in [[behaviors()]] are attached to this component.
      */
     public function ensureBehaviors()
@@ -650,12 +673,14 @@ class Component extends Object
         if ($this->_behaviors === null) {
             $this->_behaviors = [];
             foreach ($this->behaviors() as $name => $behavior) {
+                // 将行为绑定到自身
                 $this->attachBehaviorInternal($name, $behavior);
             }
         }
     }
 
     /**
+     * 绑定行为到组件 component
      * Attaches a behavior to this component.
      * @param string|int $name the name of the behavior. If this is an integer, it means the behavior
      * is an anonymous one. Otherwise, the behavior is a named one and any existing behavior with the same name
@@ -665,14 +690,21 @@ class Component extends Object
      */
     private function attachBehaviorInternal($name, $behavior)
     {
+        // 如果是配置数组进行创建
         if (!($behavior instanceof Behavior)) {
             $behavior = Yii::createObject($behavior);
         }
+        // 绑定
         if (is_int($name)) {
+            // 将behavior中定义的事件events绑定到$this
             $behavior->attach($this);
+            // 放进自身的 behaviors数组
             $this->_behaviors[] = $behavior;
+        // 绑定或覆盖
         } else {
+            // 如果遇到重名的进行解绑
             if (isset($this->_behaviors[$name])) {
+                // 解绑行为中定义的事件
                 $this->_behaviors[$name]->detach();
             }
             $behavior->attach($this);

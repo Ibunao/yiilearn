@@ -73,6 +73,7 @@ class Action extends Component
     }
 
     /**
+     * 使用参数运行action
      * Runs this action with the specified parameters.
      * This method is mainly invoked by the controller.
      *
@@ -82,15 +83,18 @@ class Action extends Component
      */
     public function runWithParams($params)
     {
+        // 必须定义run方法
         if (!method_exists($this, 'run')) {
             throw new InvalidConfigException(get_class($this) . ' must define a "run()" method.');
         }
+        // 请求参数
         $args = $this->controller->bindActionParams($this, $params);
         Yii::trace('Running action: ' . get_class($this) . '::run()', __METHOD__);
         if (Yii::$app->requestedParams === null) {
             Yii::$app->requestedParams = $args;
         }
         if ($this->beforeRun()) {
+            // 执行action
             $result = call_user_func_array([$this, 'run'], $args);
             $this->afterRun();
 
@@ -101,6 +105,7 @@ class Action extends Component
     }
 
     /**
+     * run之前执行
      * This method is called right before `run()` is executed.
      * You may override this method to do preparation work for the action run.
      * If the method returns false, it will cancel the action.
@@ -113,6 +118,7 @@ class Action extends Component
     }
 
     /**
+     * run之后执行
      * This method is called right after `run()` is executed.
      * You may override this method to do post-processing work for the action run.
      */

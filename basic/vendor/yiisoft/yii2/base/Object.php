@@ -119,6 +119,7 @@ class Object implements Configurable
     }
 
     /**
+     * 返回对象的属性
      * Returns the value of an object property.
      *
      * Do not call this method directly as it is a PHP magic method that
@@ -132,6 +133,7 @@ class Object implements Configurable
     public function __get($name)
     {
         $getter = 'get' . $name;
+        // 存在 getter 方法
         if (method_exists($this, $getter)) {
             return $this->$getter();
         } elseif (method_exists($this, 'set' . $name)) {
@@ -142,6 +144,7 @@ class Object implements Configurable
     }
 
     /**
+     * 设置属性值
      * Sets value of an object property.
      *
      * Do not call this method directly as it is a PHP magic method that
@@ -165,6 +168,7 @@ class Object implements Configurable
     }
 
     /**
+     * 检查属性是否定义
      * Checks if a property is set, i.e. defined and not null.
      *
      * Do not call this method directly as it is a PHP magic method that
@@ -186,6 +190,7 @@ class Object implements Configurable
     }
 
     /**
+     * 设置属性值为null
      * Sets an object property to null.
      *
      * Do not call this method directly as it is a PHP magic method that
@@ -208,6 +213,7 @@ class Object implements Configurable
     }
 
     /**
+     * 访问不存在的方法时调用
      * Calls the named method which is not a class method.
      *
      * Do not call this method directly as it is a PHP magic method that
@@ -223,6 +229,7 @@ class Object implements Configurable
     }
 
     /**
+     * 检查属性是否存在
      * Returns a value indicating whether a property is defined.
      * A property is defined if:
      *
@@ -242,6 +249,7 @@ class Object implements Configurable
     }
 
     /**
+     * 是否存在属性
      * Returns a value indicating whether a property can be read.
      * A property is readable if:
      *
@@ -250,7 +258,7 @@ class Object implements Configurable
      * - the class has a member variable with the specified name (when `$checkVars` is true);
      *
      * @param string $name the property name
-     * @param bool $checkVars whether to treat member variables as properties
+     * @param bool $checkVars whether to treat member variables as properties  是否检查属性
      * @return bool whether the property can be read
      * @see canSetProperty()
      */
@@ -278,6 +286,7 @@ class Object implements Configurable
     }
 
     /**
+     * 是否存在方法
      * Returns a value indicating whether a method is defined.
      *
      * The default implementation is a call to php function `method_exists()`.

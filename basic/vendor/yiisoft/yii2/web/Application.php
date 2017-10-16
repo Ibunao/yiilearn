@@ -106,6 +106,7 @@ class Application extends \yii\base\Application
             unset($params[0]);
         }
         try {
+            // 返回相应
             Yii::trace("Route requested: '$route'", __METHOD__);
             $this->requestedRoute = $route;
             // 执行动作
@@ -117,7 +118,6 @@ class Application extends \yii\base\Application
                 if ($result !== null) {
                     $response->data = $result;
                 }
-
                 return $response;
             }
         } catch (InvalidRouteException $e) {
@@ -128,14 +128,18 @@ class Application extends \yii\base\Application
     private $_homeUrl;
 
     /**
+     * 首页url
      * @return string the homepage URL
      */
     public function getHomeUrl()
     {
         if ($this->_homeUrl === null) {
+            // 如果现实脚本名称 index.php
             if ($this->getUrlManager()->showScriptName) {
+                // 获取请求入口文件的相对路径   /index.php
                 return $this->getRequest()->getScriptUrl();
             } else {
+                // /
                 return $this->getRequest()->getBaseUrl() . '/';
             }
         } else {

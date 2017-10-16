@@ -165,6 +165,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 返回请求的当前模块
      * Returns the currently requested instance of this module class.
      * If the module class is not currently requested, `null` will be returned.
      * This method is provided so that you access the module instance from anywhere within the module.
@@ -204,6 +205,7 @@ class Module extends ServiceLocator
      */
     public function init()
     {
+        // 定义控制器文件路径
         if ($this->controllerNamespace === null) {
             $class = get_class($this);
             if (($pos = strrpos($class, '\\')) !== false) {
@@ -359,6 +361,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 
      * Returns default module version.
      * Child class may override this method to provide more specific version detection.
      * @return string the version of this module.
@@ -373,6 +376,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 设置别名
      * Defines path aliases.
      * This method calls [[Yii::setAlias()]] to register the path aliases.
      * This method is provided so that you can define path aliases when configuring a module.
@@ -419,6 +423,11 @@ class Module extends ServiceLocator
 
     /**
      * 获取模块对象，可以是多级模块
+     * 返回最后一个module 
+     * 例如 ding/ran/bunao
+     * 返回的是bunao模块对象  
+     * 在创建的同时又会检查各个模块是否已经在配置中配置，假设，bunao模块没有配置，将会返回null
+     * 
      * Retrieves the child module of the specified ID.
      * This method supports retrieving both child modules and grand child modules.
      * @param string $id module ID (case-sensitive). To retrieve grand child modules,
@@ -540,6 +549,7 @@ class Module extends ServiceLocator
      */
     public function runAction($route, $params = [])
     {
+        // 根据路由创建控制器，会找到最后一层的module，并根据此module来创建控制器  
         $parts = $this->createController($route);
         if (is_array($parts)) {
             /* @var $controller Controller */
@@ -554,7 +564,7 @@ class Module extends ServiceLocator
 
             return $result;
         }
-
+        // 获取路径
         $id = $this->getUniqueId();
         throw new InvalidRouteException('Unable to resolve the request "' . ($id === '' ? $route : $id . '/' . $route) . '".');
     }
@@ -610,19 +620,20 @@ class Module extends ServiceLocator
             $controller = Yii::createObject($this->controllerMap[$id], [$id, $this]);
             return [$controller, $route];
         }
-        // 看是否存在module， 这就要求控制器不能和Module重名
+        // 看是否存在module 返回的是
         $module = $this->getModule($id);
         if ($module !== null) {
             // 通过此 Modules创建控制器，递归调用，可以有多个module嵌套
             return $module->createController($route);
         }
+        // module层已经处理创建完成  
         // / 最后一次出现的位置
         // 控制器 控制器文件夹 controllers中又创建了一个文件夹，请求里层文件夹内的控制器
         if (($pos = strrpos($route, '/')) !== false) {
             $id .= '/' . substr($route, 0, $pos);
             $route = substr($route, $pos + 1);
         }
-
+        // 获取控制器
         $controller = $this->createControllerByID($id);
         // 如果没有写 action
         if ($controller === null && $route !== '') {
@@ -634,6 +645,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 创建控制器根据id
      * Creates a controller based on the given controller ID.
      *
      * The controller ID is relative to this module. The controller class
@@ -648,7 +660,7 @@ class Module extends ServiceLocator
      */
     public function createControllerByID($id)
     {
-        // 判断是否带有 module
+        // 如果存在 / 则获取最后一个 / 之后的作为类名
         $pos = strrpos($id, '/');
         if ($pos === false) {
             $prefix = '';
@@ -685,6 +697,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 执行Action 的操作
      * This method is invoked right before an action within this module is executed.
      *
      * The method will trigger the [[EVENT_BEFORE_ACTION]] event. The return value of the method
@@ -708,7 +721,7 @@ class Module extends ServiceLocator
      * }
      * ```
      *
-     * @param Action $action the action to be executed.
+     * @param Action $action the action to be executed.   需要执行的 action对象
      * @return bool whether the action should continue to be executed.
      */
     public function beforeAction($action)

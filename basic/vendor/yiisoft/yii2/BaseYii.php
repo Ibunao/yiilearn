@@ -336,7 +336,7 @@ class BaseYii
     }
 
     /**
-     * 使用配置数组的方式创建对象
+     * 使用配置数组的方式创建对象 使用容器解决依赖
      * Creates a new object using the given configuration.
      *
      * You may view this method as an enhanced version of the `new` operator.
@@ -516,7 +516,7 @@ class BaseYii
     }
 
     /**
-     * 携带yii
+     * 携带yii连接
      * Returns an HTML hyperlink that can be displayed on your Web page showing "Powered by Yii Framework" information.
      * @return string an HTML hyperlink that can be displayed on your Web page showing "Powered by Yii Framework" information
      */

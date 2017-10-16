@@ -130,7 +130,7 @@ class Controller extends Component implements ViewContextInterface
         }
 
         Yii::trace('Route to run: ' . $action->getUniqueId(), __METHOD__);
-
+        // 配置请求的 action
         if (Yii::$app->requestedAction === null) {
             Yii::$app->requestedAction = $action;
         }
@@ -233,11 +233,11 @@ class Controller extends Component implements ViewContextInterface
         if (isset($actionMap[$id])) {
             // 创建
             return Yii::createObject($actionMap[$id], [$id, $this]);
-        // 定义在控制器的 action
+        // 检查action是否符合规则，符合则创建
         } elseif (preg_match('/^[a-z0-9\\-_]+$/', $id) && strpos($id, '--') === false && trim($id, '-') === $id) {
             //转换
             $methodName = 'action' . str_replace(' ', '', ucwords(implode(' ', explode('-', $id))));
-            // 方法存在
+            // 方法存在   这就意味着行为类behavior中定义的动作actionXXX 无法被访问到
             if (method_exists($this, $methodName)) {
                 $method = new \ReflectionMethod($this, $methodName);
                 if ($method->isPublic() && $method->getName() === $methodName) {

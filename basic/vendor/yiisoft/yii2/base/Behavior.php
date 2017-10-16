@@ -23,12 +23,14 @@ namespace yii\base;
 class Behavior extends Object
 {
     /**
+     * 拥有者
      * @var Component|null the owner of this behavior
      */
     public $owner;
 
 
     /**
+     * 绑定到拥有者的事件
      * Declares event handlers for the [[owner]]'s events.
      *
      * Child classes may override this method to declare what PHP callbacks should
@@ -62,6 +64,7 @@ class Behavior extends Object
     }
 
     /**
+     * 绑定行为到拥有者，并将行文中定义的事件也注册到拥有者
      * Attaches the behavior object to the component.
      * The default implementation will set the [[owner]] property
      * and attach event handlers as declared in [[events]].
@@ -77,6 +80,7 @@ class Behavior extends Object
     }
 
     /**
+     * 从拥有者解绑，把事件也解绑
      * Detaches the behavior object from the component.
      * The default implementation will unset the [[owner]] property
      * and detach event handlers declared in [[events]].

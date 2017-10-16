@@ -11,7 +11,10 @@ use Yii;
 use Closure;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+/*
+服务定位器
 
+ */
 /**
  * ServiceLocator implements a [service locator](http://en.wikipedia.org/wiki/Service_locator_pattern).
  *

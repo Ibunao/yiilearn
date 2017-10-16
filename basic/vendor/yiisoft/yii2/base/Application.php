@@ -226,6 +226,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 预初始化
      * Pre-initializes the application.
      * This method is called at the beginning of the application constructor.
      * It initializes several important application properties.
@@ -433,7 +434,6 @@ abstract class Application extends Module
             $this->trigger(self::EVENT_AFTER_REQUEST);
             //发送
             $this->state = self::STATE_SENDING_RESPONSE;
-
             $response->send();
             // 结束
             $this->state = self::STATE_END;
@@ -463,6 +463,7 @@ abstract class Application extends Module
     private $_runtimePath;
 
     /**
+     * 获取runtime 路径
      * Returns the directory that stores runtime files.
      * @return string the directory that stores runtime files.
      * Defaults to the "runtime" subdirectory under [[basePath]].
@@ -477,6 +478,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 设置runtime路径
      * Sets the directory that stores runtime files.
      * @param string $path the directory that stores runtime files.
      */
@@ -689,6 +691,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 终止应用程序
      * Terminates the application.
      * This method replaces the `exit()` function by ensuring the application life cycle is completed
      * before terminating the application.

@@ -104,6 +104,7 @@ class Controller extends \yii\base\Controller
     }
 
     /**
+     * 绑定参数到Action对象
      * Binds the parameters to the action.
      * This method is invoked by [[\yii\base\Action]] when it begins to run with the given parameters.
      * This method will check the parameter names that the action requires and return
@@ -116,6 +117,7 @@ class Controller extends \yii\base\Controller
      */
     public function bindActionParams($action, $params)
     {
+        // 反射获取 action方法
         if ($action instanceof InlineAction) {
             $method = new \ReflectionMethod($this, $action->actionMethod);
         } else {
@@ -125,11 +127,16 @@ class Controller extends \yii\base\Controller
         $args = [];
         $missing = [];
         $actionParams = [];
+        // 方法的参数
         foreach ($method->getParameters() as $param) {
+            // 参数名字
             $name = $param->getName();
+            // 传递的参数存在需要的
             if (array_key_exists($name, $params)) {
+                // 数组形式
                 if ($param->isArray()) {
                     $args[] = $actionParams[$name] = (array) $params[$name];
+                // 非数组形式
                 } elseif (!is_array($params[$name])) {
                     $args[] = $actionParams[$name] = $params[$name];
                 } else {
@@ -138,25 +145,27 @@ class Controller extends \yii\base\Controller
                     ]));
                 }
                 unset($params[$name]);
+            // 是否有默认值， 获取默认值
             } elseif ($param->isDefaultValueAvailable()) {
                 $args[] = $actionParams[$name] = $param->getDefaultValue();
             } else {
                 $missing[] = $name;
             }
         }
-
+        // 如果确实参数
         if (!empty($missing)) {
             throw new BadRequestHttpException(Yii::t('yii', 'Missing required parameters: {params}', [
                 'params' => implode(', ', $missing),
             ]));
         }
-
+        // 保存action参数
         $this->actionParams = $actionParams;
 
         return $args;
     }
 
     /**
+     * 执行动作之前 ， 验证 csrf
      * @inheritdoc
      */
     public function beforeAction($action)

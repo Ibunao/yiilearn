@@ -32,6 +32,7 @@ class Response extends Component
     }
 
     /**
+     * 清除所有ob缓存
      * Removes all existing output buffers.
      */
     public function clearOutputBuffers()

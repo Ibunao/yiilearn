@@ -12,7 +12,9 @@ use Yii;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
-
+/*
+依赖注入容器，解决依赖问题
+ */
 /**
  * Container implements a [dependency injection](http://en.wikipedia.org/wiki/Dependency_injection) container.
  *
@@ -100,22 +102,27 @@ use yii\helpers\ArrayHelper;
 class Container extends Component
 {
     /**
+     * 用于保存单例Singleton对象，以对象类型为键
      * @var array singleton objects indexed by their types
      */
     private $_singletons = [];
     /**
+     * 用于保存依赖的定义，以对象类型为键
      * @var array object definitions indexed by their types
      */
     private $_definitions = [];
     /**
+     * 用于保存构造函数的参数，以对象类型为键
      * @var array constructor parameters indexed by object types
      */
     private $_params = [];
     /**
+     * 用于缓存ReflectionClass(反射)对象，以类名或接口名为键
      * @var array cached ReflectionClass objects indexed by class/interface names
      */
     private $_reflections = [];
     /**
+     * 用于缓存依赖信息，以类名或接口名为键
      * @var array cached dependencies indexed by class/interface names. Each class name
      * is associated with a list of constructor parameter types or default values.
      */
@@ -147,19 +154,31 @@ class Container extends Component
      * @throws InvalidConfigException if the class cannot be recognized or correspond to an invalid definition
      * @throws NotInstantiableException If resolved to an abstract class or an interface (since 2.0.9)
      */
+    /**
+     * 获取实例，自动解析依赖      
+     * @param  [type] $class  类名或者别名
+     * @param  array  $params 构造方法的参数值，要按顺序来 []
+     * @param  array  $config 要给实例属性赋值的配置数组 如 ：['id' => 11];
+     * @return [type]         [description]
+     */
     public function get($class, $params = [], $config = [])
     {
+        // 如果已经创建过了
         if (isset($this->_singletons[$class])) {
             // singleton
             return $this->_singletons[$class];
+        // 如果没有 set() 直接get()了
         } elseif (!isset($this->_definitions[$class])) {
+            // 创建对象
             return $this->build($class, $params, $config);
         }
-
+        // 获取依赖
         $definition = $this->_definitions[$class];
-        // 匿名函数
+        // 依赖是匿名函数
         if (is_callable($definition, true)) {
+            // 合并参数
             $params = $this->resolveDependencies($this->mergeParams($class, $params));
+            // 把第一个参数作为回调函数调用
             $object = call_user_func($definition, $this, $params, $config);
         } elseif (is_array($definition)) {
             $concrete = $definition['class'];
@@ -188,6 +207,7 @@ class Container extends Component
     }
 
     /**
+     * 注册依赖
      * Registers a class definition with this container.
      *
      * For example,
@@ -234,7 +254,7 @@ class Container extends Component
      * If a class definition with the same name already exists, it will be overwritten with the new one.
      * You may use [[has()]] to check if a class definition already exists.
      *
-     * @param string $class class name, interface name or alias name
+     * @param string $class class name, interface name or alias name 
      * @param mixed $definition the definition associated with `$class`. It can be one of the following:
      *
      * - a PHP callable: The callable will be executed when [[get()]] is invoked. The signature of the callable
@@ -249,10 +269,19 @@ class Container extends Component
      * constructor when [[get()]] is called.
      * @return $this the container itself
      */
+    /**
+     * 注册依赖
+     * @param [type] $class      类名/接口名/别名
+     * @param array  $definition 依赖
+     * @param array  $params     参数
+     */
     public function set($class, $definition = [], array $params = [])
     {
+        // 将规范后的依赖存入依赖数组 _definitions
         $this->_definitions[$class] = $this->normalizeDefinition($class, $definition);
+        // 存入 参数数组
         $this->_params[$class] = $params;
+        // 删除
         unset($this->_singletons[$class]);
         return $this;
     }
@@ -272,13 +301,17 @@ class Container extends Component
      */
     public function setSingleton($class, $definition = [], array $params = [])
     {
+        // 将规范后的依赖存入依赖数组 _definitions
         $this->_definitions[$class] = $this->normalizeDefinition($class, $definition);
+        // 存入 参数数组
         $this->_params[$class] = $params;
+        // 设置为null
         $this->_singletons[$class] = null;
         return $this;
     }
 
     /**
+     * 容器是否存在
      * Returns a value indicating whether the container has the definition of the specified name.
      * @param string $class class name, interface name or alias name
      * @return bool whether the container has the definition of the specified name..
@@ -290,6 +323,7 @@ class Container extends Component
     }
 
     /**
+     * 是否存在
      * Returns a value indicating whether the given name corresponds to a registered singleton.
      * @param string $class class name, interface name or alias name
      * @param bool $checkInstance whether to check if the singleton has been instantiated.
@@ -302,6 +336,7 @@ class Container extends Component
     }
 
     /**
+     * 清空容器
      * Removes the definition for the specified name.
      * @param string $class class name, interface name or alias name
      */
@@ -311,21 +346,27 @@ class Container extends Component
     }
 
     /**
+     * 规范依赖类的定义
      * Normalizes the class definition.
-     * @param string $class class name
-     * @param string|array|callable $definition the class definition
+     * @param string $class class name    类名
+     * @param string|array|callable $definition the class definition  定义的类
      * @return array the normalized class definition
      * @throws InvalidConfigException if the definition is invalid.
      */
     protected function normalizeDefinition($class, $definition)
     {
+        // 没有定义类
         if (empty($definition)) {
             return ['class' => $class];
+        // 字符串也直接为类
         } elseif (is_string($definition)) {
             return ['class' => $definition];
+        // 回调函数或者是对象 
         } elseif (is_callable($definition, true) || is_object($definition)) {
             return $definition;
+        // 数组
         } elseif (is_array($definition)) {
+            // 没有定义类
             if (!isset($definition['class'])) {
                 if (strpos($class, '\\') !== false) {
                     $definition['class'] = $class;
@@ -389,6 +430,7 @@ class Container extends Component
     }
 
     /**
+     * 合并参数
      * Merges the user-specified constructor parameters with the ones registered via [[set()]].
      * @param string $class class name, interface name or alias name
      * @param array $params the constructor parameters
@@ -442,6 +484,7 @@ class Container extends Component
     }
 
     /**
+     * 解析依赖通过使用instances对象
      * Resolves dependencies by replacing them with the actual object instances.
      * @param array $dependencies the dependencies
      * @param ReflectionClass $reflection the class reflection associated with the dependencies
@@ -451,9 +494,12 @@ class Container extends Component
     protected function resolveDependencies($dependencies, $reflection = null)
     {
         foreach ($dependencies as $index => $dependency) {
+            // 如果参数使用了Instance对象
             if ($dependency instanceof Instance) {
                 if ($dependency->id !== null) {
+                    // 获取对象
                     $dependencies[$index] = $this->get($dependency->id);
+                // 如果存在反射对象
                 } elseif ($reflection !== null) {
                     $name = $reflection->getConstructor()->getParameters()[$index]->getName();
                     $class = $reflection->getName();

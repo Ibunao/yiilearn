@@ -71,6 +71,7 @@ class Instance
     }
 
     /**
+     * 创建一个Instance
      * Creates a new Instance object.
      * @param string $id the component ID
      * @return Instance the new Instance object.
@@ -168,6 +169,8 @@ class Instance
     }
 
     /**
+     * 调用var_export()的时候调用
+     * https://my.oschina.net/zhangdapeng89/blog/40296
      * Restores class state after using `var_export()`
      *
      * @param array $state

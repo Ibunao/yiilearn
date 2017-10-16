@@ -7,6 +7,10 @@ use yii\web\Controller;
 
 class TestController extends Controller
 {
+	public function behaviors()
+	{
+		return ['app\behaviors\TestBehavior'];
+	}
 	public function actionTest()
 	{
 		// $ding = [1,2,3];

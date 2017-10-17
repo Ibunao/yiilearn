@@ -185,6 +185,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 渲染ajax请求的视图
      * Renders a view in response to an AJAX request.
      *
      * This method is similar to [[render()]] except that it will surround the view being rendered

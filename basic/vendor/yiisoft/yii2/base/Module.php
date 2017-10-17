@@ -267,6 +267,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 获取该模块下控制器的路径
      * Returns the directory that contains the controller classes according to [[controllerNamespace]].
      * Note that in order for this method to return a value, you must define
      * an alias for the root namespace of [[controllerNamespace]].
@@ -279,6 +280,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 获取该模块下view视图的路径
      * Returns the directory that contains the view files for this module.
      * @return string the root directory of view files. Defaults to "[[basePath]]/views".
      */
@@ -301,6 +303,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 该模块下layouts的路径
      * Returns the directory that contains layout view files for this module.
      * @return string the root directory of layout files. Defaults to "[[viewPath]]/layouts".
      */

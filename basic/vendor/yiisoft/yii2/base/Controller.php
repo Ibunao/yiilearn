@@ -178,6 +178,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 运行控制器的action
      * Runs a request specified in terms of a route.
      * The route can be either an ID of an action within this controller or a complete route consisting
      * of module IDs, controller ID and action ID. If the route starts with a slash '/', the parsing of

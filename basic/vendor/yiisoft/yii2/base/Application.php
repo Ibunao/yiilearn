@@ -664,6 +664,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 安全组件
      * Returns the security component.
      * @return \yii\base\Security the security application component.
      */

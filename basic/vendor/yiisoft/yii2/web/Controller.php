@@ -33,6 +33,7 @@ class Controller extends \yii\base\Controller
 
 
     /**
+     * 相应ajax请求
      * Renders a view in response to an AJAX request.
      *
      * This method is similar to [[renderPartial()]] except that it will inject into
@@ -50,6 +51,7 @@ class Controller extends \yii\base\Controller
     }
 
     /**
+     * 返回json数据
      * Send data formatted as JSON.
      *
      * This method is a shortcut for sending data formatted as JSON. It will return
@@ -77,6 +79,7 @@ class Controller extends \yii\base\Controller
     }
 
     /**
+     * 返回xml
      * Send data formatted as XML.
      *
      * This method is a shortcut for sending data formatted as XML. It will return
@@ -165,7 +168,7 @@ class Controller extends \yii\base\Controller
     }
 
     /**
-     * 执行动作之前 ， 验证 csrf
+     * 执行动作之前 ， 验证 csrf  csrf验证
      * @inheritdoc
      */
     public function beforeAction($action)
@@ -181,6 +184,7 @@ class Controller extends \yii\base\Controller
     }
 
     /**
+     * 跳转
      * Redirects the browser to the specified URL.
      * This method is a shortcut to [[Response::redirect()]].
      *
@@ -212,6 +216,7 @@ class Controller extends \yii\base\Controller
     }
 
     /**
+     * 首页
      * Redirects the browser to the home page.
      *
      * You can use this method in an action by returning the [[Response]] directly:
@@ -229,6 +234,7 @@ class Controller extends \yii\base\Controller
     }
 
     /**
+     * 返回用户最后访问的页面
      * Redirects the browser to the last visited page.
      *
      * You can use this method in an action by returning the [[Response]] directly:
@@ -252,6 +258,7 @@ class Controller extends \yii\base\Controller
     }
 
     /**
+     * 刷新当前页
      * Refreshes the current page.
      * This method is a shortcut to [[Response::refresh()]].
      *

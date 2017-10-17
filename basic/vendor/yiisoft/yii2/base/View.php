@@ -153,6 +153,7 @@ class View extends Component
     }
 
     /**
+     * 获取视图文件
      * Finds the view file based on the given view name.
      * @param string $view the view name or the [path alias](guide:concept-aliases) of the view file. Please refer to [[render()]]
      * on how to specify this parameter.

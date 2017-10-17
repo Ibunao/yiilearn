@@ -55,10 +55,12 @@ use yii\base\InvalidConfigException;
 class ServiceLocator extends Component
 {
     /**
+     * 用于缓存服务、组件等的实例
      * @var array shared component instances indexed by their IDs
      */
     private $_components = [];
     /**
+     * 用于保存服务和组件的定义，通常为配置数组，可以用来创建具体的实例
      * @var array component definitions indexed by their IDs
      */
     private $_definitions = [];
@@ -72,9 +74,14 @@ class ServiceLocator extends Component
      */
     public function __get($name)
     {
+        // has() 方法就是判断 $_definitions 数组中是否已经保存了服务或组件的定义
+        // 请留意，这个时候服务或组件仅是完成定义，不一定已经实例化
         if ($this->has($name)) {
+            // get() 方法用于返回服务或组件的实例
             return $this->get($name);
         } else {
+            // 未定义的服务或组件，那么视为正常的属性、行为，
+            // 调用 yii\base\Component::__get()
             return parent::__get($name);
         }
     }
@@ -108,6 +115,14 @@ class ServiceLocator extends Component
      * @return bool whether the locator has the specified component definition or has instantiated the component.
      * @see set()
      */
+    /**
+     * 检查是否有某个服务或组件
+     * @param  [type]  $id            [description]
+     * @param  boolean $checkInstance [description]
+     *  当 $checkInstance === false 时，用于判断是否已经定义了某个服务或组件
+     * 当 $checkInstance === true 时，用于判断是否已经有了某个服务或组件的实例
+     * @return boolean                [description]
+     */
     public function has($id, $checkInstance = false)
     {
         return $checkInstance ? isset($this->_components[$id]) : isset($this->_definitions[$id]);
@@ -126,15 +141,20 @@ class ServiceLocator extends Component
      */
     public function get($id, $throwException = true)
     {
+        // 是否存在   已经实例化
         if (isset($this->_components[$id])) {
             return $this->_components[$id];
         }
-
+        // 存在定义
         if (isset($this->_definitions[$id])) {
             $definition = $this->_definitions[$id];
+            // 如果定义是个对象，且不是Closure对象，那么直接将这个对象返回
+            // 通过定义创建对象，并保存到 _components
             if (is_object($definition) && !$definition instanceof Closure) {
                 return $this->_components[$id] = $definition;
             } else {
+                // 是个数组或者PHP callable，调用 Yii::createObject()来创建一个实例
+                // Yii::createObject 服务定位器和容器进行关联
                 return $this->_components[$id] = Yii::createObject($definition);
             }
         } elseif ($throwException) {
@@ -187,15 +207,21 @@ class ServiceLocator extends Component
      *
      * @throws InvalidConfigException if the definition is an invalid configuration array
      */
+    /**
+     * 
+     * @param [type] $id         组件id
+     * @param [type] $definition 组件定义
+     */
     public function set($id, $definition)
     {
+        // 从组件数组删除此id
         unset($this->_components[$id]);
-
+        // 删除定义
         if ($definition === null) {
             unset($this->_definitions[$id]);
             return;
         }
-
+        // 保存定义
         if (is_object($definition) || is_callable($definition, true)) {
             // an object, a class name, or a PHP callable
             $this->_definitions[$id] = $definition;
@@ -212,6 +238,7 @@ class ServiceLocator extends Component
     }
 
     /**
+     * 
      * Removes the component from the locator.
      * @param string $id the component ID
      */

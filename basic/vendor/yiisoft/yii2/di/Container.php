@@ -16,6 +16,67 @@ use yii\helpers\ArrayHelper;
 依赖注入容器，解决依赖问题
  */
 /**
+ *
+ * 示例
+ *
+ *
+ * namespace app\models;
+ *
+ * use yii\base\Object;
+ * use yii\db\Connection;
+ * use yii\di\Container;
+ *
+ * interface UserFinderInterface
+ * {
+ *     function findUser();
+ * }
+ *
+ * class UserFinder extends Object implements UserFinderInterface
+ * {
+ *     public $db;
+ *
+ *     public function __construct(Connection $db, $config = [])
+ *     {
+ *         $this->db = $db;
+ *         parent::__construct($config);
+ *     }
+ *
+ *     public function findUser()
+ *     {
+ *     }
+ * }
+ *
+ * class UserLister extends Object
+ * {
+ *     public $finder;
+ *
+ *     public function __construct(UserFinderInterface $finder, $config = [])
+ *     {
+ *         $this->finder = $finder;
+ *         parent::__construct($config);
+ *     }
+ * }
+ *
+ * $container = new Container;
+ * $container->set('yii\db\Connection', [
+ *     'dsn' => '...',
+ * ]);
+ * $container->set('app\models\UserFinderInterface', [
+ *     'class' => 'app\models\UserFinder',
+ * ]);
+ * $container->set('userLister', 'app\models\UserLister');
+ *
+ * $lister = $container->get('userLister');
+ *
+ * 和下面的相同
+ * // which is equivalent to:
+ *
+ * $db = new \yii\db\Connection(['dsn' => '...']);
+ * $finder = new UserFinder($db);
+ * $lister = new UserLister($finder);
+ *
+ */
+/**
  * Container implements a [dependency injection](http://en.wikipedia.org/wiki/Dependency_injection) container.
  *
  * A dependency injection (DI) container is an object that knows how to instantiate and configure objects and
@@ -107,7 +168,7 @@ class Container extends Component
      */
     private $_singletons = [];
     /**
-     * 用于保存依赖的定义，以对象类型为键
+     * 用于保存依赖的定义，以对象类型为键  set 的时候保存的
      * @var array object definitions indexed by their types
      */
     private $_definitions = [];
@@ -122,7 +183,7 @@ class Container extends Component
      */
     private $_reflections = [];
     /**
-     * 用于缓存依赖信息，以类名或接口名为键
+     * 用于缓存依赖信息，以类名或接口名为键  get获取解析的时候保存的
      * @var array cached dependencies indexed by class/interface names. Each class name
      * is associated with a list of constructor parameter types or default values.
      */
@@ -179,25 +240,31 @@ class Container extends Component
             // 合并参数
             $params = $this->resolveDependencies($this->mergeParams($class, $params));
             // 把第一个参数作为回调函数调用
+            // 回调函数 $definition 要接收三个参数
             $object = call_user_func($definition, $this, $params, $config);
+        // 如果是数组，必定还有 class 因为 set的时候依赖进行了标准化
         } elseif (is_array($definition)) {
             $concrete = $definition['class'];
             unset($definition['class']);
-
+            // 合并属性配置值
             $config = array_merge($definition, $config);
+            // 合并 $class 构造函数参数配置值
             $params = $this->mergeParams($class, $params);
-
+            // 依赖如果和自己相等 
             if ($concrete === $class) {
+                // 创建对象
                 $object = $this->build($class, $params, $config);
             } else {
+                // 递归获取依赖
                 $object = $this->get($concrete, $params, $config);
             }
+        // 如果依赖是一个对象，添加到单利数组
         } elseif (is_object($definition)) {
             return $this->_singletons[$class] = $definition;
         } else {
             throw new InvalidConfigException('Unexpected object definition type: ' . gettype($definition));
         }
-
+        // 存入单利数组 _singletons
         if (array_key_exists($class, $this->_singletons)) {
             // singleton
             $this->_singletons[$class] = $object;
@@ -269,6 +336,72 @@ class Container extends Component
      * constructor when [[get()]] is called.
      * @return $this the container itself
      */
+
+/*
+=======================================================
+示例   
+$container = new \yii\di\Container;
+
+// 直接以类名注册一个依赖，虽然这么做没什么意义。
+// $_definition['yii\db\Connection'] = ['class' => 'yii\db\Connetcion']
+$container->set('yii\db\Connection');
+
+// 注册一个接口，当一个类依赖于该接口时，定义中的类会自动被实例化，并供
+// 有依赖需要的类使用。
+// $_definition['yii\mail\MailInterface'] = ['class' => 'yii\swiftmailer\Mailer']
+$container->set('yii\mail\MailInterface', 'yii\swiftmailer\Mailer');
+
+// 注册一个别名，当调用$container->get('foo')时，可以得到一个
+// yii\db\Connection 实例。
+// $_definition['foo'] = ['class' => 'yii\db\Connection']
+$container->set('foo', 'yii\db\Connection');
+
+// 用一个配置数组来注册一个类，需要这个类的实例时，这个配置数组会发生作用。
+// $_definition['yii\db\Connection'] = [
+//    'class' => 'yii\db\Connection',
+//    'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
+//    'username' => 'root',
+//    'password' => '',
+//    'charset' => 'utf8',
+//];
+$container->set('yii\db\Connection', [
+    'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
+    'username' => 'root',
+    'password' => '',
+    'charset' => 'utf8',
+]);
+
+// 用一个配置数组来注册一个别名，由于别名的类型不详，因此配置数组中需要
+// 有 class 元素。
+// $_definition['db'] = [
+//    'class' => 'yii\db\Connection',
+//    'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
+//    'username' => 'root',
+//    'password' => '',
+//    'charset' => 'utf8',
+//];
+$container->set('db', [
+    'class' => 'yii\db\Connection',
+    'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
+    'username' => 'root',
+    'password' => '',
+    'charset' => 'utf8',
+]);
+
+// 用一个PHP callable来注册一个别名，每次引用这个别名时，这个callable都会被调用。
+// $_definition['db'] = function(...){...}
+$container->set('db', function ($container, $params, $config) {
+    return new \yii\db\Connection($config);
+});
+
+// 用一个对象来注册一个别名，每次引用这个别名时，这个对象都会被引用。
+// $_definition['pageCache'] = anInstanceOfFileCache
+$container->set('pageCache', new FileCache);
+
+
+
+=======================================================
+ */
     /**
      * 注册依赖
      * @param [type] $class      类名/接口名/别名
@@ -390,37 +523,43 @@ class Container extends Component
     }
 
     /**
+     * 创建实例
      * Creates an instance of the specified class.
      * This method will resolve dependencies of the specified class, instantiate them, and inject
      * them into the new instance of the specified class.
-     * @param string $class the class name
-     * @param array $params constructor parameters
-     * @param array $config configurations to be applied to the new instance
+     * @param string $class the class name 类名
+     * @param array $params constructor parameters 构造函数参数
+     * @param array $config configurations to be applied to the new instance 属性配置值
      * @return object the newly created instance of the specified class
      * @throws NotInstantiableException If resolved to an abstract class or an interface (since 2.0.9)
      */
     protected function build($class, $params, $config)
     {
+        // 反射对象 参数依赖信息
         /* @var $reflection ReflectionClass */
         list ($reflection, $dependencies) = $this->getDependencies($class);
-
+        // 给参数赋值
         foreach ($params as $index => $param) {
             $dependencies[$index] = $param;
         }
-
+        // 解析依赖，实例化构造参数依赖对象
         $dependencies = $this->resolveDependencies($dependencies, $reflection);
+        // 检查类是否可实例化, 排除抽象类abstract和对象接口interface
         if (!$reflection->isInstantiable()) {
             throw new NotInstantiableException($reflection->name);
         }
+        // 反射实例化对象
         if (empty($config)) {
             return $reflection->newInstanceArgs($dependencies);
         }
-
+        // 检查它是否实现了一个Configurable接口，也就是继承自Object对象  
         if (!empty($dependencies) && $reflection->implementsInterface('yii\base\Configurable')) {
+            // 继承object后，规则上，是要在构造函数中最后一个参数和Object中的一直，并调用Object中的构造函数  
             // set $config as the last parameter (existing one will be overwritten)
             $dependencies[count($dependencies) - 1] = $config;
             return $reflection->newInstanceArgs($dependencies);
         } else {
+            // 创建对象并给属性赋值
             $object = $reflection->newInstanceArgs($dependencies);
             foreach ($config as $name => $value) {
                 $object->$name = $value;
@@ -452,32 +591,41 @@ class Container extends Component
     }
 
     /**
+     * 返回类的依赖
      * Returns the dependencies of the specified class.
      * @param string $class class name, interface name or alias name
      * @return array the dependencies of the specified class.
      */
     protected function getDependencies($class)
     {
+        // 如果已经通过此类解析过此类的构造方法，直接返回
         if (isset($this->_reflections[$class])) {
             return [$this->_reflections[$class], $this->_dependencies[$class]];
         }
 
         $dependencies = [];
+        // 反射
         $reflection = new ReflectionClass($class);
-
+        // 获取构造函数
         $constructor = $reflection->getConstructor();
         if ($constructor !== null) {
+            // 遍历构造函数参数
             foreach ($constructor->getParameters() as $param) {
+                // 是否有有效的默认值 假设 ding($d = 'a', $b) $d就不是有效的默认值，必须要赋值的
                 if ($param->isDefaultValueAvailable()) {
+                    // 获取默认值
                     $dependencies[] = $param->getDefaultValue();
                 } else {
+                    // 获取强制类型的类，如 function ding(RanClass ran)  获取Ranclass
                     $c = $param->getClass();
+                    // 创建Instance实例
                     $dependencies[] = Instance::of($c === null ? null : $c->getName());
                 }
             }
         }
-
+        // 存入反射数组
         $this->_reflections[$class] = $reflection;
+        // 存入缓存依赖数组
         $this->_dependencies[$class] = $dependencies;
 
         return [$reflection, $dependencies];
@@ -486,7 +634,7 @@ class Container extends Component
     /**
      * 解析依赖通过使用instances对象
      * Resolves dependencies by replacing them with the actual object instances.
-     * @param array $dependencies the dependencies
+     * @param array $dependencies the dependencies  赋值后的参数
      * @param ReflectionClass $reflection the class reflection associated with the dependencies
      * @return array the resolved dependencies
      * @throws InvalidConfigException if a dependency cannot be resolved or if a dependency cannot be fulfilled.
@@ -497,9 +645,10 @@ class Container extends Component
             // 如果参数使用了Instance对象
             if ($dependency instanceof Instance) {
                 if ($dependency->id !== null) {
-                    // 获取对象
+                    // 获取对象，解析依赖
                     $dependencies[$index] = $this->get($dependency->id);
-                // 如果存在反射对象
+                // 如果存在反射对象，获取信息抛出错误
+                // 不存在依赖还不给赋值，报错了
                 } elseif ($reflection !== null) {
                     $name = $reflection->getConstructor()->getParameters()[$index]->getName();
                     $class = $reflection->getName();
@@ -511,6 +660,7 @@ class Container extends Component
     }
 
     /**
+     * 解析 函数/方法 参数依赖
      * Invoke a callback with resolving dependencies in parameters.
      *
      * This methods allows invoking a callback and let type hinted parameter names to be
@@ -546,6 +696,7 @@ class Container extends Component
     }
 
     /**
+     * 解析函数/方法的依赖
      * Resolve dependencies for a function.
      *
      * This method can be used to implement similar functionality as provided by [[invoke()]] in other
@@ -560,25 +711,31 @@ class Container extends Component
      */
     public function resolveCallableDependencies(callable $callback, $params = [])
     {
+        // 如果是方法
         if (is_array($callback)) {
             $reflection = new \ReflectionMethod($callback[0], $callback[1]);
+        // 如果是函数
         } else {
             $reflection = new \ReflectionFunction($callback);
         }
 
         $args = [];
-
+        // 判断是否是关联数组
         $associative = ArrayHelper::isAssociative($params);
-
+        // 反射获取参数遍历
         foreach ($reflection->getParameters() as $param) {
             $name = $param->getName();
+            // 看是否是类class
             if (($class = $param->getClass()) !== null) {
                 $className = $class->getName();
+                //是关联数组 and 是给参数赋值的值 and 继承关系
                 if ($associative && isset($params[$name]) && $params[$name] instanceof $className) {
                     $args[] = $params[$name];
                     unset($params[$name]);
+                // 如果不是关联数组，则第一参数为对象型的
                 } elseif (!$associative && isset($params[0]) && $params[0] instanceof $className) {
                     $args[] = array_shift($params);
+                // 容器获取对象
                 } elseif (isset(Yii::$app) && Yii::$app->has($name) && ($obj = Yii::$app->get($name)) instanceof $className) {
                     $args[] = $obj;
                 } else {
@@ -597,10 +754,13 @@ class Container extends Component
             } elseif ($associative && isset($params[$name])) {
                 $args[] = $params[$name];
                 unset($params[$name]);
+            // 不是关联数组 and 长度大一0
             } elseif (!$associative && count($params)) {
                 $args[] = array_shift($params);
+            // 有默认值
             } elseif ($param->isDefaultValueAvailable()) {
                 $args[] = $param->getDefaultValue();
+            // 检查是否可选
             } elseif (!$param->isOptional()) {
                 $funcName = $reflection->getName();
                 throw new InvalidConfigException("Missing required parameter \"$name\" when calling \"$funcName\".");

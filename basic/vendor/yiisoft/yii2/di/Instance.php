@@ -109,14 +109,25 @@ class Instance
      * @return object the object referenced by the Instance, or `$reference` itself if it is an object.
      * @throws InvalidConfigException if the reference is invalid
      */
+    /**
+     * 将指定的引用解析到实际的对象中，并确保它是指定的类型。
+     * @param  [type] $reference [description]
+     * @param  [type] $type      [description]
+     * @param  [type] $container [description]
+     * @return [type]            [description]
+     */
     public static function ensure($reference, $type = null, $container = null)
     {
+        // 如果是数组形式
         if (is_array($reference)) {
+            // 设置 class
             $class = isset($reference['class']) ? $reference['class'] : $type;
+            // 设置 容器
             if (!$container instanceof Container) {
                 $container = Yii::$container;
             }
             unset($reference['class']);
+            // 从其中获取
             $component = $container->get($class, [], $reference);
             if ($type === null || $component instanceof $type) {
                 return $component;
@@ -126,13 +137,14 @@ class Instance
         } elseif (empty($reference)) {
             throw new InvalidConfigException('The required component is not specified.');
         }
-
+        // 如果是字符串
         if (is_string($reference)) {
             $reference = new static($reference);
+        // type 为null 或 $reference为对象并继承 $type
         } elseif ($type === null || $reference instanceof $type) {
             return $reference;
         }
-
+        // 继承 Instance
         if ($reference instanceof self) {
             try {
                 $component = $reference->get($container);

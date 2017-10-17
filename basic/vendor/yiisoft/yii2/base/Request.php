@@ -47,7 +47,7 @@ abstract class Request extends Component
     }
 
     /**
-     * 设置属性值
+     * 设置是否是脚本属性值
      * Sets the value indicating whether the current request is made via command line
      * @param bool $value the value indicating whether the current request is made via command line
      */

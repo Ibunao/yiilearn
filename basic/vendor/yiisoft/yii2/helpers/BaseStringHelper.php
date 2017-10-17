@@ -21,6 +21,7 @@ use Yii;
 class BaseStringHelper
 {
     /**
+     * 获取字节长度
      * Returns the number of bytes in the given string.
      * This method ensures the string is treated as a byte array by using `mb_strlen()`.
      * @param string $string the string being measured for length
@@ -32,6 +33,7 @@ class BaseStringHelper
     }
 
     /**
+     * 截取字节
      * Returns the portion of string specified by the start and length parameters.
      * This method ensures the string is treated as a byte array by using `mb_substr()`.
      * @param string $string the input string. Must be one character or longer.

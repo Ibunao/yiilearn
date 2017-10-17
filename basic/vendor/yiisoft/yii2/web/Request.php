@@ -393,7 +393,7 @@ php://input 是返回整个HTTP请求中，除去HTTP头部的全部原始内容
     private $_bodyParams;
 
     /**
-     * 
+     * 获取请求参数
      * Returns the request parameters given in the request body.
      *
      * Request parameters are determined using the parsers configured in [[parsers]] property.
@@ -419,7 +419,6 @@ php://input 是返回整个HTTP请求中，除去HTTP头部的全部原始内容
             $rawContentType = $this->getContentType();
             // 得到的是 'application/json'
             if (($pos = strpos($rawContentType, ';')) !== false) {
-                // e.g. application/json; charset=UTF-8
                 $contentType = substr($rawContentType, 0, $pos);
             } else {
                 $contentType = $rawContentType;
@@ -477,7 +476,7 @@ Array
     }
 
     /**
-     * 获取 请求 参数
+     * 获取请求参数
      * Returns the named request body parameter value.
      * If the parameter does not exist, the second parameter passed to this method will be returned.
      * @param string $name the parameter name
@@ -604,9 +603,18 @@ Array
      * (e.g. `http://www.yiiframework.com`), null if can't be obtained from `$_SERVER` and wasn't set.
      * @see setHostInfo()
      */
+    /**
+     * 获取当前域名
+     * 请求
+     * www.yiibasic.com/test/test
+     * 输出
+     * http://www.yiibasic.com
+     * @return [type] [description]
+     */
     public function getHostInfo()
     {
         if ($this->_hostInfo === null) {
+            // 是否是https
             $secure = $this->getIsSecureConnection();
             $http = $secure ? 'https' : 'http';
             if (isset($_SERVER['HTTP_HOST'])) {
@@ -637,6 +645,11 @@ Array
     }
 
     /**
+     * 返回域名
+     * 请求
+     * www.yiibasic.com/test/test
+     * 返回
+     * www.yiibasic.com
      * Returns the host part of the current request URL.
      * Value is calculated from current [[getHostInfo()|hostInfo]] property.
      *
@@ -660,6 +673,8 @@ Array
 
     /**
      * 获取相对url   为空 ''
+     * 假设域名指向的不是web 而是web的外层  
+     * 则获取到的是 /web
      * Returns the relative URL for the application.
      * This is similar to [[scriptUrl]] except that it does not include the script file name,
      * and the ending slashes are removed.
@@ -736,7 +751,10 @@ Array
     private $_scriptFile;
 
     /**
-     * 获取当前执行脚本的文件
+     * 获取当前执行脚本的文件路径
+     * 例如
+     * D:/ding/wamp64/www/learn/yii/yiilearn/basic/web/index.php
+     * 
      * Returns the entry script file path.
      * The default implementation will simply return `$_SERVER['SCRIPT_FILENAME']`.
      * @return string the entry script file path
@@ -771,6 +789,7 @@ Array
 
     /**
      * 返回pathInfo
+     * 域名后问号?前的
      * Returns the path info of the currently requested URL.
      * A path info refers to the part that is after the entry script and before the question mark (query string).
      * The starting and ending slashes are both removed.
@@ -859,6 +878,7 @@ Array
     }
 
     /**
+     * 获取当前的请求url
      * Returns the currently requested absolute URL.
      * This is a shortcut to the concatenation of [[hostInfo]] and [[url]].
      * @return string the currently requested absolute URL.
@@ -932,6 +952,7 @@ Array
     }
 
     /**
+     * 返回问号后面的请求URL的一部分。
      * Returns part of the request URL that is after the question mark.
      * @return string part of the request URL that is after the question mark
      */
@@ -941,6 +962,7 @@ Array
     }
 
     /**
+     * 检查是不是https
      * Return if the request is sent via secure channel (https).
      * @return bool if the request is sent via secure channel (https)
      */
@@ -951,6 +973,7 @@ Array
     }
 
     /**
+     * 域名
      * Returns the server name.
      * @return string server name, null if not available
      */
@@ -960,6 +983,7 @@ Array
     }
 
     /**
+     * 端口
      * Returns the server port number.
      * @return int|null server port number, null if not available
      */
@@ -969,6 +993,7 @@ Array
     }
 
     /**
+     * 获取referrer
      * Returns the URL referrer.
      * @return string|null URL referrer, null if not available
      */
@@ -978,6 +1003,7 @@ Array
     }
 
     /**
+     * 浏览器信息
      * Returns the user agent.
      * @return string|null user agent, null if not available
      */
@@ -987,6 +1013,7 @@ Array
     }
 
     /**
+     * 获取用户ip
      * Returns the user IP address.
      * @return string|null user IP address, null if not available
      */
@@ -996,6 +1023,7 @@ Array
     }
 
     /**
+     * 获取用户主机名/域名
      * Returns the user host name.
      * @return string|null user host name, null if not available
      */
@@ -1005,6 +1033,7 @@ Array
     }
 
     /**
+     * 认证机制
      * @return string|null the username sent via HTTP authentication, null if the username is not given
      */
     public function getAuthUser()
@@ -1013,6 +1042,7 @@ Array
     }
 
     /**
+     * 认证密码
      * @return string|null the password sent via HTTP authentication, null if the password is not given
      */
     public function getAuthPassword()
@@ -1023,6 +1053,7 @@ Array
     private $_port;
 
     /**
+     * 获取http端口
      * Returns the port to use for insecure requests.
      * Defaults to 80, or the port specified by the server if the current
      * request is insecure.
@@ -1055,6 +1086,7 @@ Array
     private $_securePort;
 
     /**
+     * https端口
      * Returns the port to use for secure requests.
      * Defaults to 443, or the port specified by the server if the current
      * request is secure.
@@ -1087,6 +1119,7 @@ Array
     private $_contentTypes;
 
     /**
+     * 实例很详细了
      * Returns the content types acceptable by the end user.
      * This is determined by the `Accept` HTTP header. For example,
      *
@@ -1160,6 +1193,7 @@ Array
     private $_languages;
 
     /**
+     * 获取接收语言
      * Returns the languages acceptable by the end user.
      * This is determined by the `Accept-Language` HTTP header.
      * @return array the languages ordered by the preference level. The first element
@@ -1324,6 +1358,7 @@ Array
     }
 
     /**
+     * 获取cookie
      * Returns the cookie collection.
      * Through the returned cookie collection, you may access a cookie using the following syntax:
      *
@@ -1351,6 +1386,7 @@ Array
     }
 
     /**
+     * 获取cookie并转换
      * Converts `$_COOKIE` into an array of [[Cookie]].
      * @return array the cookies obtained from request
      * @throws InvalidConfigException if [[cookieValidationKey]] is not set when [[enableCookieValidation]] is true
@@ -1358,7 +1394,9 @@ Array
     protected function loadCookies()
     {
         $cookies = [];
+        // 如果开启cookie验证
         if ($this->enableCookieValidation) {
+            // cookie验证关键字
             if ($this->cookieValidationKey == '') {
                 throw new InvalidConfigException(get_class($this) . '::cookieValidationKey must be configured with a secret key.');
             }
@@ -1366,11 +1404,14 @@ Array
                 if (!is_string($value)) {
                     continue;
                 }
+                // 验证后获取源数据
                 $data = Yii::$app->getSecurity()->validateData($value, $this->cookieValidationKey);
                 if ($data === false) {
                     continue;
                 }
+                // 反序列化
                 $data = @unserialize($data);
+                // 解析cookie
                 if (is_array($data) && isset($data[0], $data[1]) && $data[0] === $name) {
                     $cookies[$name] = new Cookie([
                         'name' => $name,
@@ -1395,6 +1436,7 @@ Array
     private $_csrfToken;
 
     /**
+     * 获取csrftoken
      * Returns the token used to perform CSRF validation.
      *
      * This token is generated in a way to prevent [BREACH attacks](http://breachattack.com/). It may be passed
@@ -1422,13 +1464,16 @@ Array
      */
     protected function loadCsrfToken()
     {
+        // 如果开启cookie验证从cookie中获取
         if ($this->enableCsrfCookie) {
             return $this->getCookies()->getValue($this->csrfParam);
         }
+        // 从session中获取
         return Yii::$app->getSession()->get($this->csrfParam);
     }
 
     /**
+     * 生成csrftoken
      * Generates an unmasked random token used to perform CSRF validation.
      * @return string the random token for CSRF validation.
      */
@@ -1437,8 +1482,10 @@ Array
         $token = Yii::$app->getSecurity()->generateRandomKey();
         if ($this->enableCsrfCookie) {
             $cookie = $this->createCsrfCookie($token);
+            // 添加到cookie中
             Yii::$app->getResponse()->getCookies()->add($cookie);
         } else {
+            // 添加到session中
             Yii::$app->getSession()->set($this->csrfParam, $token);
         }
         return $token;
@@ -1468,6 +1515,7 @@ Array
     }
 
     /**
+     * 验证csrf
      * Performs the CSRF validation.
      *
      * This method will validate the user-provided CSRF token by comparing it with the one stored in cookie or session.
@@ -1494,7 +1542,7 @@ Array
         if ($clientSuppliedToken !== null) {
             return $this->validateCsrfTokenInternal($clientSuppliedToken, $trueToken);
         }
-
+        // 如果post请求将会进行验证
         return $this->validateCsrfTokenInternal($this->getBodyParam($this->csrfParam), $trueToken)
             || $this->validateCsrfTokenInternal($this->getCsrfTokenFromHeader(), $trueToken);
     }

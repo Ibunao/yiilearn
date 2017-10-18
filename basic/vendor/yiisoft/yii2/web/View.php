@@ -174,8 +174,9 @@ class View extends \yii\base\View
         $this->trigger(self::EVENT_END_PAGE);
 
         $content = ob_get_clean();
-
+        // 替换预留位置   加载注册的js/css
         echo strtr($content, [
+            // 注册需要注册在头部的html
             self::PH_HEAD => $this->renderHeadHtml(),
             self::PH_BODY_BEGIN => $this->renderBodyBeginHtml(),
             self::PH_BODY_END => $this->renderBodyEndHtml($ajaxMode),
@@ -185,7 +186,7 @@ class View extends \yii\base\View
     }
 
     /**
-     * 渲染ajax请求的视图
+     * 渲染ajax请求的视图   不使用layout也可以注册进去js/css等
      * Renders a view in response to an AJAX request.
      *
      * This method is similar to [[render()]] except that it will surround the view being rendered
@@ -202,16 +203,23 @@ class View extends \yii\base\View
      */
     public function renderAjax($view, $params = [], $context = null)
     {
+        // 获取视图文件路径
         $viewFile = $this->findViewFile($view, $context);
-
+        // 开启ob
         ob_start();
+        // ob_implicit_flush()将打开或关闭绝对（隐式）刷送。绝对（隐式）刷送将导致在每次输出调用后有一次刷送操作，以便不再需要对 flush() 的显式调用。
         ob_implicit_flush(false);
-
+        // 开启ob 
         $this->beginPage();
+        // 预留头位置，以便替换
         $this->head();
+        // 预留body开始位置，并触发事件
         $this->beginBody();
+        // 又开启缓存，获取文件内容
         echo $this->renderFile($viewFile, $params, $context);
+        // 预留body结束位置，并触发事件
         $this->endBody();
+        // 替换预留位置，触发事件
         $this->endPage(true);
 
         return ob_get_clean();
@@ -270,6 +278,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 注册资源
      * Registers the named asset bundle.
      * All dependent asset bundles will be registered.
      * @param string $name the class name of the asset bundle (without the leading backslash)
@@ -283,6 +292,7 @@ class View extends \yii\base\View
     public function registerAssetBundle($name, $position = null)
     {
         if (!isset($this->assetBundles[$name])) {
+            // 获取资源管理对象
             $am = $this->getAssetManager();
             $bundle = $am->getBundle($name);
             $this->assetBundles[$name] = false;
@@ -419,6 +429,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 注册js代码块
      * Registers a JS code block.
      * @param string $js the JS code block to be registered
      * @param int $position the position at which the JS script tag should be inserted
@@ -438,14 +449,17 @@ class View extends \yii\base\View
      */
     public function registerJs($js, $position = self::POS_READY, $key = null)
     {
+        // 记录注册的js
         $key = $key ?: md5($js);
         $this->js[$position][$key] = $js;
+        // 如果是在jquery load 或者 ready 之后注册
         if ($position === self::POS_READY || $position === self::POS_LOAD) {
             JqueryAsset::register($this);
         }
     }
 
     /**
+     * 注册js文件
      * Registers a JS file.
      * @param string $url the JS file to be registered.
      * @param array $options the HTML attributes for the script tag. The following options are specially handled
@@ -468,13 +482,17 @@ class View extends \yii\base\View
     {
         $url = Yii::getAlias($url);
         $key = $key ?: $url;
-
+        // 获取options数组中的 depends数组
         $depends = ArrayHelper::remove($options, 'depends', []);
-
+        // 如果没有依赖 depends
         if (empty($depends)) {
+            // 获取position信息
             $position = ArrayHelper::remove($options, 'position', self::POS_END);
+            // 存入数组   引入js的标签
             $this->jsFiles[$position][$key] = Html::jsFile($url, $options);
+        // 如果有依赖
         } else {
+            // 
             $this->getAssetManager()->bundles[$key] = Yii::createObject([
                 'class' => AssetBundle::className(),
                 'baseUrl' => '',
@@ -487,6 +505,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 需要插入在头部的
      * Renders the content to be inserted in the head section.
      * The content is rendered using the registered meta tags, link tags, CSS/JS code blocks and files.
      * @return string the rendered content

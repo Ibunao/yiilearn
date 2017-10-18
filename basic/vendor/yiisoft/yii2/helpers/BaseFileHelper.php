@@ -36,6 +36,7 @@ class BaseFileHelper
 
 
     /**
+     * 规范化路径
      * Normalizes a file/directory path.
      * The normalization does the following work:
      *
@@ -70,6 +71,8 @@ class BaseFileHelper
     }
 
     /**
+     * 加载本地化的文件
+     * 根据语言设置加载不同的语言目录下的视图
      * Returns the localized version of a specified file.
      *
      * The searching is based on the specified language code. In particular,

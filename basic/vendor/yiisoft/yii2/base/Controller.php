@@ -399,6 +399,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 给视图加上layout外衣
      * Renders a static string by applying a layout.
      * @param string $content the static string being rendered
      * @return string the rendering result of the layout with the given static string as the `$content` variable.
@@ -409,12 +410,14 @@ class Controller extends Component implements ViewContextInterface
     {
         $layoutFile = $this->findLayoutFile($this->getView());
         if ($layoutFile !== false) {
+            // 渲染layout
             return $this->getView()->renderFile($layoutFile, ['content' => $content], $this);
         }
         return $content;
     }
 
     /**
+     * 不用layout
      * Renders a view without applying layout.
      * This method differs from [[render()]] in that it does not apply any layout.
      * @param string $view the view name. Please refer to [[render()]] on how to specify a view name.
@@ -428,6 +431,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 渲染一个文件。完整的路径
      * Renders a view file.
      * @param string $file the view file to be rendered. This can be either a file path or a [path alias](guide:concept-aliases).
      * @param array $params the parameters (name-value pairs) that should be made available in the view.
@@ -464,6 +468,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 获取去视图文件夹路径
      * Returns the directory containing view files for this controller.
      * The default implementation returns the directory named as controller [[id]] under the [[module]]'s
      * [[viewPath]] directory.
@@ -489,6 +494,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 找layout文件
      * Finds the applicable layout file.
      * @param View $view the view object to render the layout file.
      * @return string|bool the layout file path, or false if layout is not needed.
@@ -512,11 +518,13 @@ class Controller extends Component implements ViewContextInterface
         if (!isset($layout)) {
             return false;
         }
-
+        // 别名
         if (strncmp($layout, '@', 1) === 0) {
             $file = Yii::getAlias($layout);
+        // 跟路径
         } elseif (strncmp($layout, '/', 1) === 0) {
             $file = Yii::$app->getLayoutPath() . DIRECTORY_SEPARATOR . substr($layout, 1);
+        // 当前模块下的layout路径
         } else {
             $file = $module->getLayoutPath() . DIRECTORY_SEPARATOR . $layout;
         }
@@ -524,6 +532,7 @@ class Controller extends Component implements ViewContextInterface
         if (pathinfo($file, PATHINFO_EXTENSION) !== '') {
             return $file;
         }
+        // 以php结尾
         $path = $file . '.' . $view->defaultExtension;
         if ($view->defaultExtension !== 'php' && !is_file($path)) {
             $path = $file . '.php';

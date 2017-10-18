@@ -166,30 +166,37 @@ class View extends Component
      */
     protected function findViewFile($view, $context = null)
     {
+        // 如果是别名
         if (strncmp($view, '@', 1) === 0) {
             // e.g. "@app/views/main"
             $file = Yii::getAlias($view);
+        // 如果是以 // 开头 表示跟目录中的视图文件
         } elseif (strncmp($view, '//', 2) === 0) {
             // e.g. "//layouts/main"
             $file = Yii::$app->getViewPath() . DIRECTORY_SEPARATOR . ltrim($view, '/');
+        // 如果是 / 开头，正常的
         } elseif (strncmp($view, '/', 1) === 0) {
             // e.g. "/site/index"
             if (Yii::$app->controller !== null) {
+                // 获取模块下的视图文件目录
                 $file = Yii::$app->controller->module->getViewPath() . DIRECTORY_SEPARATOR . ltrim($view, '/');
             } else {
                 throw new InvalidCallException("Unable to locate view file for view '$view': no active controller.");
             }
+        // $context控制器对象
         } elseif ($context instanceof ViewContextInterface) {
             $file = $context->getViewPath() . DIRECTORY_SEPARATOR . $view;
+        //??? 没用过 获取保存的view路径
         } elseif (($currentViewFile = $this->getViewFile()) !== false) {
             $file = dirname($currentViewFile) . DIRECTORY_SEPARATOR . $view;
         } else {
             throw new InvalidCallException("Unable to resolve view file for view '$view': no active view context.");
         }
-
+        // 判断是否有文件后缀
         if (pathinfo($file, PATHINFO_EXTENSION) !== '') {
             return $file;
         }
+        // 添加默认后缀名
         $path = $file . '.' . $this->defaultExtension;
         if ($this->defaultExtension !== 'php' && !is_file($path)) {
             $path = $file . '.php';
@@ -199,6 +206,7 @@ class View extends Component
     }
 
     /**
+     * 渲染视图文件
      * Renders a view file.
      *
      * If [[theme]] is enabled (not null), it will try to render the themed version of the view file as long
@@ -219,11 +227,13 @@ class View extends Component
      */
     public function renderFile($viewFile, $params = [], $context = null)
     {
+        // 获取别名
         $viewFile = Yii::getAlias($viewFile);
-
+        // 如果有主题(视图文件放在主题目录中)，返回主题目录中对应的文件
         if ($this->theme !== null) {
             $viewFile = $this->theme->applyTo($viewFile);
         }
+        // 本地化，如果设置了不同语言的视图，可以根据设置的语言来加载不同语言的视图文件
         if (is_file($viewFile)) {
             $viewFile = FileHelper::localize($viewFile);
         } else {
@@ -239,20 +249,24 @@ class View extends Component
 
         if ($this->beforeRender($viewFile, $params)) {
             Yii::trace("Rendering view file: $viewFile", __METHOD__);
+            // 获取后缀
             $ext = pathinfo($viewFile, PATHINFO_EXTENSION);
+            // 是否存在后缀对应的模板渲染引擎，如果存在则使用模板引擎进行渲染
             if (isset($this->renderers[$ext])) {
                 if (is_array($this->renderers[$ext]) || is_string($this->renderers[$ext])) {
                     $this->renderers[$ext] = Yii::createObject($this->renderers[$ext]);
                 }
                 /* @var $renderer ViewRenderer */
                 $renderer = $this->renderers[$ext];
+                // 模板引擎渲染
                 $output = $renderer->render($this, $viewFile, $params);
             } else {
+                // php原生渲染
                 $output = $this->renderPhpFile($viewFile, $params);
             }
             $this->afterRender($viewFile, $params, $output);
         }
-
+        // 弹出最后一个
         array_pop($this->_viewFiles);
         $this->context = $oldContext;
 
@@ -264,10 +278,12 @@ class View extends Component
      */
     public function getViewFile()
     {
+        // 将数组的内部指针指向最后一个单元 
         return end($this->_viewFiles);
     }
 
     /**
+     * 渲染之前
      * This method is invoked right before [[renderFile()]] renders a view file.
      * The default implementation will trigger the [[EVENT_BEFORE_RENDER]] event.
      * If you override this method, make sure you call the parent implementation first.
@@ -309,6 +325,7 @@ class View extends Component
     }
 
     /**
+     * 渲染视图文件中的php
      * Renders a view file as a PHP script.
      *
      * This method treats the view file as a PHP script and includes the file.
@@ -324,11 +341,16 @@ class View extends Component
     public function renderPhpFile($_file_, $_params_ = [])
     {
         $_obInitialLevel_ = ob_get_level();
+        // 开启ob
         ob_start();
         ob_implicit_flush(false);
+
+        //从数组中将变量导入到当前的符号表   去重
         extract($_params_, EXTR_OVERWRITE);
         try {
+            // 加载文件
             require($_file_);
+            // 获取ob缓存
             return ob_get_clean();
         } catch (\Exception $e) {
             while (ob_get_level() > $_obInitialLevel_) {
@@ -494,13 +516,15 @@ class View extends Component
     }
 
     /**
+     * 开始
      * Marks the beginning of a page.
      */
     public function beginPage()
     {
+        // 开启ob
         ob_start();
         ob_implicit_flush(false);
-
+        // 触发事件
         $this->trigger(self::EVENT_BEGIN_PAGE);
     }
 
@@ -510,6 +534,7 @@ class View extends Component
     public function endPage()
     {
         $this->trigger(self::EVENT_END_PAGE);
+        // 刷新
         ob_end_flush();
     }
 }

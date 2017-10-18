@@ -158,6 +158,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 定义场景
      * Returns a list of scenarios and the corresponding active attributes.
      * An active attribute is one that is subject to validation in the current scenario.
      * The returned array should be in the following format:
@@ -183,7 +184,9 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
      */
     public function scenarios()
     {
+        // 默认场景
         $scenarios = [self::SCENARIO_DEFAULT => []];
+        // 
         foreach ($this->getValidators() as $validator) {
             foreach ($validator->on as $scenario) {
                 $scenarios[$scenario] = [];
@@ -228,6 +231,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 获取类名
      * Returns the form name that this model class should use.
      *
      * The form name is mainly used by [[\yii\widgets\ActiveForm]] to determine how to name
@@ -248,10 +252,12 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     public function formName()
     {
         $reflector = new ReflectionClass($this);
+        // 获取类的短名，就是不含命名空间（namespace）的那一部分。
         return $reflector->getShortName();
     }
 
     /**
+     * 返回模型的public属性
      * Returns the list of attribute names.
      * By default, this method returns all public non-static properties of the class.
      * You may override this method to change the default behavior.
@@ -271,6 +277,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 属性标签
      * Returns the attribute labels.
      *
      * Attribute labels are mainly used for display purpose. For example, given an attribute
@@ -312,6 +319,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 验证
      * Performs the data validation.
      *
      * This method executes the validation rules applicable to the current [[scenario]].
@@ -390,6 +398,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 所有的验证器
      * Returns all the validators declared in [[rules()]].
      *
      * This method differs from [[getActiveValidators()]] in that the latter
@@ -432,6 +441,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 创建验证器
      * Creates validator objects based on the validation rules specified in [[rules()]].
      * Unlike [[getValidators()]], each time this method is called, a new list of validators will be returned.
      * @return ArrayObject validators
@@ -526,6 +536,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * // 判断验证后是否有错误
      * Returns a value indicating whether there is any validation error.
      * @param string|null $attribute attribute name. Use null to check all attributes.
      * @return bool whether there is any error.
@@ -536,6 +547,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 获取验证的错误信息
      * Returns the errors for all attributes or a single attribute.
      * @param string $attribute attribute name. Use null to retrieve errors for all attributes.
      * @property array An array of errors for all attributes. Empty array is returned if no error.
@@ -567,6 +579,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 返回第一个验证错误的信息
      * Returns the first error of every attribute in the model.
      * @return array the first errors. The array keys are the attribute names, and the array
      * values are the corresponding error messages. An empty array will be returned if there is no error.
@@ -658,6 +671,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 
      * Returns attribute values.
      * @param array $names list of attributes whose value needs to be returned.
      * Defaults to null, meaning all attributes listed in [[attributes()]] will be returned.
@@ -682,6 +696,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 将数据赋值到模型
      * Sets the attribute values in a massive way.
      * @param array $values attribute values (name => value) to be assigned to the model.
      * @param bool $safeOnly whether the assignments should only be done to the safe attributes.
@@ -692,6 +707,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     public function setAttributes($values, $safeOnly = true)
     {
         if (is_array($values)) {
+            // 交换数组中的键和值
             $attributes = array_flip($safeOnly ? $this->safeAttributes() : $this->attributes());
             foreach ($values as $name => $value) {
                 if (isset($attributes[$name])) {
@@ -718,6 +734,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 获取当前场景
      * Returns the scenario that this model is used in.
      *
      * Scenario affects how validation is performed and which attributes can
@@ -731,6 +748,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 设置当前场景
      * Sets the scenario for the model.
      * Note that this method does not check if the scenario exists or not.
      * The method [[validate()]] will perform this check.
@@ -742,6 +760,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 返回场景定义的属性
      * Returns the attribute names that are safe to be massively assigned in the current scenario.
      * @return string[] safe attribute names
      */
@@ -784,6 +803,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
+     * 将数据填充到模型
      * Populates the model with input data.
      *
      * This method provides a convenient shortcut for:
@@ -823,6 +843,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
             $this->setAttributes($data);
 
             return true;
+        // 获取提交的类名下的数据
         } elseif (isset($data[$scope])) {
             $this->setAttributes($data[$scope]);
 

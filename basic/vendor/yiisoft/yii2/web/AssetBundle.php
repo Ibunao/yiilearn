@@ -116,12 +116,14 @@ class AssetBundle extends Object
 
 
     /**
+     * 注册 assetbundle到视图view
      * Registers this asset bundle with a view.
      * @param View $view the view to be registered with
      * @return static the registered asset bundle instance
      */
     public static function register($view)
     {
+        // 后期静态绑定（"Late Static Binding"）类的名称
         return $view->registerAssetBundle(get_called_class());
     }
 

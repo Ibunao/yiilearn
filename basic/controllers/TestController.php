@@ -32,10 +32,12 @@ class TestController extends Controller
 		// var_dump(Yii::$app->request->getCookies());exit;
 		// var_dump($_COOKIE);exit;
 
-		return $this->run('site/index');
+		// return $this->run('site/index');
 
 		// 容器
 		// Yii::$container->get('app\controllers\SiteController');
+
+		return $this->renderAjax('test');
 	}
 
 }

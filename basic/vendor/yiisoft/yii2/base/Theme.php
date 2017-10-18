@@ -124,6 +124,7 @@ class Theme extends Component
     }
 
     /**
+     * 转化成主题文件
      * Converts a file to a themed file if possible.
      * If there is no corresponding themed file, the original file will be returned.
      * @param string $path the file to be themed
@@ -132,6 +133,7 @@ class Theme extends Component
      */
     public function applyTo($path)
     {
+        // 配置的主题目录映射
         $pathMap = $this->pathMap;
         if (empty($pathMap)) {
             if (($basePath = $this->getBasePath()) === null) {
@@ -139,15 +141,18 @@ class Theme extends Component
             }
             $pathMap = [Yii::$app->getBasePath() => [$basePath]];
         }
-
+        // 规范文件路径
         $path = FileHelper::normalizePath($path);
 
         foreach ($pathMap as $from => $tos) {
+            // 规范化路径
             $from = FileHelper::normalizePath(Yii::getAlias($from)) . DIRECTORY_SEPARATOR;
+            // 如果路径包含了主题路径
             if (strpos($path, $from) === 0) {
                 $n = strlen($from);
                 foreach ((array) $tos as $to) {
                     $to = FileHelper::normalizePath(Yii::getAlias($to)) . DIRECTORY_SEPARATOR;
+                    // 获取主题下的文件
                     $file = $to . substr($path, $n);
                     if (is_file($file)) {
                         return $file;

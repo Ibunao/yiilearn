@@ -30,6 +30,7 @@ class BaseHtml
      */
     public static $attributeRegex = '/(^|.*\])([\w\.\+]+)(\[.*|$)/u';
     /**
+     * 单标签
      * @var array list of void elements (element name => 1)
      * @see http://www.w3.org/TR/html-markup/syntax.html#void-element
      */
@@ -125,6 +126,7 @@ class BaseHtml
     }
 
     /**
+     * 创建html标签
      * Generates a complete HTML tag.
      * @param string|bool|null $name the tag name. If $name is `null` or `false`, the corresponding content will be rendered without any tag.
      * @param string $content the content to be enclosed between the start and end tags. It will not be HTML-encoded.
@@ -147,6 +149,7 @@ class BaseHtml
         if ($name === null || $name === false) {
             return $content;
         }
+        // 创建开始标签
         $html = "<$name" . static::renderTagAttributes($options) . '>';
         return isset(static::$voidElements[strtolower($name)]) ? $html : "$html$content</$name>";
     }
@@ -249,6 +252,7 @@ class BaseHtml
     }
 
     /**
+     * 创建进入js的标签
      * Generates a script tag that refers to an external JavaScript file.
      * @param string $url the URL of the external JavaScript file. This parameter will be processed by [[Url::to()]].
      * @param array $options the tag options in terms of name-value pairs. The following option is specially handled:
@@ -265,10 +269,14 @@ class BaseHtml
      */
     public static function jsFile($url, $options = [])
     {
+        // url
         $options['src'] = Url::to($url);
+        // 创建标签
+        // 如果设置浏览器条件
         if (isset($options['condition'])) {
             $condition = $options['condition'];
             unset($options['condition']);
+            // 添加浏览器条件
             return self::wrapIntoCondition(static::tag('script', '', $options), $condition);
         } else {
             return static::tag('script', '', $options);
@@ -1799,6 +1807,7 @@ class BaseHtml
     }
 
     /**
+     * 根据数组渲染html标签的属性
      * Renders the HTML tag attributes.
      *
      * Attributes whose values are of boolean type will be treated as

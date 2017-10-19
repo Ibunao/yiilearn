@@ -1009,6 +1009,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 准备发送
      * Prepares for sending the response.
      * The default implementation will convert [[data]] into [[content]] and set headers accordingly.
      * @throws InvalidConfigException if the formatter for the specified format is invalid or [[format]] is not supported

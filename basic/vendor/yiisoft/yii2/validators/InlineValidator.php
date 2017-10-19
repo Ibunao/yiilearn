@@ -26,6 +26,7 @@ namespace yii\validators;
 class InlineValidator extends Validator
 {
     /**
+     * 匿名方法或模型中的方法
      * @var string|\Closure an anonymous function or the name of a model class method that will be
      * called to perform the actual validation. The signature of the method should be like the following:
      *
@@ -61,6 +62,7 @@ class InlineValidator extends Validator
 
 
     /**
+     * 使用自定义的验证方法验证
      * @inheritdoc
      */
     public function validateAttribute($model, $attribute)

@@ -449,10 +449,14 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
      */
     public function createValidators()
     {
+        // 数组对象
         $validators = new ArrayObject;
         foreach ($this->rules() as $rule) {
+            // ??? 没遇到过
             if ($rule instanceof Validator) {
+                // 添加到数组对象
                 $validators->append($rule);
+            // 正常的数组模式
             } elseif (is_array($rule) && isset($rule[0], $rule[1])) { // attributes, validator type
                 $validator = Validator::createValidator($rule[1], $this, (array) $rule[0], array_slice($rule, 2));
                 $validators->append($validator);

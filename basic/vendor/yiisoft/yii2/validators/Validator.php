@@ -192,6 +192,7 @@ class Validator extends Component
 
 
     /**
+     * 
      * Creates a validator object.
      * @param string|\Closure $type the validator type. This can be either:
      *  * a built-in validator name listed in [[builtInValidators]];
@@ -204,15 +205,24 @@ class Validator extends Component
      * @param array $params initial values to be applied to the validator properties.
      * @return Validator the validator
      */
+    /**
+     * 创建验证器
+     * @param  [type] $type       验证器类型／方法
+     * @param  [type] $model      model
+     * @param  [type] $attributes 验证的属性
+     * @param  array  $params     其它参数，除了rules数组中数组的前两项。比如设置的场景
+     * @return [type]             [description]
+     */
     public static function createValidator($type, $model, $attributes, $params = [])
     {
         $params['attributes'] = $attributes;
-
+        // 如果是你命函数 或者 模型中定义了验证方法
         if ($type instanceof \Closure || $model->hasMethod($type)) {
             // method-based validator
             $params['class'] = __NAMESPACE__ . '\InlineValidator';
             $params['method'] = $type;
         } else {
+            // 
             if (isset(static::$builtInValidators[$type])) {
                 $type = static::$builtInValidators[$type];
             }

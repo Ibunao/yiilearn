@@ -203,6 +203,7 @@ class BaseHtml
     }
 
     /**
+     * 生成script标签
      * Generates a script tag.
      * @param string $content the script content
      * @param array $options the tag options in terms of name-value pairs. These will be rendered as

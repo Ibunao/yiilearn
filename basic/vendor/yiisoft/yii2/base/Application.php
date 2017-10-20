@@ -655,6 +655,7 @@ abstract class Application extends Module
     }
 
     /**
+     * 资源管理类
      * Returns the asset manager.
      * @return \yii\web\AssetManager the asset manager application component.
      */

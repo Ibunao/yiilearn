@@ -134,6 +134,7 @@ class View extends \yii\base\View
 
 
     /**
+     * 输出占位符
      * Marks the position of an HTML head section.
      */
     public function head()
@@ -142,6 +143,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 输出占位符 触发事件
      * Marks the beginning of an HTML body section.
      */
     public function beginBody()
@@ -151,6 +153,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 触发事件 输出占位符 注册资源
      * Marks the ending of an HTML body section.
      */
     public function endBody()
@@ -164,6 +167,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 获取渲染的html，并用注册的资源替换占位符
      * Marks the ending of an HTML page.
      * @param bool $ajaxMode whether the view is rendering in AJAX mode.
      * If true, the JS scripts registered at [[POS_READY]] and [[POS_LOAD]] positions
@@ -187,6 +191,7 @@ class View extends \yii\base\View
 
     /**
      * 渲染ajax请求的视图   不使用layout也可以注册进去js/css等
+     * 可能是在iframe中使用的吧，只刷新一部分网页
      * Renders a view in response to an AJAX request.
      *
      * This method is similar to [[render()]] except that it will surround the view being rendered
@@ -244,6 +249,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 清空
      * Clears up the registered meta tags, link tags, css/js scripts and files.
      */
     public function clear()
@@ -513,22 +519,27 @@ class View extends \yii\base\View
     protected function renderHeadHtml()
     {
         $lines = [];
+        // 注册的meta标签
         if (!empty($this->metaTags)) {
             $lines[] = implode("\n", $this->metaTags);
         }
-
+        // link标签
         if (!empty($this->linkTags)) {
             $lines[] = implode("\n", $this->linkTags);
         }
+        // css文件
         if (!empty($this->cssFiles)) {
             $lines[] = implode("\n", $this->cssFiles);
         }
+        // css代码段
         if (!empty($this->css)) {
             $lines[] = implode("\n", $this->css);
         }
+        // js文件
         if (!empty($this->jsFiles[self::POS_HEAD])) {
             $lines[] = implode("\n", $this->jsFiles[self::POS_HEAD]);
         }
+        // js 代码段
         if (!empty($this->js[self::POS_HEAD])) {
             $lines[] = Html::script(implode("\n", $this->js[self::POS_HEAD]), ['type' => 'text/javascript']);
         }
@@ -537,6 +548,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 注册在body开始处的js/jsfile
      * Renders the content to be inserted at the beginning of the body section.
      * The content is rendered using the registered JS code blocks and files.
      * @return string the rendered content
@@ -555,9 +567,10 @@ class View extends \yii\base\View
     }
 
     /**
+     * 注册在body结束处的js
      * Renders the content to be inserted at the end of the body section.
      * The content is rendered using the registered JS code blocks and files.
-     * @param bool $ajaxMode whether the view is rendering in AJAX mode.
+     * @param bool $ajaxMode whether the view is rendering in AJAX mode.  
      * If true, the JS scripts registered at [[POS_READY]] and [[POS_LOAD]] positions
      * will be rendered at the end of the view like normal scripts.
      * @return string the rendered content
@@ -584,6 +597,7 @@ class View extends \yii\base\View
             if (!empty($scripts)) {
                 $lines[] = Html::script(implode("\n", $scripts), ['type' => 'text/javascript']);
             }
+        // 渲染在ready 和load中
         } else {
             if (!empty($this->js[self::POS_END])) {
                 $lines[] = Html::script(implode("\n", $this->js[self::POS_END]), ['type' => 'text/javascript']);

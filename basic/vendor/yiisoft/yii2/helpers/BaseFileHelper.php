@@ -36,7 +36,8 @@ class BaseFileHelper
 
 
     /**
-     * 规范化路径
+     * 规范化路径 
+     * 看示例
      * Normalizes a file/directory path.
      * The normalization does the following work:
      *

@@ -133,12 +133,13 @@ class Theme extends Component
      */
     public function applyTo($path)
     {
-        // 配置的主题目录映射
+        // 配置的主题目录映射  将 a/b 映射成 c/e
         $pathMap = $this->pathMap;
         if (empty($pathMap)) {
             if (($basePath = $this->getBasePath()) === null) {
                 throw new InvalidConfigException('The "basePath" property must be set.');
             }
+            // 默认为 当前模块的目录 => 配置的主题目录
             $pathMap = [Yii::$app->getBasePath() => [$basePath]];
         }
         // 规范文件路径
@@ -165,6 +166,7 @@ class Theme extends Component
     }
 
     /**
+     * 获取主题资源路径  如 /theme/ding/ran/  相对于web文件夹
      * Converts a relative URL into an absolute URL using [[baseUrl]].
      * @param string $url the relative URL to be converted.
      * @return string the absolute URL
@@ -180,6 +182,7 @@ class Theme extends Component
     }
 
     /**
+     * 获取绝对路径
      * Converts a relative file path into an absolute one using [[basePath]].
      * @param string $path the relative file path to be converted.
      * @return string the absolute file path

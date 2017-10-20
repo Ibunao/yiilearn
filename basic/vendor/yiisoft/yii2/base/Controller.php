@@ -87,6 +87,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 独立动作
      * Declares external actions for the controller.
      * This method is meant to be overwritten to declare external actions for the controller.
      * It should return an array, with array keys being action IDs, and array values the corresponding
@@ -112,7 +113,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
-     * 执行 action
+     * 执行 action 执行本控制器的action
      * Runs an action within this controller with the specified action ID and parameters.
      * If the action ID is empty, the method will use [[defaultAction]].
      * @param string $id the ID of the action to be executed.
@@ -178,7 +179,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
-     * 运行控制器的action
+     * 运行路由指向的action
      * Runs a request specified in terms of a route.
      * The route can be either an ID of an action within this controller or a complete route consisting
      * of module IDs, controller ID and action ID. If the route starts with a slash '/', the parsing of
@@ -191,11 +192,14 @@ class Controller extends Component implements ViewContextInterface
     public function run($route, $params = [])
     {
         $pos = strpos($route, '/');
+        // route 不包含 / 执行本控制器的action
         if ($pos === false) {
             return $this->runAction($route, $params);
+        // route 为 controller/action 的形式，执行本module下的控制器方法
         } elseif ($pos > 0) {
             return $this->module->runAction($route, $params);
         }
+        // route 以 / 开头 和路由一样了
         return Yii::$app->runAction(ltrim($route, '/'), $params);
     }
 
@@ -354,6 +358,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 渲染视图
      * Renders a view and applies layout if available.
      *
      * The view to be rendered can be specified in one of the following formats:
@@ -432,6 +437,7 @@ class Controller extends Component implements ViewContextInterface
 
     /**
      * 渲染一个文件。完整的路径
+     * 和renderPartial的区别就是文件路径，不会再找控制器啊之类的 ，$file 必须是一个文件路径，可以使用别名，要加文件后缀
      * Renders a view file.
      * @param string $file the view file to be rendered. This can be either a file path or a [path alias](guide:concept-aliases).
      * @param array $params the parameters (name-value pairs) that should be made available in the view.
@@ -444,6 +450,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * 获取view对象
      * Returns the view object that can be used to render views or view files.
      * The [[render()]], [[renderPartial()]] and [[renderFile()]] methods will use
      * this view object to implement the actual view rendering.

@@ -59,10 +59,12 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     use ArrayableTrait;
 
     /**
+     * 默认场景值
      * The name of the default scenario.
      */
     const SCENARIO_DEFAULT = 'default';
     /**
+     * 
      * @event ModelEvent an event raised at the beginning of [[validate()]]. You may set
      * [[ModelEvent::isValid]] to be false to stop the validation.
      */
@@ -186,11 +188,13 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     {
         // 默认场景
         $scenarios = [self::SCENARIO_DEFAULT => []];
-        // 
+        // 遍历rules定义的所有的验证器
         foreach ($this->getValidators() as $validator) {
+            // rules数组中定义的场景on=>scenario
             foreach ($validator->on as $scenario) {
                 $scenarios[$scenario] = [];
             }
+            // 
             foreach ($validator->except as $scenario) {
                 $scenarios[$scenario] = [];
             }
@@ -441,7 +445,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     }
 
     /**
-     * 创建验证器
+     * 创建rules中定义的所有验证器
      * Creates validator objects based on the validation rules specified in [[rules()]].
      * Unlike [[getValidators()]], each time this method is called, a new list of validators will be returned.
      * @return ArrayObject validators

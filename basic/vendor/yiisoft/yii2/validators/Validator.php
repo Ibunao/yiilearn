@@ -99,11 +99,13 @@ class Validator extends Component
         'ip' => 'yii\validators\IpValidator',
     ];
     /**
+     * 此验证器需要验证的属性
      * @var array|string attributes to be validated by this validator. For multiple attributes,
      * please specify them as an array; for single attribute, you may use either a string or an array.
      */
     public $attributes = [];
     /**
+     * rules中定义的message
      * @var string the user-defined error message. It may contain the following placeholders which
      * will be replaced accordingly by the validator:
      *
@@ -117,11 +119,13 @@ class Validator extends Component
      */
     public $message;
     /**
+     * rules中定义的场景 on
      * @var array|string scenarios that the validator can be applied to. For multiple scenarios,
      * please specify them as an array; for single scenario, you may use either a string or an array.
      */
     public $on = [];
     /**
+     * ???验证器不应该应用于此的场景。对于多个场景,
      * @var array|string scenarios that the validator should not be applied to. For multiple scenarios,
      * please specify them as an array; for single scenario, you may use either a string or an array.
      */
@@ -210,7 +214,7 @@ class Validator extends Component
      * @param  [type] $type       验证器类型／方法
      * @param  [type] $model      model
      * @param  [type] $attributes 验证的属性
-     * @param  array  $params     其它参数，除了rules数组中数组的前两项。比如设置的场景
+     * @param  array  $params     其它参数，除了rules数组中数组的前两项。比如设置的场景，字符串的max，min
      * @return [type]             [description]
      */
     public static function createValidator($type, $model, $attributes, $params = [])
@@ -219,15 +223,18 @@ class Validator extends Component
         // 如果是你命函数 或者 模型中定义了验证方法
         if ($type instanceof \Closure || $model->hasMethod($type)) {
             // method-based validator
+            // 默认的验证器
             $params['class'] = __NAMESPACE__ . '\InlineValidator';
             $params['method'] = $type;
         } else {
-            // 
+            // 自带的验证器
             if (isset(static::$builtInValidators[$type])) {
                 $type = static::$builtInValidators[$type];
             }
+            // 自定义的验证器，需要有类名
             if (is_array($type)) {
                 $params = array_merge($type, $params);
+            // 自带的验证器
             } else {
                 $params['class'] = $type;
             }

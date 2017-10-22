@@ -90,6 +90,7 @@ class View extends \yii\base\View
     const PH_BODY_END = '<![CDATA[YII-BLOCK-BODY-END]]>';
 
     /**
+     * 
      * @var AssetBundle[] list of the registered asset bundles. The keys are the bundle names, and the values
      * are the registered [[AssetBundle]] objects.
      * @see registerAssetBundle()
@@ -264,6 +265,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 注册
      * Registers all files provided by an asset bundle including depending bundles files.
      * Removes a bundle from [[assetBundles]] once files are registered.
      * @param string $name name of the bundle to register
@@ -284,7 +286,7 @@ class View extends \yii\base\View
     }
 
     /**
-     * 注册资源
+     * 注册资源对象到 assetBundles数组
      * Registers the named asset bundle.
      * All dependent asset bundles will be registered.
      * @param string $name the class name of the asset bundle (without the leading backslash)
@@ -297,27 +299,36 @@ class View extends \yii\base\View
      */
     public function registerAssetBundle($name, $position = null)
     {
+        // 如果还没有注册到
         if (!isset($this->assetBundles[$name])) {
             // 获取资源管理对象
             $am = $this->getAssetManager();
+            // 获取资源对象
             $bundle = $am->getBundle($name);
             $this->assetBundles[$name] = false;
             // register dependencies
+            // 注册依赖
+            // 获取js注册位置
             $pos = isset($bundle->jsOptions['position']) ? $bundle->jsOptions['position'] : null;
+            
             foreach ($bundle->depends as $dep) {
+                // 递归
                 $this->registerAssetBundle($dep, $pos);
             }
+            // 将资源对象添加到 
             $this->assetBundles[$name] = $bundle;
+        // js 出现循环依赖
         } elseif ($this->assetBundles[$name] === false) {
             throw new InvalidConfigException("A circular dependency is detected for bundle '$name'.");
         } else {
             $bundle = $this->assetBundles[$name];
         }
-
+        // 如果设置了 $position 则更新bundle注册位置
         if ($position !== null) {
             $pos = isset($bundle->jsOptions['position']) ? $bundle->jsOptions['position'] : null;
             if ($pos === null) {
                 $bundle->jsOptions['position'] = $pos = $position;
+            // 如果原注册位置在现设置的位置后面则报错
             } elseif ($pos > $position) {
                 throw new InvalidConfigException("An asset bundle that depends on '$name' has a higher javascript file position configured than '$name'.");
             }
@@ -331,6 +342,8 @@ class View extends \yii\base\View
     }
 
     /**
+     * 注册meta标签
+     * 
      * Registers a meta tag.
      *
      * For example, a description meta tag can be added like the following:
@@ -402,6 +415,7 @@ class View extends \yii\base\View
     }
 
     /**
+     * 注册css文件
      * Registers a CSS file.
      * @param string $url the CSS file to be registered.
      * @param array $options the HTML attributes for the link tag. Please refer to [[Html::cssFile()]] for
@@ -459,6 +473,7 @@ class View extends \yii\base\View
         $key = $key ?: md5($js);
         $this->js[$position][$key] = $js;
         // 如果是在jquery load 或者 ready 之后注册
+        // 将jqueryAsset 注册到 registerAssetBundle数组中
         if ($position === self::POS_READY || $position === self::POS_LOAD) {
             JqueryAsset::register($this);
         }
@@ -498,7 +513,7 @@ class View extends \yii\base\View
             $this->jsFiles[$position][$key] = Html::jsFile($url, $options);
         // 如果有依赖
         } else {
-            // 
+            // 创建资源管理对象
             $this->getAssetManager()->bundles[$key] = Yii::createObject([
                 'class' => AssetBundle::className(),
                 'baseUrl' => '',
@@ -506,12 +521,13 @@ class View extends \yii\base\View
                 'jsOptions' => $options,
                 'depends' => (array)$depends,
             ]);
+            // 注册资源管理对象
             $this->registerAssetBundle($key);
         }
     }
 
     /**
-     * 需要插入在头部的
+     * 需要注册(插入)在头部的
      * Renders the content to be inserted in the head section.
      * The content is rendered using the registered meta tags, link tags, CSS/JS code blocks and files.
      * @return string the rendered content

@@ -145,12 +145,15 @@ class AssetBundle extends Object
     }
 
     /**
+     * 注册js\css到view对象
+     * 
      * Registers the CSS and JS files with the given view.
      * @param \yii\web\View $view the view that the asset files are to be registered with.
      */
     public function registerAssetFiles($view)
     {
         $manager = $view->getAssetManager();
+        // 注册js文件
         foreach ($this->js as $js) {
             if (is_array($js)) {
                 $file = array_shift($js);
@@ -162,6 +165,7 @@ class AssetBundle extends Object
                 }
             }
         }
+        // 注册 css 文件
         foreach ($this->css as $css) {
             if (is_array($css)) {
                 $file = array_shift($css);

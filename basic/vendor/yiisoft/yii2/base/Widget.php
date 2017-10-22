@@ -73,6 +73,7 @@ class Widget extends Component implements ViewContextInterface
     }
 
     /**
+     * 开始小部件
      * Begins a widget.
      * This method creates an instance of the calling class. It will apply the configuration
      * to the created instance. A matching [[end()]] call should be called later.
@@ -84,9 +85,12 @@ class Widget extends Component implements ViewContextInterface
      */
     public static function begin($config = [])
     {
+        // 获取小部件的class
         $config['class'] = get_called_class();
         /* @var $widget Widget */
+        // 创建小部件
         $widget = Yii::createObject($config);
+        // 添加到
         static::$stack[] = $widget;
 
         return $widget;
@@ -120,6 +124,7 @@ class Widget extends Component implements ViewContextInterface
     }
 
     /**
+     * 创建一个小部件实例并执行run方法
      * Creates a widget instance and runs it.
      * The widget rendering result is returned by this method.
      * @param array $config name-value pairs that will be used to initialize the object properties

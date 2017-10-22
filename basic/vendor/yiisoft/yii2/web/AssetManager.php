@@ -220,6 +220,7 @@ class AssetManager extends Component
     }
 
     /**
+     * 获取资源对象
      * Returns the named asset bundle.
      *
      * This method will first look for the bundle in [[bundles]]. If not found,
@@ -249,6 +250,7 @@ class AssetManager extends Component
     }
 
     /**
+     * 根据类名获取资源对象
      * Loads asset bundle class by name
      *
      * @param string $name bundle name

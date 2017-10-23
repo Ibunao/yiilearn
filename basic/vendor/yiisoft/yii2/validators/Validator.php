@@ -155,6 +155,7 @@ class Validator extends Component
      */
     public $isEmpty;
     /**
+     * 
      * @var callable a PHP callable whose return value determines whether this validator should be applied.
      * The signature of the callable should be `function ($model, $attribute)`, where `$model` and `$attribute`
      * refer to the model and the attribute currently being validated. The callable should return a boolean value.
@@ -255,6 +256,7 @@ class Validator extends Component
     }
 
     /**
+     * 验证
      * Validates the specified object.
      * @param \yii\base\Model $model the data model being validated
      * @param array|null $attributes the list of attributes to be validated.
@@ -263,6 +265,7 @@ class Validator extends Component
      */
     public function validateAttributes($model, $attributes = null)
     {
+        // 获取需要验证的字段
         if (is_array($attributes)) {
             $newAttributes = [];
             foreach ($attributes as $attribute) {
@@ -274,11 +277,13 @@ class Validator extends Component
         } else {
             $attributes = $this->getAttributeNames();
         }
-
+        // 
         foreach ($attributes as $attribute) {
+            // 是否跳过 
             $skip = $this->skipOnError && $model->hasErrors($attribute)
                 || $this->skipOnEmpty && $this->isEmpty($model->$attribute);
             if (!$skip) {
+                //??? when 到底是什么，没用过啊
                 if ($this->when === null || call_user_func($this->when, $model, $attribute)) {
                     $this->validateAttribute($model, $attribute);
                 }
@@ -287,6 +292,7 @@ class Validator extends Component
     }
 
     /**
+     * 验证字段
      * Validates a single attribute.
      * Child classes must implement this method to provide the actual validation logic.
      * @param \yii\base\Model $model the data model to be validated
@@ -294,7 +300,9 @@ class Validator extends Component
      */
     public function validateAttribute($model, $attribute)
     {
+        // 验证器的具体验证方法
         $result = $this->validateValue($model->$attribute);
+        // 添加验证的错误信息
         if (!empty($result)) {
             $this->addError($model, $attribute, $result[0], $result[1]);
         }
@@ -394,6 +402,7 @@ class Validator extends Component
     }
 
     /**
+     * 返回验证器在指定场景下是否有效
      * Returns a value indicating whether the validator is active for the given scenario and attribute.
      *
      * A validator is active if
@@ -410,6 +419,7 @@ class Validator extends Component
     }
 
     /**
+     * 给model添加错误信息
      * Adds an error about the specified attribute to the model object.
      * This is a helper method that performs message selection and internationalization.
      * @param \yii\base\Model $model the data model being validated
@@ -434,6 +444,7 @@ class Validator extends Component
     }
 
     /**
+     * 检查给的值是否为空
      * Checks if the given value is empty.
      * A value is considered empty if it is null, an empty array, or an empty string.
      * Note that this method is different from PHP empty(). It will return false when the value is 0.
@@ -441,7 +452,7 @@ class Validator extends Component
      * @return bool whether the value is empty
      */
     public function isEmpty($value)
-    {
+    {   // isEmpty属性不为空， 使用isEmpty定义的值作为方法对$value 进行处理
         if ($this->isEmpty !== null) {
             return call_user_func($this->isEmpty, $value);
         } else {
@@ -471,6 +482,7 @@ class Validator extends Component
     }
 
     /**
+     * 验证的字段(属性)
      * Returns cleaned attribute names without the `!` character at the beginning
      * @return array attribute names.
      * @since 2.0.12

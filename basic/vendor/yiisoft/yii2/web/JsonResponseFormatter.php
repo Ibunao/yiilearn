@@ -62,6 +62,7 @@ class JsonResponseFormatter extends Component implements ResponseFormatterInterf
 
 
     /**
+     * 
      * Formats the specified response.
      * @param Response $response the response to be formatted.
      */
@@ -75,11 +76,13 @@ class JsonResponseFormatter extends Component implements ResponseFormatterInterf
     }
 
     /**
+     * 格式化返回的数据格式
      * Formats response data in JSON format.
      * @param Response $response
      */
     protected function formatJson($response)
     {
+        // 设置响应头
         $response->getHeaders()->set('Content-Type', 'application/json; charset=UTF-8');
         if ($response->data !== null) {
             $options = $this->encodeOptions;

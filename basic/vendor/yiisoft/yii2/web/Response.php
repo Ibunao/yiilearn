@@ -159,6 +159,7 @@ class Response extends \yii\base\Response
      */
     public $isSent = false;
     /**
+     * 状态码
      * @var array list of HTTP status codes and the corresponding texts
      */
     public static $httpStatuses = [
@@ -260,6 +261,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 获取状态码
      * @return int the HTTP status code to send with the response.
      */
     public function getStatusCode()
@@ -268,6 +270,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 设置状态码
      * Sets the response status code.
      * This method will set the corresponding status text if `$text` is null.
      * @param int $value the status code
@@ -281,9 +284,11 @@ class Response extends \yii\base\Response
             $value = 200;
         }
         $this->_statusCode = (int) $value;
+        // 判断验证码是否符合
         if ($this->getIsInvalid()) {
             throw new InvalidParamException("The HTTP status code is invalid: $value");
         }
+        // 设置状态信息
         if ($text === null) {
             $this->statusText = isset(static::$httpStatuses[$this->_statusCode]) ? static::$httpStatuses[$this->_statusCode] : '';
         } else {
@@ -293,6 +298,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 设置异常的状态码
      * Sets the response status code based on the exception.
      * @param \Exception|\Error $e the exception object.
      * @throws InvalidParamException if the status code is invalid.
@@ -310,6 +316,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 请求头 采集器
      * Returns the header collection.
      * The header collection contains the currently registered HTTP headers.
      * @return HeaderCollection the header collection
@@ -323,6 +330,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 发送
      * Sends the response to the client.
      */
     public function send()
@@ -340,6 +348,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 清空
      * Clears the headers, cookies, content, status code of the response.
      */
     public function clear()
@@ -355,6 +364,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 发送头部
      * Sends the response headers to the client
      */
     protected function sendHeaders()
@@ -913,6 +923,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 判断验证码是否合理
      * @return bool whether this response has a valid [[statusCode]].
      */
     public function getIsInvalid()
@@ -993,6 +1004,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 格式化的类
      * @return array the formatters that are supported by default
      */
     protected function defaultFormatters()
@@ -1016,20 +1028,23 @@ class Response extends \yii\base\Response
      */
     protected function prepare()
     {
+        // 
         if ($this->stream !== null) {
             return;
         }
-
+        // 格式化处理器
         if (isset($this->formatters[$this->format])) {
             $formatter = $this->formatters[$this->format];
             if (!is_object($formatter)) {
                 $this->formatters[$this->format] = $formatter = Yii::createObject($formatter);
             }
             if ($formatter instanceof ResponseFormatterInterface) {
+                // 格式化
                 $formatter->format($this);
             } else {
                 throw new InvalidConfigException("The '{$this->format}' response formatter is invalid. It must implement the ResponseFormatterInterface.");
             }
+        // raw格式
         } elseif ($this->format === self::FORMAT_RAW) {
             if ($this->data !== null) {
                 $this->content = $this->data;

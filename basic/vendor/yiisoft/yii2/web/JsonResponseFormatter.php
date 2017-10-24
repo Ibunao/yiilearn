@@ -62,21 +62,23 @@ class JsonResponseFormatter extends Component implements ResponseFormatterInterf
 
 
     /**
-     * 
+     * 格式化Response的数据
      * Formats the specified response.
      * @param Response $response the response to be formatted.
      */
     public function format($response)
     {
+        // jsonp
         if ($this->useJsonp) {
             $this->formatJsonp($response);
+        // json
         } else {
             $this->formatJson($response);
         }
     }
 
     /**
-     * 格式化返回的数据格式
+     * 格式化返回的数据格式为json
      * Formats response data in JSON format.
      * @param Response $response
      */
@@ -87,6 +89,7 @@ class JsonResponseFormatter extends Component implements ResponseFormatterInterf
         if ($response->data !== null) {
             $options = $this->encodeOptions;
             if ($this->prettyPrint) {
+                // 位运算
                 $options |= JSON_PRETTY_PRINT;
             }
             $response->content = Json::encode($response->data, $options);
@@ -94,6 +97,8 @@ class JsonResponseFormatter extends Component implements ResponseFormatterInterf
     }
 
     /**
+     * 格式化返回的数据格式为jsonp
+     * ??? 怎么用？
      * Formats response data in JSONP format.
      * @param Response $response
      */

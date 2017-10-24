@@ -114,6 +114,7 @@ class Response extends \yii\base\Response
      */
     public $acceptParams = [];
     /**
+     * 处理数据格式的 格式器
      * @var array the formatters for converting data into the response content of the specified [[format]].
      * The array keys are the format names, and the array values are the corresponding configurations
      * for creating the formatter objects.
@@ -339,9 +340,12 @@ class Response extends \yii\base\Response
             return;
         }
         $this->trigger(self::EVENT_BEFORE_SEND);
+        // 准备发送的数据
         $this->prepare();
         $this->trigger(self::EVENT_AFTER_PREPARE);
+        // 设置相应头，发送cookie
         $this->sendHeaders();
+        // 发送相应主体
         $this->sendContent();
         $this->trigger(self::EVENT_AFTER_SEND);
         $this->isSent = true;
@@ -369,10 +373,12 @@ class Response extends \yii\base\Response
      */
     protected function sendHeaders()
     {
+        // 判断header是否发送
         if (headers_sent()) {
             return;
         }
         if ($this->_headers) {
+            // 
             $headers = $this->getHeaders();
             foreach ($headers as $name => $values) {
                 $name = str_replace(' ', '-', ucwords(str_replace('-', ' ', $name)));
@@ -386,6 +392,7 @@ class Response extends \yii\base\Response
         }
         $statusCode = $this->getStatusCode();
         header("HTTP/{$this->version} {$statusCode} {$this->statusText}");
+        // 发送cookie
         $this->sendCookies();
     }
 
@@ -398,7 +405,9 @@ class Response extends \yii\base\Response
             return;
         }
         $request = Yii::$app->getRequest();
+        // 开启了cookie 验证
         if ($request->enableCookieValidation) {
+            // 没有设置cookie key 报错
             if ($request->cookieValidationKey == '') {
                 throw new InvalidConfigException(get_class($request) . '::cookieValidationKey must be configured with a secret key.');
             }
@@ -414,10 +423,12 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 发送主体
      * Sends the response content to the client
      */
     protected function sendContent()
     {
+        // 文件流
         if ($this->stream === null) {
             echo $this->content;
 
@@ -427,8 +438,11 @@ class Response extends \yii\base\Response
         set_time_limit(0); // Reset time limit for big files
         $chunkSize = 8 * 1024 * 1024; // 8MB per chunk
 
+        // 读取文件输出
         if (is_array($this->stream)) {
+            // 文件handle 开始位置 结束为止
             list ($handle, $begin, $end) = $this->stream;
+            // 读取文件内容输出
             fseek($handle, $begin);
             while (!feof($handle) && ($pos = ftell($handle)) <= $end) {
                 if ($pos + $chunkSize > $end) {
@@ -485,9 +499,11 @@ class Response extends \yii\base\Response
     public function sendFile($filePath, $attachmentName = null, $options = [])
     {
         if (!isset($options['mimeType'])) {
+            // 获取文件的minetype
             $options['mimeType'] = FileHelper::getMimeTypeByExtension($filePath);
         }
         if ($attachmentName === null) {
+            // 文件名
             $attachmentName = basename($filePath);
         }
         $handle = fopen($filePath, 'rb');
@@ -497,6 +513,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 
      * Sends the specified content as a file to the browser.
      *
      * Note that this method only prepares the response for file sending. The file is not sent
@@ -545,6 +562,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 发送文件
      * Sends the specified stream as a file to the browser.
      *
      * Note that this method only prepares the response for file sending. The file is not sent
@@ -568,13 +586,14 @@ class Response extends \yii\base\Response
     public function sendStreamAsFile($handle, $attachmentName, $options = [])
     {
         $headers = $this->getHeaders();
+        // 获取文件大小
         if (isset($options['fileSize'])) {
             $fileSize = $options['fileSize'];
         } else {
             fseek($handle, 0, SEEK_END);
             $fileSize = ftell($handle);
         }
-
+        // ??? 添加断点续传
         $range = $this->getHttpRange($fileSize);
         if ($range === false) {
             $headers->set('Content-Range', "bytes */$fileSize");
@@ -599,6 +618,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 设置下载请求头
      * Sets a default set of HTTP headers for file downloading purpose.
      * @param string $attachmentName the attachment file name
      * @param string $mimeType the MIME type for the response. If null, `Content-Type` header will NOT be set.
@@ -630,6 +650,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 用来断点续传的判断
      * Determines the HTTP range given in the request.
      * @param int $fileSize the size of the file that will be used to validate the requested HTTP range.
      * @return array|bool the range (begin, end), or false if the range request is invalid.
@@ -663,6 +684,9 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 一些浏览器提供特殊的名为X-Sendfile的文件发送功能， 原理为将请求跳转到服务器上的文件， Web应用可在服务器发送文件前结束，为使用该功能， 可调用yii\web\Response::xSendFile()， 如下简要列出一些常用Web服务器如何启用X-Sendfile 功能：
+     * http://www.yiichina.com/doc/guide/2.0/runtime-responses
+     * 
      * Sends existing file to a browser as a download using x-sendfile.
      *
      * X-Sendfile is a feature allowing a web application to redirect the request for a file to the webserver
@@ -784,6 +808,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 跳转
      * Redirects the browser to the specified URL.
      *
      * This method adds a "Location" header to the current response. Note that it does not send out
@@ -841,6 +866,7 @@ class Response extends \yii\base\Response
      */
     public function redirect($url, $statusCode = 302, $checkAjax = true)
     {
+        // 获得url
         if (is_array($url) && isset($url[0])) {
             // ensure the route is absolute
             $url[0] = '/' . ltrim($url[0], '/');
@@ -874,6 +900,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 刷新当前页
      * Refreshes the current page.
      * The effect of this method call is the same as the user pressing the refresh button of his browser
      * (without re-posting data).
@@ -896,6 +923,7 @@ class Response extends \yii\base\Response
     private $_cookies;
 
     /**
+     * 获取cookie采集器
      * Returns the cookie collection.
      * Through the returned cookie collection, you add or remove cookies as follows,
      *
@@ -1021,7 +1049,7 @@ class Response extends \yii\base\Response
     }
 
     /**
-     * 准备发送
+     * 准备发送数据
      * Prepares for sending the response.
      * The default implementation will convert [[data]] into [[content]] and set headers accordingly.
      * @throws InvalidConfigException if the formatter for the specified format is invalid or [[format]] is not supported

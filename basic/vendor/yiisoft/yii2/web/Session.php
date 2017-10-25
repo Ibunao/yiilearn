@@ -97,7 +97,9 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     public function init()
     {
         parent::init();
+        // 注册一个会在php中止时执行的函数
         register_shutdown_function([$this, 'close']);
+        // 如果已经开启
         if ($this->getIsActive()) {
             Yii::warning('Session is already started', __METHOD__);
             $this->updateFlashCounters();
@@ -117,6 +119,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 开启session
      * Starts the session.
      */
     public function open()
@@ -142,6 +145,8 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 注册sessionhandle
+     * ??? 没用过
      * Registers session handler.
      * @throws \yii\base\InvalidConfigException
      */
@@ -154,6 +159,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
             if (!$this->handler instanceof \SessionHandlerInterface) {
                 throw new InvalidConfigException('"' . get_class($this) . '::handler" must implement the SessionHandlerInterface.');
             }
+            // 设置用户自定义会话存储函数
             YII_DEBUG ? session_set_save_handler($this->handler, false) : @session_set_save_handler($this->handler, false);
         } elseif ($this->getUseCustomStorage()) {
             if (YII_DEBUG) {
@@ -179,6 +185,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 关闭session
      * Ends the current session and store session data.
      */
     public function close()
@@ -189,6 +196,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 释放所有会话变量，并销毁注册到会话中的所有数据。
      * Frees all session variables and destroys all data registered to a session.
      *
      * This method has no effect when session is not [[getIsActive()|active]].
@@ -210,16 +218,19 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 是否已经开启session
      * @return bool whether the session has started
      */
     public function getIsActive()
     {
+        // 返回当前会话状态
         return session_status() === PHP_SESSION_ACTIVE;
     }
 
     private $_hasSessionId;
 
     /**
+     * 返回一个值，指示当前的请求是否发送了会话ID
      * Returns a value indicating whether the current request has sent the session ID.
      * The default implementation will check cookie and $_GET using the session name.
      * If you send session ID via other ways, you may need to override this method
@@ -231,6 +242,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
         if ($this->_hasSessionId === null) {
             $name = $this->getName();
             $request = Yii::$app->getRequest();
+            // ini_get — 获取一个配置选项的值
             if (!empty($_COOKIE[$name]) && ini_get('session.use_cookies')) {
                 $this->_hasSessionId = true;
             } elseif (!ini_get('session.use_only_cookies') && ini_get('session.use_trans_sid')) {
@@ -255,6 +267,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 获取sessionid
      * Gets the session ID.
      * This is a wrapper for [PHP session_id()](http://php.net/manual/en/function.session-id.php).
      * @return string the current session ID
@@ -265,6 +278,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 设置sessionid
      * Sets the session ID.
      * This is a wrapper for [PHP session_id()](http://php.net/manual/en/function.session-id.php).
      * @param string $value the session ID for the current session
@@ -275,6 +289,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 使用新生成的一个更新当前会话ID
      * Updates the current session ID with a newly generated one.
      *
      * Please refer to <http://php.net/session_regenerate_id> for more details.
@@ -300,6 +315,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 当前的session名
      * Gets the name of the current session.
      * This is a wrapper for [PHP session_name()](http://php.net/manual/en/function.session-name.php).
      * @return string the current session name
@@ -321,6 +337,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 获取session保存路径
      * Gets the current session save path.
      * This is a wrapper for [PHP session_save_path()](http://php.net/manual/en/function.session-save-path.php).
      * @return string the current session save path, defaults to '/tmp'.
@@ -331,6 +348,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 设置session保存路径
      * Sets the current session save path.
      * This is a wrapper for [PHP session_save_path()](http://php.net/manual/en/function.session-save-path.php).
      * @param string $value the current session save path. This can be either a directory name or a [path alias](guide:concept-aliases).
@@ -585,6 +603,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 通过key获取session值
      * Returns the session variable value with the session variable name.
      * If the session variable does not exist, the `$defaultValue` will be returned.
      * @param string $key the session variable name
@@ -649,6 +668,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 跟新Flash次数，并不知道什么用
      * Updates the counters for flash messages and removes outdated flash messages.
      * This method should only be called once in [[init()]].
      */

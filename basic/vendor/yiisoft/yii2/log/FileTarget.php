@@ -26,6 +26,7 @@ use yii\helpers\FileHelper;
 class FileTarget extends Target
 {
     /**
+     * 记录日志的文件
      * @var string log file path or [path alias](guide:concept-aliases). If not set, it will use the "@runtime/logs/app.log" file.
      * The directory containing the log files will be automatically created if not existing.
      */
@@ -52,6 +53,7 @@ class FileTarget extends Target
      */
     public $fileMode;
     /**
+     * 文件夹的权限
      * @var int the permission to be set for newly created directories.
      * This value will be used by PHP chmod() function. No umask will be applied.
      * Defaults to 0775, meaning the directory is read-writable by owner and group,
@@ -86,7 +88,9 @@ class FileTarget extends Target
             $this->logFile = Yii::getAlias($this->logFile);
         }
         $logPath = dirname($this->logFile);
+        // 如果不存在 创建
         if (!is_dir($logPath)) {
+            // 创建文件夹
             FileHelper::createDirectory($logPath, $this->dirMode, true);
         }
         if ($this->maxLogFiles < 1) {

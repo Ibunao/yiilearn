@@ -77,6 +77,7 @@ abstract class ErrorHandler extends Component
     }
 
     /**
+     * 释放注册的自定义错误/异常处理
      * Unregisters this error handler by restoring the PHP error and exception handlers.
      */
     public function unregister()
@@ -299,6 +300,7 @@ abstract class ErrorHandler extends Component
         if ($exception instanceof HttpException) {
             $category = 'yii\\web\\HttpException:' . $exception->statusCode;
         } elseif ($exception instanceof \ErrorException) {
+            // $exception->getSeverity() 获取异常的严重程度
             $category .= ':' . $exception->getSeverity();
         }
         Yii::error($exception, $category);

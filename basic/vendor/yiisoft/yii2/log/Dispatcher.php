@@ -96,7 +96,7 @@ class Dispatcher extends Component
     public function init()
     {
         parent::init();
-
+        // 创建记录日志对象
         foreach ($this->targets as $name => $target) {
             if (!$target instanceof Target) {
                 $this->targets[$name] = Yii::createObject($target);
@@ -175,6 +175,7 @@ class Dispatcher extends Component
     }
 
     /**
+     * 将日志信息写入到文件
      * Dispatches the logged messages to [[targets]].
      * @param array $messages the logged messages
      * @param bool $final whether this method is called at the end of the current application
@@ -187,6 +188,7 @@ class Dispatcher extends Component
                 try {
                     $target->collect($messages, $final);
                 } catch (\Exception $e) {
+                    // 记录日志的对象记录失败了，关闭，并记录错误信息到其他(如果有的话)日志对象
                     $target->enabled = false;
                     $targetErrors[] = [
                         'Unable to send log via ' . get_class($target) . ': ' . ErrorHandler::convertExceptionToString($e),
@@ -198,7 +200,7 @@ class Dispatcher extends Component
                 }
             }
         }
-
+        // 将记录日志的错误信息用其他日志对象记录
         if (!empty($targetErrors)) {
             $this->dispatch($targetErrors, true);
         }

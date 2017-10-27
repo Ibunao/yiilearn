@@ -477,6 +477,7 @@ class BaseFileHelper
     }
 
     /**
+     * 创建文件夹
      * Creates a new directory.
      *
      * This method is similar to the PHP `mkdir()` function except that
@@ -485,21 +486,24 @@ class BaseFileHelper
      *
      * @param string $path path of the directory to be created.
      * @param int $mode the permission to be set for the created directory.
-     * @param bool $recursive whether to create parent directories if they do not exist.
+     * @param bool $recursive whether to create parent directories if they do not exist. 是否递归创建
      * @return bool whether the directory is created successfully
      * @throws \yii\base\Exception if the directory could not be created (i.e. php error due to parallel changes)
      */
     public static function createDirectory($path, $mode = 0775, $recursive = true)
     {
+        // 如果已存在
         if (is_dir($path)) {
             return true;
         }
         $parentDir = dirname($path);
+        // 递归创建
         // recurse if parent dir does not exist and we are not at the root of the file system.
         if ($recursive && !is_dir($parentDir) && $parentDir !== $path) {
             static::createDirectory($parentDir, $mode, true);
         }
         try {
+            // 创建
             if (!mkdir($path, $mode)) {
                 return false;
             }
@@ -509,6 +513,7 @@ class BaseFileHelper
             }
         }
         try {
+            // 改文件权限
             return chmod($path, $mode);
         } catch (\Exception $e) {
             throw new \yii\base\Exception("Failed to change permissions for directory \"$path\": " . $e->getMessage(), $e->getCode(), $e);

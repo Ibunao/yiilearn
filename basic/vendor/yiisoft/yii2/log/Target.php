@@ -37,10 +37,12 @@ use yii\web\Request;
 abstract class Target extends Component
 {
     /**
+     * 是否开启记录
      * @var bool whether to enable this log target. Defaults to true.
      */
     public $enabled = true;
     /**
+     * 记录的类别
      * @var array list of message categories that this target is interested in. Defaults to empty, meaning all categories.
      * You can use an asterisk at the end of a category so that the category may be used to
      * match those categories sharing the same common prefix. For example, 'yii\db\*' will match
@@ -48,6 +50,7 @@ abstract class Target extends Component
      */
     public $categories = [];
     /**
+     * 不记录的等级
      * @var array list of message categories that this target is NOT interested in. Defaults to empty, meaning no uninteresting messages.
      * If this property is not empty, then any category listed here will be excluded from [[categories]].
      * You can use an asterisk at the end of a category so that the category can be used to
@@ -103,6 +106,7 @@ abstract class Target extends Component
     abstract public function export();
 
     /**
+     * 处理日志信息
      * Processes the given log messages.
      * This method will filter the given messages with [[levels]] and [[categories]].
      * And if requested, it will also export the filtering result to specific medium (e.g. email).
@@ -112,7 +116,9 @@ abstract class Target extends Component
      */
     public function collect($messages, $final)
     {
+        // 获取需要记录的日志
         $this->messages = array_merge($this->messages, static::filterMessages($messages, $this->getLevels(), $this->categories, $this->except));
+        // 日志条数
         $count = count($this->messages);
         if ($count > 0 && ($final || $this->exportInterval > 0 && $count >= $this->exportInterval)) {
             if (($context = $this->getContextMessage()) !== '') {
@@ -153,6 +159,7 @@ abstract class Target extends Component
     }
 
     /**
+     * 设置记录日志的等级
      * Sets the message levels that this target is interested in.
      *
      * The parameter can be either an array of interested level names or an integer representing
@@ -185,12 +192,14 @@ abstract class Target extends Component
             $this->_levels = 0;
             foreach ($levels as $level) {
                 if (isset($levelMap[$level])) {
+                    // 二进制记录需要记录的等级
                     $this->_levels |= $levelMap[$level];
                 } else {
                     throw new InvalidConfigException("Unrecognized level: $level");
                 }
             }
         } else {
+            // 用位运算表示的
             $bitmapValues = array_reduce($levelMap, function ($carry, $item) {
                 return $carry | $item;
             });
@@ -211,15 +220,27 @@ abstract class Target extends Component
      * @param array $except the message categories to exclude. If empty, it means all categories are allowed.
      * @return array the filtered messages.
      */
+    /**
+     * 根据它们的类别和级别过滤给定的消息。
+     * @param  [type]  $messages   记录的日志消息数组
+     * 日志信息     等级   种类     时间      文件追溯  内存
+     * [[$message, $level, $category, $time, $traces, memory_get_usage()]]
+     * @param  integer $levels     记录的级别
+     * @param  array   $categories 记录的类型
+     * @param  array   $except     不记录的
+     * @return [type]              [description]
+     */
     public static function filterMessages($messages, $levels = 0, $categories = [], $except = [])
     {
         foreach ($messages as $i => $message) {
+            // 日志不属于需要记录的等级
             if ($levels && !($levels & $message[1])) {
                 unset($messages[$i]);
                 continue;
             }
 
             $matched = empty($categories);
+            // 如果日志种类是需要记录的，$matched = true;
             foreach ($categories as $category) {
                 if ($message[2] === $category || !empty($category) && substr_compare($category, '*', -1, 1) === 0 && strpos($message[2], rtrim($category, '*')) === 0) {
                     $matched = true;
@@ -228,6 +249,7 @@ abstract class Target extends Component
             }
 
             if ($matched) {
+                // 如果日志种类是要排除的 $matched = false;
                 foreach ($except as $category) {
                     $prefix = rtrim($category, '*');
                     if (($message[2] === $category || $prefix !== $category) && strpos($message[2], $prefix) === 0) {
@@ -236,7 +258,7 @@ abstract class Target extends Component
                     }
                 }
             }
-
+            // 不记录该日志
             if (!$matched) {
                 unset($messages[$i]);
             }

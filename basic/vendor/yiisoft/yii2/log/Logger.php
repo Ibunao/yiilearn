@@ -102,6 +102,7 @@ class Logger extends Component
      */
     public $flushInterval = 1000;
     /**
+     * 文件追溯的层数
      * @var int how much call stack information (file name and line number) should be logged for each message.
      * If it is greater than 0, at most that number of call stacks will be logged. Note that only application
      * call stacks are counted.
@@ -141,23 +142,30 @@ class Logger extends Component
      */
     public function log($message, $level, $category = 'application')
     {
+        //返回当前 Unix 时间戳和微秒数
         $time = microtime(true);
         $traces = [];
         if ($this->traceLevel > 0) {
             $count = 0;
+            // 产生一条回溯跟踪,获取调用的信息
             $ts = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             array_pop($ts); // remove the last trace since it would be the entry script, not very useful
             foreach ($ts as $trace) {
+                // $trace['file'] 调用log的文件 $trace['line']行数
                 if (isset($trace['file'], $trace['line']) && strpos($trace['file'], YII2_PATH) !== 0) {
                     unset($trace['object'], $trace['args']);
                     $traces[] = $trace;
+                    // 往上追溯调用该文件的文件深度
                     if (++$count >= $this->traceLevel) {
                         break;
                     }
                 }
             }
         }
+        // 需要记录的信息
+        // memory_get_usage()返回分配给 PHP 的内存量
         $this->messages[] = [$message, $level, $category, $time, $traces, memory_get_usage()];
+        // 记录够多少条刷新一次写入到文件
         if ($this->flushInterval > 0 && count($this->messages) >= $this->flushInterval) {
             $this->flush();
         }
@@ -180,6 +188,7 @@ class Logger extends Component
     }
 
     /**
+     * 返回请求到现在的总时长
      * Returns the total elapsed time since the start of the current request.
      * This method calculates the difference between now and the timestamp
      * defined by constant `YII_BEGIN_TIME` which is evaluated at the beginning

@@ -63,6 +63,7 @@ use yii\base\ErrorHandler;
 class Dispatcher extends Component
 {
     /**
+     * 记录到不同地方(文件、email、db)的日志记录对象
      * @var array|Target[] the log targets. Each array element represents a single [[Target|log target]] instance
      * or the configuration for creating the log target instance.
      */
@@ -142,6 +143,7 @@ class Dispatcher extends Component
     }
 
     /**
+     * 文件追溯几层
      * @param int $value how many application call stacks should be logged together with each message.
      * This method will set the value of [[Logger::traceLevel]]. If the value is greater than 0,
      * at most that number of call stacks will be logged. Note that only application call stacks are counted.
@@ -153,6 +155,7 @@ class Dispatcher extends Component
     }
 
     /**
+     * 多少条日志写入一次
      * @return int how many messages should be logged before they are sent to targets.
      * This method returns the value of [[Logger::flushInterval]].
      */
@@ -162,6 +165,7 @@ class Dispatcher extends Component
     }
 
     /**
+     * 多少条日志写入一次
      * @param int $value how many messages should be logged before they are sent to targets.
      * This method will set the value of [[Logger::flushInterval]].
      * Defaults to 1000, meaning the [[Logger::flush()]] method will be invoked once every 1000 messages logged.
@@ -175,7 +179,7 @@ class Dispatcher extends Component
     }
 
     /**
-     * 将日志信息写入到文件
+     * 将日志使用不同的记录类型对象将信息写入
      * Dispatches the logged messages to [[targets]].
      * @param array $messages the logged messages
      * @param bool $final whether this method is called at the end of the current application

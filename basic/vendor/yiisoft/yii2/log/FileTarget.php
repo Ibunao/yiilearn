@@ -32,6 +32,7 @@ class FileTarget extends Target
      */
     public $logFile;
     /**
+     * 当日志文件到了设置的文件最大大小是否换文件
      * @var bool whether log files should be rotated when they reach a certain [[maxFileSize|maximum size]].
      * Log rotation is enabled by default. This property allows you to disable it, when you have configured
      * an external tools for log rotation on your server.
@@ -43,6 +44,7 @@ class FileTarget extends Target
      */
     public $maxFileSize = 10240; // in KB
     /**
+     * 最多几个日志文件
      * @var int number of log files used for rotation. Defaults to 5.
      */
     public $maxLogFiles = 5;
@@ -102,11 +104,13 @@ class FileTarget extends Target
     }
 
     /**
+     * 写入日志到文件
      * Writes log messages to a file.
      * @throws InvalidConfigException if unable to open the log file for writing
      */
     public function export()
     {
+        // 获取完整的日志信息
         $text = implode("\n", array_map([$this, 'formatMessage'], $this->messages)) . "\n";
         if (($fp = @fopen($this->logFile, 'a')) === false) {
             throw new InvalidConfigException("Unable to append to log file: {$this->logFile}");
@@ -117,6 +121,7 @@ class FileTarget extends Target
             // this may result in rotating twice when cached file size is used on subsequent calls
             clearstatcache();
         }
+        // 允许在多个文件中循环记录
         if ($this->enableRotation && @filesize($this->logFile) > $this->maxFileSize * 1024) {
             $this->rotateFiles();
             @flock($fp, LOCK_UN);
@@ -133,6 +138,7 @@ class FileTarget extends Target
     }
 
     /**
+     * 文件大小到了，转换文件
      * Rotates log files.
      */
     protected function rotateFiles()
@@ -142,10 +148,14 @@ class FileTarget extends Target
             // $i == 0 is the original log file
             $rotateFile = $file . ($i === 0 ? '' : '.' . $i);
             if (is_file($rotateFile)) {
+                // 所有的文件都满了，删除最后一个文件
                 // suppress errors because it's possible multiple processes enter into this section
                 if ($i === $this->maxLogFiles) {
+
                     @unlink($rotateFile);
+                // 如果不是最后一个文件，进行内容的转移,转移到 +1 的文件内
                 } else {
+                    // 以复制的方式
                     if ($this->rotateByCopy) {
                         @copy($rotateFile, $file . '.' . ($i + 1));
                         if ($fp = @fopen($rotateFile, 'a')) {
@@ -155,6 +165,7 @@ class FileTarget extends Target
                         if ($this->fileMode !== null) {
                             @chmod($file . '.' . ($i + 1), $this->fileMode);
                         }
+                    // 以重命名的方式
                     } else {
                         @rename($rotateFile, $file . '.' . ($i + 1));
                     }

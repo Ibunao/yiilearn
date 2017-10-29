@@ -92,12 +92,14 @@ class ErrorAction extends Action
     }
 
     /**
+     * 执行
      * Runs the action.
      *
      * @return string result content
      */
     public function run()
     {
+        // 设置相应码
         Yii::$app->getResponse()->setStatusCodeByException($this->exception);
 
         if (Yii::$app->getRequest()->getIsAjax()) {

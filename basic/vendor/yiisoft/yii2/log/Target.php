@@ -120,10 +120,13 @@ abstract class Target extends Component
         $this->messages = array_merge($this->messages, static::filterMessages($messages, $this->getLevels(), $this->categories, $this->except));
         // 日志条数
         $count = count($this->messages);
+        // 符合记录的条件
         if ($count > 0 && ($final || $this->exportInterval > 0 && $count >= $this->exportInterval)) {
+            // 着每次写入的时候记录访问的全局信息
             if (($context = $this->getContextMessage()) !== '') {
                 $this->messages[] = [$context, Logger::LEVEL_INFO, 'application', YII_BEGIN_TIME];
             }
+            // 保证没写入完成，不会再写，类似于加锁了
             // set exportInterval to 0 to avoid triggering export again while exporting
             $oldExportInterval = $this->exportInterval;
             $this->exportInterval = 0;
@@ -135,6 +138,7 @@ abstract class Target extends Component
     }
 
     /**
+     * 生成要记录的上下文信息。默认实现将转储用户信息、系统变量等。
      * Generates the context information to be logged.
      * The default implementation will dump user information, system variables, etc.
      * @return string the context information. If an empty string, it means no context information.
@@ -267,6 +271,7 @@ abstract class Target extends Component
     }
 
     /**
+     * 格式化日志为写入到文件的标准格式
      * Formats a log message for display as a string.
      * @param array $message the log message to be formatted.
      * The message structure follows that in [[Logger::messages]].
@@ -297,6 +302,7 @@ abstract class Target extends Component
     }
 
     /**
+     * 获取每条日志的前缀信息
      * Returns a string to be prefixed to the given message.
      * If [[prefix]] is configured it will return the result of the callback.
      * The default implementation will return user IP, user ID and session ID as a prefix.
@@ -306,6 +312,7 @@ abstract class Target extends Component
      */
     public function getMessagePrefix($message)
     {
+        // 如果配置了根据日志消息记录额外信息的回调函数
         if ($this->prefix !== null) {
             return call_user_func($this->prefix, $message);
         }
@@ -313,7 +320,7 @@ abstract class Target extends Component
         if (Yii::$app === null) {
             return '';
         }
-
+        // 默认记录的日志前缀
         $request = Yii::$app->getRequest();
         $ip = $request instanceof Request ? $request->getUserIP() : '-';
 

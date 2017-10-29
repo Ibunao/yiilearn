@@ -331,7 +331,7 @@ class UrlRule extends Object implements UrlRuleInterface
                 $this->_routeParams[$name] = "<$name>";
             }
         }
-
+        // 转化请求patten部分
         $this->translatePattern(true);
     }
 

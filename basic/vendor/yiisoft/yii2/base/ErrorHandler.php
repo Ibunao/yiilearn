@@ -28,6 +28,7 @@ use yii\web\HttpException;
 abstract class ErrorHandler extends Component
 {
     /**
+     * 清除发生错误之前的输出
      * @var bool whether to discard any existing page output before error display. Defaults to true.
      */
     public $discardExistingOutput = true;
@@ -103,7 +104,7 @@ abstract class ErrorHandler extends Component
         }
 
         $this->exception = $exception;
-        // 释放注册的异常处理函数
+        // 释放注册的异常处理函数,猜想：如果自定义处理异常出现了错误系统的还可以捕捉
         // disable error capturing to avoid recursive errors while handling exceptions
         $this->unregister();
 
@@ -115,14 +116,14 @@ abstract class ErrorHandler extends Component
         }
 
         try {
-            // 记录日志
+            // 记录错误日志
             $this->logException($exception);
             if ($this->discardExistingOutput) {
                 // 清 ob
                 $this->clearOutput();
             }
             $this->renderException($exception);
-            // 如果是 test环境,将错误信息输出
+            // 如果不是 test环境,将错误信息输出
             if (!YII_ENV_TEST) {
                 \Yii::getLogger()->flush(true);
                 if (defined('HHVM_VERSION')) {
@@ -143,6 +144,7 @@ abstract class ErrorHandler extends Component
     }
 
     /**
+     * 处理错误时发生错误
      * Handles exception thrown during exception processing in [[handleException()]].
      * @param \Exception|\Throwable $exception Exception that was thrown during main exception processing.
      * @param \Exception $previousException Main exception processed in [[handleException()]].
@@ -163,6 +165,7 @@ abstract class ErrorHandler extends Component
             echo 'An internal server error occurred.';
         }
         $msg .= "\n\$_SERVER = " . VarDumper::export($_SERVER);
+        // 记录到PHP日志
         error_log($msg);
         if (defined('HHVM_VERSION')) {
             flush();

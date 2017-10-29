@@ -44,6 +44,7 @@ use yii\base\Component;
 class Logger extends Component
 {
     /**
+     * 日志等级
      * Error message level. An error message is one that indicates the abnormal termination of the
      * application and may require developer's handling.
      */
@@ -78,6 +79,7 @@ class Logger extends Component
     const LEVEL_PROFILE_END = 0x60;
 
     /**
+     * 日志信息
      * @var array logged messages. This property is managed by [[log()]] and [[flush()]].
      * Each log message is of the following structure:
      *
@@ -94,6 +96,7 @@ class Logger extends Component
      */
     public $messages = [];
     /**
+     * 多少条记录写入一次
      * @var int how many messages should be logged before they are flushed from memory and sent to targets.
      * Defaults to 1000, meaning the [[flush]] method will be invoked once every 1000 messages logged.
      * Set this property to be 0 if you don't want to flush messages until the application terminates.
@@ -120,6 +123,7 @@ class Logger extends Component
     public function init()
     {
         parent::init();
+        // 注册PHP结束要执行的方法
         register_shutdown_function(function () {
             // make regular flush before other shutdown functions, which allows session data collection and so on
             $this->flush();
@@ -130,6 +134,7 @@ class Logger extends Component
     }
 
     /**
+     * 记录日志
      * Logs a message with the given type and category.
      * If [[traceLevel]] is greater than 0, additional call stack information about
      * the application code will be logged as well.
@@ -201,6 +206,7 @@ class Logger extends Component
     }
 
     /**
+     * 返回profile结果
      * Returns the profiling results.
      *
      * By default, all profiling results will be returned. You may provide
@@ -254,6 +260,7 @@ class Logger extends Component
     }
 
     /**
+     * 返回查询消耗的时间
      * Returns the statistical results of DB queries.
      * The results returned include the number of SQL statements executed and
      * the total time spent.
@@ -273,6 +280,7 @@ class Logger extends Component
     }
 
     /**
+     * 计算profile运行的时间
      * Calculates the elapsed time for the given log messages.
      * @param array $messages the log messages obtained from profiling
      * @return array timings. Each element is an array consisting of these elements:

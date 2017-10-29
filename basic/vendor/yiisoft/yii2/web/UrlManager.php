@@ -187,11 +187,12 @@ class UrlManager extends Component
         if (!$this->enablePrettyUrl || empty($this->rules)) {
             return;
         }
-        // 如果设置了缓存
+        // 如果设置了缓存,获取缓存对象
         if (is_string($this->cache)) {
             // 获取缓存
             $this->cache = Yii::$app->get($this->cache, false);
         }
+        // 缓存创建的规则
         if ($this->cache instanceof Cache) {
             $cacheKey = $this->cacheKey;
             $hash = md5(json_encode($this->rules));
@@ -246,7 +247,9 @@ class UrlManager extends Component
         $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
         foreach ($rules as $key => $rule) {
             if (is_string($rule)) {
+                // 路由部分
                 $rule = ['route' => $rule];
+                // 获取允许的请求
                 if (preg_match("/^((?:($verbs),)*($verbs))\\s+(.*)$/", $key, $matches)) {
                     $rule['verb'] = explode(',', $matches[1]);
                     // rules that do not apply for GET requests should not be use to create urls
@@ -255,6 +258,7 @@ class UrlManager extends Component
                     }
                     $key = $matches[4];
                 }
+                // 请求部分
                 $rule['pattern'] = $key;
             }
             if (is_array($rule)) {

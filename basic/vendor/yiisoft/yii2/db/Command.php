@@ -12,6 +12,7 @@ use yii\base\Component;
 use yii\base\NotSupportedException;
 
 /**
+ * 执行sql命令
  * Command represents a SQL statement to be executed against a database.
  *
  * A command object is usually created by calling [[Connection::createCommand()]].
@@ -57,14 +58,17 @@ use yii\base\NotSupportedException;
 class Command extends Component
 {
     /**
+     * 数据库
      * @var Connection the DB connection that this command is associated with
      */
     public $db;
     /**
+     * 关联的pdo对象
      * @var \PDOStatement the PDOStatement object that this command is associated with
      */
     public $pdoStatement;
     /**
+     * ???获取模式
      * @var int the default fetch mode for this command.
      * @see http://www.php.net/manual/en/pdostatement.setfetchmode.php
      */
@@ -93,6 +97,7 @@ class Command extends Component
      */
     private $_pendingParams = [];
     /**
+     * sql语句
      * @var string the SQL statement that this command represents
      */
     private $_sql;
@@ -137,6 +142,7 @@ class Command extends Component
     }
 
     /**
+     * 设置sql
      * Specifies the SQL statement to be executed.
      * The previous SQL execution (if any) will be cancelled, and [[params]] will be cleared as well.
      * @param string $sql the SQL statement to be set.
@@ -145,7 +151,9 @@ class Command extends Component
     public function setSql($sql)
     {
         if ($sql !== $this->_sql) {
+            // 更改执行状态为取消执行
             $this->cancel();
+            // 加反引号
             $this->_sql = $this->db->quoteSql($sql);
             $this->_pendingParams = [];
             $this->params = [];
@@ -156,6 +164,8 @@ class Command extends Component
     }
 
     /**
+     * 返回插入参数的sql语句
+     * 通过在相应的占位符中插入参数值来返回原始的SQL
      * Returns the raw SQL by inserting parameter values into the corresponding placeholders in [[sql]].
      * Note that the return value of this method should mainly be used for logging purpose.
      * It is likely that this method returns an invalid SQL due to improper replacement of parameter placeholders.
@@ -167,23 +177,29 @@ class Command extends Component
             return $this->_sql;
         }
         $params = [];
+        // 将
         foreach ($this->params as $name => $value) {
+            // 是字符串并且不以 : 开头
             if (is_string($name) && strncmp(':', $name, 1)) {
                 $name = ':' . $name;
             }
+            // 如果为字符串类型加引号，放sql注入
             if (is_string($value)) {
                 $params[$name] = $this->db->quoteValue($value);
             } elseif (is_bool($value)) {
                 $params[$name] = ($value ? 'TRUE' : 'FALSE');
             } elseif ($value === null) {
                 $params[$name] = 'NULL';
+            // 不是对象和资源类型的其他类型
             } elseif (!is_object($value) && !is_resource($value)) {
                 $params[$name] = $value;
             }
         }
+        // 如果都是 :name 的形式直接替换返回
         if (!isset($params[1])) {
             return strtr($this->_sql, $params);
         }
+        //??? 还没遇到过
         $sql = '';
         foreach (explode('?', $this->_sql) as $i => $part) {
             $sql .= (isset($params[$i]) ? $params[$i] : '') . $part;
@@ -193,6 +209,7 @@ class Command extends Component
     }
 
     /**
+     * 准备要执行的sql
      * Prepares the SQL statement to be executed.
      * For complex SQL statement that is to be executed multiple times,
      * this may improve performance.
@@ -215,8 +232,11 @@ class Command extends Component
             // master is in a transaction. use the same connection.
             $forRead = false;
         }
+        // 判断是读是写
+        // 读的话使用从库
         if ($forRead || $forRead === null && $this->db->getSchema()->isReadQuery($sql)) {
             $pdo = $this->db->getSlavePdo();
+        // 写的话使用主库
         } else {
             $pdo = $this->db->getMasterPdo();
         }
@@ -232,6 +252,7 @@ class Command extends Component
     }
 
     /**
+     * 取消sql的执行，设置pdo对象为null
      * Cancels the execution of the SQL statement.
      * This method mainly sets [[pdoStatement]] to be null.
      */
@@ -285,6 +306,7 @@ class Command extends Component
     }
 
     /**
+     * 绑定参数
      * Binds a value to a parameter.
      * @param string|int $name Parameter identifier. For a prepared statement
      * using named placeholders, this will be a parameter name of
@@ -307,6 +329,7 @@ class Command extends Component
     }
 
     /**
+     * 绑定参数，判断类型
      * Binds a list of values to the corresponding parameters.
      * This is similar to [[bindValue()]] except that it binds multiple values at a time.
      * Note that the SQL data type of each value is determined by its PHP type.
@@ -325,10 +348,12 @@ class Command extends Component
 
         $schema = $this->db->getSchema();
         foreach ($values as $name => $value) {
+            // 如果value中指定了pdo类型
             if (is_array($value)) {
                 $this->_pendingParams[$name] = $value;
                 $this->params[$name] = $value[0];
             } else {
+                // 获取值对应的pdo类型
                 $type = $schema->getPdoType($value);
                 $this->_pendingParams[$name] = [$value, $type];
                 $this->params[$name] = $value;
@@ -819,6 +844,7 @@ class Command extends Component
     }
 
     /**
+     * 执行sql
      * Executes the SQL statement.
      * This method should only be used for executing non-query SQL statement, such as `INSERT`, `DELETE`, `UPDATE` SQLs.
      * No result set will be returned.
@@ -827,7 +853,10 @@ class Command extends Component
      */
     public function execute()
     {
+        // 获取sql
         $sql = $this->getSql();
+        // 记录日志
+        // 是否开启性能分析  sql语句
         list($profile, $rawSql) = $this->logQuery(__METHOD__);
 
         if ($sql == '') {
@@ -838,8 +867,9 @@ class Command extends Component
 
         try {
             $profile and Yii::beginProfile($rawSql, __METHOD__);
-
+            // 执行
             $this->pdoStatement->execute();
+            // 条数
             $n = $this->pdoStatement->rowCount();
 
             $profile and Yii::endProfile($rawSql, __METHOD__);
@@ -854,6 +884,7 @@ class Command extends Component
     }
 
     /**
+     * 记录查询日志
      * Logs the current database query if query logging is enabled and returns
      * the profiling token if profiling is enabled.
      * @param string $category the log category.
@@ -862,10 +893,13 @@ class Command extends Component
      */
     private function logQuery($category)
     {
+        // 开启记录日志
         if ($this->db->enableLogging) {
             $rawSql = $this->getRawSql();
             Yii::info($rawSql, $category);
+            // var_dump($rawSql, $category);exit;
         }
+        // 开启性能分析
         if (!$this->db->enableProfiling) {
             return [false, isset($rawSql) ? $rawSql : null];
         } else {

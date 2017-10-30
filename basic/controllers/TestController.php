@@ -39,5 +39,10 @@ class TestController extends Controller
 
 		return $this->renderAjax('test');
 	}
-
+	public function actionDb()
+	{
+		$sql = 'select [[ding]] from {{%ran%}}  WHERE id=:id AND status=:status;';
+		var_dump(Yii::$app->db->createCommand($sql)->bindValue(':id', 1)
+           ->bindValue(':status', 1)->execute());
+	}
 }

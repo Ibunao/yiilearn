@@ -251,6 +251,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 获取pdo对应的类型
      * Determines the PDO type for the given PHP data value.
      * @param mixed $data the data whose PDO type is to be determined
      * @return int the PDO type
@@ -469,6 +470,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 防止sql注入
      * Quotes a string value for use in a query.
      * Note that if the parameter is not a string, it will be returned without change.
      * @param string $str string to be quoted
@@ -480,10 +482,11 @@ abstract class Schema extends Object
         if (!is_string($str)) {
             return $str;
         }
-
+        // pdo加引号
         if (($value = $this->db->getSlavePdo()->quote($str)) !== false) {
             return $value;
         } else {
+            // 手动反转查询字段
             // the driver doesn't support quote (e.g. oci)
             return "'" . addcslashes(str_replace("'", "''", $str), "\000\n\r\\\032") . "'";
         }
@@ -516,28 +519,34 @@ abstract class Schema extends Object
     }
 
     /**
+     * 处理sql中 [[field]] 形式的字段，给加引号
      * Quotes a column name for use in a query.
      * If the column name contains prefix, the prefix will also be properly quoted.
      * If the column name is already quoted or contains '(', '[[' or '{{',
      * then this method will do nothing.
-     * @param string $name column name
+     * @param string $name column name   [[]]中定义的字段
      * @return string the properly quoted column name
      * @see quoteSimpleColumnName()
      */
     public function quoteColumnName($name)
     {
+        // 如果出现了() 或 [[]]
         if (strpos($name, '(') !== false || strpos($name, '[[') !== false) {
             return $name;
         }
+        // 计算指定字符串.在目标字符串$name中最后一次出现的位置
         if (($pos = strrpos($name, '.')) !== false) {
+            // 表名 substr($name, 0, $pos)
             $prefix = $this->quoteTableName(substr($name, 0, $pos)) . '.';
             $name = substr($name, $pos + 1);
         } else {
             $prefix = '';
         }
+        // 如果字段名包含 {{}}
         if (strpos($name, '{{') !== false) {
             return $name;
         }
+        // 字段加反引号
         return $prefix . $this->quoteSimpleColumnName($name);
     }
 
@@ -584,6 +593,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 根据列类型获取php对应的类型
      * Extracts the PHP type from abstract DB type.
      * @param ColumnSchema $column the column schema information
      * @return string PHP type name
@@ -600,6 +610,10 @@ abstract class Schema extends Object
             'double' => 'double',
             'binary' => 'resource',
         ];
+        // 除了上面的映射关系外，还有几个特殊情况：
+        // 1. bigint字段，在64位环境下，且为singed时，使用integer来表示，否则string
+        // 2. integer字段，在32位环境下，且为unsinged时，使用string表示，否则integer
+        // 3. 映射中不存在的字段类型均使用string
         if (isset($typeMap[$column->type])) {
             if ($column->type === 'bigint') {
                 return PHP_INT_SIZE === 8 && !$column->unsigned ? 'integer' : 'string';
@@ -614,6 +628,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 转变异常对象信息
      * Converts a DB exception to a more concrete one if possible.
      *
      * @param \Exception $e
@@ -638,6 +653,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 返回sql是否是读的sql
      * Returns a value indicating whether a SQL statement is for read purpose.
      * @param string $sql the SQL statement
      * @return bool whether a SQL statement is for read purpose.

@@ -224,6 +224,12 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * @return string the column name that stores the lock version of a table row.
      * If `null` is returned (default implemented), optimistic locking will not be supported.
      */
+    /**
+     * 实现乐观锁
+     * http://www.digpage.com/lock.html
+     * 
+     * @return [type] [description]
+     */
     public function optimisticLock()
     {
         return null;
@@ -748,6 +754,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     }
 
     /**
+     * 更新
      * @see update()
      * @param array $attributes attributes to update
      * @return int|false the number of rows affected, or false if [[beforeSave()]] stops the updating process.
@@ -755,24 +762,34 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      */
     protected function updateInternal($attributes = null)
     {
+        // 触发更新事件
         if (!$this->beforeSave(false)) {
             return false;
         }
+        // 获取要更新的字段及新的字段值
         $values = $this->getDirtyAttributes($attributes);
         if (empty($values)) {
             $this->afterSave(false, $values);
             return 0;
         }
+        // 把原来ActiveRecord的主键作为等下更新记录的条件，
+        // 也就是说，等下更新的，最多只有1个记录。
         $condition = $this->getOldPrimaryKey(true);
+        // 乐观锁字段
+        // 获取版本号字段的字段名，比如 ver
         $lock = $this->optimisticLock();
         if ($lock !== null) {
+            // 这里的 $this->$lock ，就是 $this->ver 的意思；
+            // 这里把 ver+1 作为要更新的字段之一。
             $values[$lock] = $this->$lock + 1;
+            // 这里把旧的版本号作为更新的另一个条件
             $condition[$lock] = $this->$lock;
         }
         // We do not check the return value of updateAll() because it's possible
         // that the UPDATE statement doesn't change anything and thus returns 0.
         $rows = static::updateAll($values, $condition);
-
+        // 如果已经启用了乐观锁，但是却没有完成更新，或者更新的记录数为0；
+        // 那就说明是由于 ver 不匹配，记录被修改过了，于是抛出异常。
         if ($lock !== null && !$rows) {
             throw new StaleObjectException('The object being updated is outdated.');
         }

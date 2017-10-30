@@ -20,6 +20,7 @@ use yii\db\ColumnSchema;
 class Schema extends \yii\db\Schema
 {
     /**
+     * 数据库类型转抽象类型
      * @var array mapping from physical column types (keys) to abstract column types (values)
      */
     public $typeMap = [
@@ -55,6 +56,7 @@ class Schema extends \yii\db\Schema
 
 
     /**
+     * 给table名加反引号
      * Quotes a table name for use in a query.
      * A simple table name has no schema prefix.
      * @param string $name table name
@@ -66,6 +68,7 @@ class Schema extends \yii\db\Schema
     }
 
     /**
+     * 给字段加反引号
      * Quotes a column name for use in a query.
      * A simple column name has no prefix.
      * @param string $name column name
@@ -122,47 +125,77 @@ class Schema extends \yii\db\Schema
     }
 
     /**
+     * 将列信息加载到列设计对象
      * Loads the column information into a [[ColumnSchema]] object.
      * @param array $info column information
      * @return ColumnSchema the column schema object
      */
+    /*
+    例如：$info 
+      Field: id
+       Type: int(11)
+  Collation: NULL
+       Null: NO
+        Key: PRI
+    Default: NULL
+      Extra: auto_increment
+ Privileges: select,insert,update,references
+    Comment:
+     */
     protected function loadColumnSchema($info)
     {
+        // 创建列设计对象
         $column = $this->createColumnSchema();
-
+        // 字段名
         $column->name = $info['field'];
+        // 是否允许null
         $column->allowNull = $info['null'] === 'YES';
+        // 是否是主键
         $column->isPrimaryKey = strpos($info['key'], 'PRI') !== false;
+        // 是否自动增长
         $column->autoIncrement = stripos($info['extra'], 'auto_increment') !== false;
+        // 获取字段注释
         $column->comment = $info['comment'];
-
+        // 类型
         $column->dbType = $info['type'];
+        // 是否是 unsigned
         $column->unsigned = stripos($column->dbType, 'unsigned') !== false;
-
+        // 以下将把数据库类型，转换成对应的抽象类型，默认为 TYPE_STRING
         $column->type = self::TYPE_STRING;
         if (preg_match('/^(\w+)(?:\(([^\)]+)\))?/', $column->dbType, $matches)) {
+            // 获取 int(11) 的 "int" 部分
             $type = strtolower($matches[1]);
+            // 如果映射表里有，那就直接映射成抽象类型
             if (isset($this->typeMap[$type])) {
                 $column->type = $this->typeMap[$type];
             }
+            // 形如int(11) 的括号中的内容
             if (!empty($matches[2])) {
+                // 枚举类型，还需要将所有枚举值写入 $column->enumValues
                 if ($type === 'enum') {
                     preg_match_all("/'[^']*'/", $matches[2], $values);
                     foreach ($values[0] as $i => $value) {
                         $values[$i] = trim($value, "'");
                     }
+                    // 权举值
                     $column->enumValues = $values;
+                // 如果不是枚举类型，那么括号中的内容就是精度了，如 decimal(19,4)
                 } else {
                     $values = explode(',', $matches[2]);
+                    // 长度/精度
                     $column->size = $column->precision = (int) $values[0];
                     if (isset($values[1])) {
+                        // 刻度，小数位数
                         $column->scale = (int) $values[1];
                     }
+                    // bit(1) 类型的，转换成 boolean
                     if ($column->size === 1 && $type === 'bit') {
                         $column->type = 'boolean';
                     } elseif ($type === 'bit') {
+                        // 由于bit最多64位，如果超过 32 位，那么用一个 bigint 足以。
                         if ($column->size > 32) {
                             $column->type = 'bigint';
+                        // 如果正好32位，那么用一个 interger 来表示。
                         } elseif ($column->size === 32) {
                             $column->type = 'integer';
                         }
@@ -170,14 +203,18 @@ class Schema extends \yii\db\Schema
                 }
             }
         }
-
+        // 获取PHP数据类型
         $column->phpType = $this->getColumnPhpType($column);
-
+        // 不是主键，处理默认值
         if (!$column->isPrimaryKey) {
+            // timestamp 的话，要实际获取当前时间戳，而不能是字符串 'CURRENT_TIMESTAMP'
             if ($column->type === 'timestamp' && $info['default'] === 'CURRENT_TIMESTAMP') {
                 $column->defaultValue = new Expression('CURRENT_TIMESTAMP');
+            // bit 的话，要截取对应的内容，并进行进制转换
             } elseif (isset($type) && $type === 'bit') {
+                // 二进制转十进制
                 $column->defaultValue = bindec(trim($info['default'], 'b\''));
+            // 其余类型的，直接转换成PHP类型的值
             } else {
                 $column->defaultValue = $column->phpTypecast($info['default']);
             }

@@ -20,6 +20,7 @@ use yii\db\Expression;
 class QueryBuilder extends \yii\db\QueryBuilder
 {
     /**
+     * 根据定义的抽象类型转换为特定数据库的指定类型
      * @var array mapping from abstract column types (keys) to physical column types (values).
      */
     public $typeMap = [

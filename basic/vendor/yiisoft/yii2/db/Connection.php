@@ -368,12 +368,14 @@ class Connection extends Component
      */
     public $masterConfig = [];
     /**
+     * 多主库的情况下打乱每次使用的主库
      * @var bool whether to shuffle [[masters]] before getting one.
      * @since 2.0.11
      * @see masters
      */
     public $shuffleMasters = true;
     /**
+     * 是否开启记录执行日志
      * @var bool whether to enable logging of database queries. Defaults to true.
      * You may want to disable this option in a production environment to gain performance
      * if you do not need the information being logged.
@@ -407,6 +409,7 @@ class Connection extends Component
      */
     private $_master = false;
     /**
+     * 
      * @var Connection the currently active slave connection
      */
     private $_slave = false;
@@ -549,6 +552,7 @@ class Connection extends Component
     }
 
     /**
+     * 开启连接
      * Establishes a DB connection.
      * It does nothing if a DB connection has already been established.
      * @throws Exception if connection fails
@@ -558,7 +562,7 @@ class Connection extends Component
         if ($this->pdo !== null) {
             return;
         }
-
+        // 多个主库
         if (!empty($this->masters)) {
             $db = $this->getMaster();
             if ($db !== null) {
@@ -666,6 +670,7 @@ class Connection extends Component
     }
 
     /**
+     * 创建sql命令
      * Creates a command for execution.
      * @param string $sql the SQL statement to be executed
      * @param array $params the parameters to be bound to the SQL statement
@@ -683,6 +688,7 @@ class Connection extends Component
     }
 
     /**
+     * 获取事务
      * Returns the currently active transaction.
      * @return Transaction the currently active transaction. Null if no active transaction.
      */
@@ -760,6 +766,7 @@ class Connection extends Component
     }
 
     /**
+     * 获取数据库对应的schema
      * Returns the schema information for the database opened by this connection.
      * @return Schema the schema information for the database opened by this connection.
      * @throws NotSupportedException if there is no support for the current driver type
@@ -851,6 +858,27 @@ class Connection extends Component
     }
 
     /**
+     * 通过引用包含在双括号内的表和列名来处理SQL语句。
+包含在双花括号内的被视为表名，而
+包含在双方括号内的令牌是列名。他们将会被引用。
+另外，在表名的开始或结束时，百分比字符“%”将被替换。
+
+例子
+$sql = 'select [[ding]] from {{%ran%}};';
+
+匹配到的$matches
+array (size=4)
+  0 => string '[[ding]]' (length=8)
+  1 => string '[[ding]]' (length=8)
+  2 => string '' (length=0)
+  3 => string 'ding' (length=4)
+
+匹配到的$matches
+array (size=3)
+  0 => string '{{%ran%}}' (length=9)
+  1 => string '{{%ran%}}' (length=9)
+  2 => string '%ran%' (length=5)
+
      * Processes a SQL statement by quoting table and column names that are enclosed within double brackets.
      * Tokens enclosed within double curly brackets are treated as table names, while
      * tokens enclosed within double square brackets are column names. They will be quoted accordingly.
@@ -864,6 +892,7 @@ class Connection extends Component
         return preg_replace_callback(
             '/(\\{\\{(%?[\w\-\. ]+%?)\\}\\}|\\[\\[([\w\-\. ]+)\\]\\])/',
             function ($matches) {
+                // [[field]]
                 if (isset($matches[3])) {
                     return $this->quoteColumnName($matches[3]);
                 } else {
@@ -875,6 +904,7 @@ class Connection extends Component
     }
 
     /**
+     * 获取数据库驱动名
      * Returns the name of the DB driver. Based on the the current [[dsn]], in case it was not set explicitly
      * by an end user.
      * @return string name of the DB driver
@@ -885,6 +915,7 @@ class Connection extends Component
             if (($pos = strpos($this->dsn, ':')) !== false) {
                 $this->_driverName = strtolower(substr($this->dsn, 0, $pos));
             } else {
+                //??? 
                 $this->_driverName = strtolower($this->getSlavePdo()->getAttribute(PDO::ATTR_DRIVER_NAME));
             }
         }
@@ -950,6 +981,7 @@ class Connection extends Component
     }
 
     /**
+     * 获取当前连接的主库
      * Returns the currently active master connection.
      * If this method is called for the first time, it will try to open a master connection.
      * @return Connection the currently active master connection. `null` is returned if there is no master available.
@@ -1006,6 +1038,7 @@ class Connection extends Component
     }
 
     /**
+     * 随机开启一个库
      * Opens the connection to a server in the pool.
      * This method implements the load balancing among the given list of the servers.
      * Connections will be tried in random order.
@@ -1016,11 +1049,13 @@ class Connection extends Component
      */
     protected function openFromPool(array $pool, array $sharedConfig)
     {
+        // 打乱数组
         shuffle($pool);
         return $this->openFromPoolSequentially($pool, $sharedConfig);
     }
 
     /**
+     * 开启一个库
      * Opens the connection to a server in the pool.
      * This method implements the load balancing among the given list of the servers.
      * Connections will be tried in sequential order.
@@ -1035,7 +1070,7 @@ class Connection extends Component
         if (empty($pool)) {
             return null;
         }
-
+        // 获取类名
         if (!isset($sharedConfig['class'])) {
             $sharedConfig['class'] = get_class($this);
         }

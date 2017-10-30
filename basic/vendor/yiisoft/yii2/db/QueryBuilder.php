@@ -732,6 +732,11 @@ class QueryBuilder extends \yii\base\Object
      * @param string|ColumnSchemaBuilder $type abstract column type
      * @return string physical column type.
      */
+    /**
+     * 根据yii的Schema中定义的统一的抽象类型根据对应的数据库的querybuilder中转换成数据库的特定类型，英文文档有例子
+     * @param  [type] $type [description]
+     * @return [type]       [description]
+     */
     public function getColumnType($type)
     {
         if ($type instanceof ColumnSchemaBuilder) {
@@ -740,13 +745,32 @@ class QueryBuilder extends \yii\base\Object
         // 映射表中已经有的，直接使用映射的类型
         if (isset($this->typeMap[$type])) {
             return $this->typeMap[$type];
-        // 映射表中没有的类型，看看是不是形如 "Schema::TYPE_INT(11) DEFAULT 0" 之类的
+        /*
+        带括号的情况
+        举例：
+        $type = 'string(32) not null';
+        输出 $matches
+        array (size=4)
+          0 => string 'string(32) not null' (length=19)
+          1 => string 'string' (length=6)
+          2 => string '32' (length=2)
+          3 => string ' not null' (length=9)
+         */
         } elseif (preg_match('/^(\w+)\((.+?)\)(.*)$/', $type, $matches)) {
             if (isset($this->typeMap[$matches[1]])) {
+                // 正则匹配替换,只有 $this->typeMap[$matches[1]] 中有 () 才会替换
                 return preg_replace('/\(.+\)/', '(' . $matches[2] . ')', $this->typeMap[$matches[1]]) . $matches[3];
             }
-        // 看看是不是形如 "Schema::TYPE_INT NOT NULL" 之类的，
-        // 注意这一分支在第二分支之后
+        /*
+        不带括号的情况
+
+        例如
+        $type = 'string not null';
+        输出 $matches
+        array (size=2)
+          0 => string 'string ' (length=7)
+          1 => string 'string' (length=6)
+         */ 
         } elseif (preg_match('/^(\w+)\s+/', $type, $matches)) {
             if (isset($this->typeMap[$matches[1]])) {
                 return preg_replace('/^\w+/', $this->typeMap[$matches[1]], $type);

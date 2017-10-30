@@ -10,6 +10,7 @@ namespace yii\db\mysql;
 use yii\db\ColumnSchemaBuilder as AbstractColumnSchemaBuilder;
 
 /**
+ * 创建mysql列类型属性
  * ColumnSchemaBuilder is the schema builder for MySQL databases.
  *
  * @author Chris Harris <chris@buckshotsoftware.com>
@@ -52,6 +53,7 @@ class ColumnSchemaBuilder extends AbstractColumnSchemaBuilder
     }
 
     /**
+     * 输出type
      * @inheritdoc
      */
     public function __toString()

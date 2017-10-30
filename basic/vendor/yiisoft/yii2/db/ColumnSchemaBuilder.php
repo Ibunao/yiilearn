@@ -11,6 +11,7 @@ use Yii;
 use yii\base\Object;
 
 /**
+ * 创建数据表列类型属性
  * ColumnSchemaBuilder helps to define database schema types using a PHP interface.
  *
  * See [[SchemaBuilderTrait]] for more detailed description and usage examples.

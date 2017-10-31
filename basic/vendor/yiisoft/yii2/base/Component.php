@@ -132,7 +132,7 @@ class Component extends Object
             // read property, e.g. getName()
             return $this->$getter();
         }
-        /* 
+        /*
         检查绑定的behavior是否含有此属性
         */
         // 将behavior()中配置的behavior添加到_behaviors数组
@@ -485,7 +485,7 @@ class Component extends Object
      * where `$event` is an [[Event]] object which includes parameters associated with the event.
      *
      * @param string $name the event name 事件名
-     * @param callable $handler the event handler 事件处理器 
+     * @param callable $handler the event handler 事件处理器
      * @param mixed $data the data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[Event::data]]. 绑定时传递的数据
      * @param bool $append whether to append new event handler to the end of the existing 是否追加到最后
@@ -561,6 +561,7 @@ class Component extends Object
             $event->name = $name;
             foreach ($this->_events[$name] as $handler) {
                 $event->data = $handler[1];
+                // $ding = $handler[0];
                 call_user_func($handler[0], $event);
                 // 如果在handler中将handled设置为true他后面的处理器将不会执行
                 // stop further handling if the event is handled

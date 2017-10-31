@@ -2,6 +2,7 @@
 
 $params = require(__DIR__ . '/params.php');
 $db = require(__DIR__ . '/db.php');
+$rules = require(__DIR__ . '/rules.php');
 
 $config = [
     'id' => 'basic',
@@ -61,6 +62,15 @@ $config = [
         ],
     ],
     'params' => $params,
+    'modules' => [
+
+        'ding' => [
+
+            'class' => 'app\modules\ding\Ding',
+
+        ],
+
+    ],
 ];
 
 if (YII_ENV_DEV) {

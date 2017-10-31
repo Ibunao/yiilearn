@@ -325,7 +325,6 @@ class UrlRule extends Object implements UrlRuleInterface
         // route 中含有 <参数> ，则将所有参数提取成 [参数 => <参数>]
         // 如 ['controller' => '<controller>', 'action' => '<action>'],
         // 获取 route 参数
-        // route 中存在 < 平匹配 <任意字符>
         if (strpos($this->route, '<') !== false && preg_match_all('/<([\w._-]+)>/', $this->route, $matches)) {
             foreach ($matches[1] as $name) {
                 $this->_routeParams[$name] = "<$name>";
@@ -409,24 +408,43 @@ class UrlRule extends Object implements UrlRuleInterface
             $appendSlash = false;
             foreach ($matches as $match) {
                 //([\w._-]+)匹配到的
+                /*
+                [
+                    "ding",
+                    7
+                ],
+                 */
                 $name = $match[1][0];
                 //([^>]+)匹配到的
                 //如果没有匹配到则 使用[^\/]+ 表示匹配除了 '/' 以外的所有字符
+                /*
+                [
+                    "\\w",
+                    12
+                ]
+                 */
                 $pattern = isset($match[2][0]) ? $match[2][0] : '[^\/]+';
                 // 占位符
                 $placeholder = 'a' . hash('crc32b', $name); // placeholder must begin with a letter
                 $this->placeholders[$placeholder] = $name;
+                // 如果 defaults[] 中有同名参数，
                 if (array_key_exists($name, $this->defaults)) {
                     // 匹配到整体的长度
+                    /*
+                    [
+                        "<ding:\\w>",
+                        6
+                    ]
+                     */
                     $length = strlen($match[0][0]);
                     // 开始位置
                     $offset = $match[0][1];
                     // 将 $requiredPatternPart 中的 /{$match[0][0]}/ 替换成 //
                     $requiredPatternPart = str_replace("/{$match[0][0]}/", '//', $requiredPatternPart);
                     if (
-                        //允许有斜线 /
+                        //允许开头有斜线 /
                         $allowAppendSlash  
-                        // 是否是最开始的位置
+                        // 第一个且pattern是以 / 开始的  如'/<bunao:\d>/<ding:\w>/<id:\d+>/<ran>' 中的 bunao
                         && ($appendSlash || $offset === 1)
                         && (($offset - $oldOffset) === 1)
                         // 判断是否有 后/
@@ -438,22 +456,27 @@ class UrlRule extends Object implements UrlRuleInterface
                         // if pattern starts from optional params, put slash at the end of param pattern
                         // @see https://github.com/yiisoft/yii2/issues/13086
                         $appendSlash = true;
+                        // $tr["<ding>/"] = "((?P<$placeholder>\\w)/)?";
+                        // 如果有就是第一个 bunao 匹配到了，之后的才有可能以这种形式存
                         $tr["<$name>/"] = "((?P<$placeholder>$pattern)/)?";
                     } elseif (
+                        // 中间的
                         $offset > 1
                         && $this->pattern[$offset - 1] === '/'
                         && (!isset($this->pattern[$offset + $length]) || $this->pattern[$offset + $length] === '/')
                     ) {
                         $appendSlash = false;
+                        // 中间的 ding  id
                         $tr["/<$name>"] = "(/(?P<$placeholder>$pattern))?";
                     }
+                    // 所有匹配到的
                     $tr["<$name>"] = "(?P<$placeholder>$pattern)?";
                     $oldOffset = $offset + $length;
                 } else {
                     $appendSlash = false;
                     $tr["<$name>"] = "(?P<$placeholder>$pattern)";
                 }
-
+                // 如果路由中也有name
                 if (isset($this->_routeParams[$name])) {
                     $tr2["<$name>"] = "(?P<$placeholder>$pattern)";
                 } else {
@@ -461,21 +484,23 @@ class UrlRule extends Object implements UrlRuleInterface
                 }
             }
         }
-
+        // 如果全部为 ////
         // we have only optional params in route - ensure slash position on param patterns
         if ($allowAppendSlash && trim($requiredPatternPart, '/') === '') {
             $this->translatePattern(false);
             return;
         }
-
+        // 将 pattern 中所有的 <参数名:参数pattern> 替换成 <参数名> 后作为 _template
         $this->_template = preg_replace('/<([\w._-]+):?([^>]+)?>/', '<$1>', $this->pattern);
+        // 将 _template 中的特殊字符及字符串使用 tr[] 进行转换，并作为最终的pattern
         $this->pattern = '#^' . trim(strtr($this->_template, $tr), '/') . '$#u';
 
         // if host starts with relative scheme, then insert pattern to match any
         if (strpos($this->host, '//') === 0) {
             $this->pattern = substr_replace($this->pattern, '[\w]+://', 2, 0);
         }
-
+        // 如果指定了 routePrams 还要使用 tr2[] 对 route 进行转换，
+        // 并作为最终的 _routeRule
         if (!empty($this->_routeParams)) {
             $this->_routeRule = '#^' . strtr($this->route, $tr2) . '$#u';
         }
@@ -508,29 +533,35 @@ class UrlRule extends Object implements UrlRuleInterface
     /**
      * 解析请求
      * Parses the given request and returns the corresponding route and parameters.
-     * @param UrlManager $manager the URL manager
-     * @param Request $request the request component
+     * @param UrlManager $manager the URL manager uslManager对象
+     * @param Request $request the request component Request对象
      * @return array|bool the parsing result. The route and the parameters are returned as an array.
      * If `false`, it means this rule cannot be used to parse this path info.
      */
     public function parseRequest($manager, $request)
     {
+        // 当前路由规则仅限于创建URL，直接返回 false。
+        // 该方法返回false表示当前规则不适用于当前的URL。
         if ($this->mode === self::CREATION_ONLY) {
             return false;
         }
-
+        // 检查请求方法是否符合定义的
         if (!empty($this->verb) && !in_array($request->getMethod(), $this->verb, true)) {
             return false;
         }
-
+        // 后缀
         $suffix = (string)($this->suffix === null ? $manager->suffix : $this->suffix);
+        // 获取URL中入口脚本之后、查询参数 ? 号之前的全部内容
         $pathInfo = $request->getPathInfo();
         $normalized = false;
+        // 如果定义的Normalizer，对pathinfo进行规范化，没用过
         if ($this->hasNormalizer($manager)) {
             $pathInfo = $this->getNormalizer($manager)->normalizePathInfo($pathInfo, $suffix, $normalized);
         }
+        // 有假后缀且有PATH_INFO
         if ($suffix !== '' && $pathInfo !== '') {
             $n = strlen($suffix);
+            // 当前请求的 PATH_INFO 以该假后缀结尾，留意 -$n 的用法
             if (substr_compare($pathInfo, $suffix, -$n, $n) === 0) {
                 $pathInfo = substr($pathInfo, 0, -$n);
                 if ($pathInfo === '') {
@@ -541,11 +572,11 @@ class UrlRule extends Object implements UrlRuleInterface
                 return false;
             }
         }
-
+        // 规则定义了主机信息，即 http://www.digpage.com 之类，那要把主机信息接回去。
         if ($this->host !== null) {
             $pathInfo = strtolower($request->getHostInfo()) . ($pathInfo === '' ? '' : '/' . $pathInfo);
         }
-
+        // 当前URL是否匹配规则，留意这个pattern是经过 init() 转换的
         if (!preg_match($this->pattern, $pathInfo, $matches)) {
             return false;
         }

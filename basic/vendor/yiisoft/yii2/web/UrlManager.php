@@ -250,7 +250,13 @@ class UrlManager extends Component
                 // 路由部分
                 $rule = ['route' => $rule];
                 // 获取允许的请求
+                /* $patten= '/^((?:(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS),)*(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS))\s+(.*)$/';
+                允许多个方法请求的形式 用 , 隔开
+                例如
+                $key = 'DELETE,POST <controller:\w+>/<id:\d+>';
+                */
                 if (preg_match("/^((?:($verbs),)*($verbs))\\s+(.*)$/", $key, $matches)) {
+                    // 允许的请求方式
                     $rule['verb'] = explode(',', $matches[1]);
                     // rules that do not apply for GET requests should not be use to create urls
                     if (!in_array('GET', $rule['verb'])) {

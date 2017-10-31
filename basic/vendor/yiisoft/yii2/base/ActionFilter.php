@@ -43,6 +43,7 @@ class ActionFilter extends Behavior
 
 
     /**
+     * 在控制器执行beforeAction时，会trigger ，trigger之前会进行绑定
      * @inheritdoc
      */
     public function attach($owner)

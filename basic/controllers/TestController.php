@@ -3,9 +3,9 @@
 namespace app\controllers;
 
 use Yii;
-use yii\web\Controller;
+use app\helpers\zController;
 
-class TestController extends Controller
+class TestController extends zController
 {
 	public function behaviors()
 	{
@@ -44,5 +44,14 @@ class TestController extends Controller
 		$sql = 'select [[ding]] from {{%ran%}}  WHERE id=:id AND status=:status;';
 		var_dump(Yii::$app->db->createCommand($sql)->bindValue(':id', 1)
            ->bindValue(':status', 1)->execute());
+	}
+	public function actionBunao()
+	{
+		var_dump($_GET);
+		echo "here";
+	}
+	public function actionDingBunao()
+	{
+		echo "bunao";
 	}
 }

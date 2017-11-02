@@ -97,8 +97,9 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
+     * 创建
      * Generates a SELECT SQL statement from a [[Query]] object.
-     * @param Query $query the [[Query]] object from which the SQL statement will be generated.
+     * @param Query $query the [[Query]] object from which the SQL statement will be generated. Query对象
      * @param array $params the parameters to be bound to the generated SQL statement. These parameters will
      * be included in the result with the additional parameters generated during the query building process.
      * @return array the generated SQL statement (the first array element) and the corresponding
@@ -108,12 +109,15 @@ class QueryBuilder extends \yii\base\Object
     public function build($query, $params = [])
     {
         $query = $query->prepare($this);
-
+        // 替换占位符的参数 [':name' => 'Dan', ':age' => 31]
         $params = empty($params) ? $query->params : array_merge($params, $query->params);
 
         $clauses = [
+            // 创建select语句
             $this->buildSelect($query->select, $params, $query->distinct, $query->selectOption),
+            // 创建from语句
             $this->buildFrom($query->from, $params),
+            // 创建jion语句
             $this->buildJoin($query->join, $params),
             $this->buildWhere($query->where, $params),
             $this->buildGroupBy($query->groupBy),
@@ -781,9 +785,10 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
-     * @param array $columns
-     * @param array $params the binding parameters to be populated
-     * @param bool $distinct
+     * 创建select语句
+     * @param array $columns 查询的列
+     * @param array $params the binding parameters to be populated  
+     * @param bool $distinct 是否去重
      * @param string $selectOption
      * @return string the SELECT clause built from [[Query::$select]].
      */
@@ -799,22 +804,29 @@ class QueryBuilder extends \yii\base\Object
         }
 
         foreach ($columns as $i => $column) {
+            // 借助于 Expression 对象定义的
             if ($column instanceof Expression) {
                 if (is_int($i)) {
                     $columns[$i] = $column->expression;
                 } else {
+                    //                                              加反引号
                     $columns[$i] = $column->expression . ' AS ' . $this->db->quoteColumnName($i);
                 }
                 $params = array_merge($params, $column->params);
+            // 如果是一个query查询，也就是要实现子查询的
             } elseif ($column instanceof Query) {
                 list($sql, $params) = $this->build($column, $params);
                 $columns[$i] = "($sql) AS " . $this->db->quoteColumnName($i);
+            // 上面两个用对象的必须设置别名
+            // 如果用别名了
             } elseif (is_string($i)) {
+                // 如果没有 () 添加反转号 ，有括号的如 (a+b) max(a)
                 if (strpos($column, '(') === false) {
                     $column = $this->db->quoteColumnName($column);
                 }
                 $columns[$i] = "$column AS " . $this->db->quoteColumnName($i);
             } elseif (strpos($column, '(') === false) {
+                // 'ding as d' 形式的
                 if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)([\w\-_\.]+)$/', $column, $matches)) {
                     $columns[$i] = $this->db->quoteColumnName($matches[1]) . ' AS ' . $this->db->quoteColumnName($matches[2]);
                 } else {
@@ -827,6 +839,7 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
+     * 创建from 语句
      * @param array $tables
      * @param array $params the binding parameters to be populated
      * @return string the FROM clause built from [[Query::$from]].
@@ -836,13 +849,14 @@ class QueryBuilder extends \yii\base\Object
         if (empty($tables)) {
             return '';
         }
-
+        // 加反引号
         $tables = $this->quoteTableNames($tables, $params);
 
         return 'FROM ' . implode(', ', $tables);
     }
 
     /**
+     * 创建jion语句
      * @param array $joins
      * @param array $params the binding parameters to be populated
      * @return string the JOIN clause built from [[Query::$join]].
@@ -875,6 +889,7 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
+     * 加反引号
      * Quotes table names passed
      *
      * @param array $tables
@@ -1078,6 +1093,7 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
+     * 创建条件
      * Parses the condition specification and generates the corresponding SQL expression.
      * @param string|array|Expression $condition the condition specification. Please refer to [[Query::where()]]
      * on how to specify a condition.
@@ -1096,7 +1112,28 @@ class QueryBuilder extends \yii\base\Object
         } elseif (empty($condition)) {
             return '';
         }
-
+        // 假设条件是
+        /*
+        [
+            or,
+            [
+                and,
+                [
+                    in, a , $arr
+                ],
+                [
+                    between, b , 10, 20
+                ]
+            ],
+            [
+                'status=:status'
+            ]
+        ]
+        构成语句的语法 
+        Query->where(['in', a , $arr])
+            ->andWhere(['between', b, 10, 20])
+            ->orWhere('status=:status', [':status' => $status])
+         */
         if (isset($condition[0])) { // operator format: operator, operand 1, operand 2, ...
             $operator = strtoupper($condition[0]);
             if (isset($this->conditionBuilders[$operator])) {
@@ -1104,6 +1141,7 @@ class QueryBuilder extends \yii\base\Object
             } else {
                 $method = 'buildSimpleCondition';
             }
+            // 删除数组的第一个
             array_shift($condition);
             return $this->$method($operator, $condition, $params);
         } else { // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
@@ -1112,6 +1150,7 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
+     * 创建键值对条件，没用过
      * Creates a condition based on column-value pairs.
      * @param array $condition the condition specification.
      * @param array $params the binding parameters to be populated
@@ -1121,6 +1160,7 @@ class QueryBuilder extends \yii\base\Object
     {
         $parts = [];
         foreach ($condition as $column => $value) {
+            // 如果是数组或Query
             if (ArrayHelper::isTraversable($value) || $value instanceof Query) {
                 // IN condition
                 $parts[] = $this->buildInCondition('IN', [$column, $value], $params);

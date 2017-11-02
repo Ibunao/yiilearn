@@ -44,8 +44,7 @@ $config = [
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'rules' => [
-            ],
+            'rules' => $rules,
         ],
         'i18n' => [
             'translations' => [

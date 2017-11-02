@@ -61,6 +61,7 @@ abstract class Schema extends Object
     const TYPE_MONEY = 'money';
 
     /**
+     * Connection
      * @var Connection the database connection
      */
     public $db;
@@ -493,6 +494,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 给table添加反引号(如mysql)或引号
      * Quotes a table name for use in a query.
      * If the table name contains schema prefix, the prefix will also be properly quoted.
      * If the table name is already quoted or contains '(' or '{{',
@@ -503,12 +505,15 @@ abstract class Schema extends Object
      */
     public function quoteTableName($name)
     {
+        // 如果有 ( ) 或 {{}} 直接返回
         if (strpos($name, '(') !== false || strpos($name, '{{') !== false) {
             return $name;
         }
+        // 如果含没有 . 
         if (strpos($name, '.') === false) {
             return $this->quoteSimpleTableName($name);
         }
+        // 含有 .
         $parts = explode('.', $name);
         foreach ($parts as $i => $part) {
             $parts[$i] = $this->quoteSimpleTableName($part);
@@ -551,6 +556,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 给table添加引号
      * Quotes a simple table name for use in a query.
      * A simple table name should contain the table name only without any schema prefix.
      * If the table name is already quoted, this method will do nothing.

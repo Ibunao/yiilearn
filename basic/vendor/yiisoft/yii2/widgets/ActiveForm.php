@@ -285,6 +285,7 @@ class ActiveForm extends Widget
     }
 
     /**
+     * 创建form字段
      * Generates a form field.
      * A form field is associated with a model and an attribute. It contains a label, an input and an error message
      * and use them to interact with end users to collect their inputs for the attribute.
@@ -299,6 +300,7 @@ class ActiveForm extends Widget
     public function field($model, $attribute, $options = [])
     {
         $config = $this->fieldConfig;
+        // 如果是匿名函数
         if ($config instanceof \Closure) {
             $config = call_user_func($config, $model, $attribute);
         }

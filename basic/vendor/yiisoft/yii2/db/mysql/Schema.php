@@ -80,6 +80,7 @@ class Schema extends \yii\db\Schema
     }
 
     /**
+     * 创建builder
      * Creates a query builder for the MySQL database.
      * @return QueryBuilder query builder instance
      */

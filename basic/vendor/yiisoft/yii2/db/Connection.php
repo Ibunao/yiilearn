@@ -285,6 +285,7 @@ class Connection extends Component
         'cubrid' => 'yii\db\cubrid\Schema', // CUBRID
     ];
     /**
+     * pdo类
      * @var string Custom PDO wrapper class. If not set, it will use [[PDO]] or [[\yii\db\mssql\PDO]] when MSSQL is used.
      * @see pdo
      */
@@ -302,22 +303,32 @@ class Connection extends Component
      */
     public $enableSavepoint = true;
     /**
+     * 缓存的用的cache组件名
      * @var Cache|string the cache object or the ID of the cache application component that is used to store
      * the health status of the DB servers specified in [[masters]] and [[slaves]].
      * This is used only when read/write splitting is enabled or [[masters]] is not empty.
      */
     public $serverStatusCache = 'cache';
     /**
+     * 重试连接时间
      * @var int the retry interval in seconds for dead servers listed in [[masters]] and [[slaves]].
      * This is used together with [[serverStatusCache]].
      */
     public $serverRetryInterval = 600;
     /**
+     * 是否开启从库
      * @var bool whether to enable read/write splitting by using [[slaves]] to read data.
      * Note that if [[slaves]] is empty, read/write splitting will NOT be enabled no matter what value this property takes.
      */
     public $enableSlaves = true;
     /**
+     * 从库配置列表
+     * [
+        ['dsn' => 'dsn for slave server 1'],
+        ['dsn' => 'dsn for slave server 2'],
+        ['dsn' => 'dsn for slave server 3'],
+        ['dsn' => 'dsn for slave server 4'],
+    ],
      * @var array list of slave connection configurations. Each configuration is used to create a slave DB connection.
      * When [[enableSlaves]] is true, one of these configurations will be chosen and used to create a DB connection
      * for performing read queries only.
@@ -326,6 +337,7 @@ class Connection extends Component
      */
     public $slaves = [];
     /**
+     * 从库统一配置
      * @var array the configuration that should be merged with every slave configuration listed in [[slaves]].
      * For example,
      *
@@ -342,6 +354,7 @@ class Connection extends Component
      */
     public $slaveConfig = [];
     /**
+     * 多主库配置
      * @var array list of master connection configurations. Each configuration is used to create a master DB connection.
      * When [[open()]] is called, one of these configurations will be chosen and used to create a DB connection
      * which will be used by this object.
@@ -401,6 +414,7 @@ class Connection extends Component
      */
     private $_schema;
     /**
+     * 数据库类型
      * @var string driver name
      */
     private $_driverName;
@@ -409,7 +423,7 @@ class Connection extends Component
      */
     private $_master = false;
     /**
-     * 
+     * 当前活动的从库
      * @var Connection the currently active slave connection
      */
     private $_slave = false;
@@ -420,6 +434,7 @@ class Connection extends Component
 
 
     /**
+     * 当前是否连接
      * Returns a value indicating whether the DB connection is established.
      * @return bool whether the DB connection is established
      */
@@ -562,8 +577,9 @@ class Connection extends Component
         if ($this->pdo !== null) {
             return;
         }
-        // 多个主库
+        // 配置多个主库
         if (!empty($this->masters)) {
+            // 获取主库
             $db = $this->getMaster();
             if ($db !== null) {
                 $this->pdo = $db->pdo;
@@ -572,7 +588,7 @@ class Connection extends Component
                 throw new InvalidConfigException('None of the master DB servers is available.');
             }
         }
-
+        // 
         if (empty($this->dsn)) {
             throw new InvalidConfigException('Connection::dsn cannot be empty.');
         }
@@ -580,6 +596,7 @@ class Connection extends Component
         try {
             Yii::info($token, __METHOD__);
             Yii::beginProfile($token, __METHOD__);
+            // 创建pdo实例
             $this->pdo = $this->createPdoInstance();
             $this->initConnection();
             Yii::endProfile($token, __METHOD__);
@@ -618,6 +635,7 @@ class Connection extends Component
     }
 
     /**
+     * 创建pdo实例
      * Creates the PDO instance.
      * This method is called by [[open]] to establish a DB connection.
      * The default implementation will create a PHP PDO instance.
@@ -629,6 +647,7 @@ class Connection extends Component
         $pdoClass = $this->pdoClass;
         if ($pdoClass === null) {
             $pdoClass = 'PDO';
+            // 获取dsn 中的数据库类型 如 mysql
             if ($this->_driverName !== null) {
                 $driver = $this->_driverName;
             } elseif (($pos = strpos($this->dsn, ':')) !== false) {
@@ -651,6 +670,7 @@ class Connection extends Component
     }
 
     /**
+     * 初始化
      * Initializes the DB connection.
      * This method is invoked right after the DB connection is established.
      * The default implementation turns on `PDO::ATTR_EMULATE_PREPARES`
@@ -659,10 +679,15 @@ class Connection extends Component
      */
     protected function initConnection()
     {
+        // pdo设置属性
+        // 设置报告错误为异常
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // 看注释吧，不太清楚
+        // 启用或禁用预处理语句的模拟。 有些驱动不支持或有限度地支持本地预处理。使用此设置强制PDO总是模拟预处理语句（如果为 TRUE ），或试着使用本地预处理语句（如果为 FALSE）。如果驱动不能成功预处理当前查询，它将总是回到模拟预处理语句上。 需要 bool 类型。 
         if ($this->emulatePrepare !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
             $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->emulatePrepare);
         }
+        // pdo设置编码
         if ($this->charset !== null && in_array($this->getDriverName(), ['pgsql', 'mysql', 'mysqli', 'cubrid'], true)) {
             $this->pdo->exec('SET NAMES ' . $this->pdo->quote($this->charset));
         }
@@ -776,6 +801,7 @@ class Connection extends Component
         if ($this->_schema !== null) {
             return $this->_schema;
         } else {
+            // dns中设置的  如mysql
             $driver = $this->getDriverName();
             if (isset($this->schemaMap[$driver])) {
                 $config = !is_array($this->schemaMap[$driver]) ? ['class' => $this->schemaMap[$driver]] : $this->schemaMap[$driver];
@@ -832,6 +858,7 @@ class Connection extends Component
     }
 
     /**
+     * 给table加引号或者反引号
      * Quotes a table name for use in a query.
      * If the table name contains schema prefix, the prefix will also be properly quoted.
      * If the table name is already quoted or contains special characters including '(', '[[' and '{{',
@@ -845,6 +872,7 @@ class Connection extends Component
     }
 
     /**
+     * 给字段加反引号
      * Quotes a column name for use in a query.
      * If the column name contains prefix, the prefix will also be properly quoted.
      * If the column name is already quoted or contains special characters including '(', '[[' and '{{',
@@ -896,6 +924,7 @@ array (size=3)
                 if (isset($matches[3])) {
                     return $this->quoteColumnName($matches[3]);
                 } else {
+                    // 把百分号替换成定义的前缀
                     return str_replace('%', $this->tablePrefix, $this->quoteTableName($matches[2]));
                 }
             },
@@ -904,7 +933,7 @@ array (size=3)
     }
 
     /**
-     * 获取数据库驱动名
+     * 获取数据库驱动名 如mysql
      * Returns the name of the DB driver. Based on the the current [[dsn]], in case it was not set explicitly
      * by an end user.
      * @return string name of the DB driver
@@ -932,6 +961,7 @@ array (size=3)
     }
 
     /**
+     * 获取从库pdo
      * Returns the PDO instance for the currently active slave connection.
      * When [[enableSlaves]] is true, one of the slaves will be used for read queries, and its PDO instance
      * will be returned by this method.
@@ -950,6 +980,7 @@ array (size=3)
     }
 
     /**
+     * 获取主库pdo
      * Returns the PDO instance for the currently active master connection.
      * This method will open the master DB connection and then return [[pdo]].
      * @return PDO the PDO instance for the currently active master connection.
@@ -961,6 +992,7 @@ array (size=3)
     }
 
     /**
+     * 获取一个当前活动的从库
      * Returns the currently active slave connection.
      * If this method is called for the first time, it will try to open a slave connection when [[enableSlaves]] is true.
      * @param bool $fallbackToMaster whether to return a master connection in case there is no slave connection available.
@@ -969,11 +1001,13 @@ array (size=3)
      */
     public function getSlave($fallbackToMaster = true)
     {
+        // 如果关闭从库
         if (!$this->enableSlaves) {
             return $fallbackToMaster ? $this : null;
         }
-
+        // 
         if ($this->_slave === false) {
+            // 随机开启一个从库
             $this->_slave = $this->openFromPool($this->slaves, $this->slaveConfig);
         }
 
@@ -1074,21 +1108,21 @@ array (size=3)
         if (!isset($sharedConfig['class'])) {
             $sharedConfig['class'] = get_class($this);
         }
-
+        // 缓存对象
         $cache = is_string($this->serverStatusCache) ? Yii::$app->get($this->serverStatusCache, false) : $this->serverStatusCache;
-
+        // 之所以循环，是为了开启第一个能用的
         foreach ($pool as $config) {
             $config = array_merge($sharedConfig, $config);
             if (empty($config['dsn'])) {
                 throw new InvalidConfigException('The "dsn" option must be specified.');
             }
-
+            // 获取缓存
             $key = [__METHOD__, $config['dsn']];
             if ($cache instanceof Cache && $cache->get($key)) {
                 // should not try this dead server now
                 continue;
             }
-
+            // 创建connection对象
             /* @var $db Connection */
             $db = Yii::createObject($config);
 

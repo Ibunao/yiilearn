@@ -45,6 +45,8 @@ use yii\base\Component;
  */
 class Query extends Component implements QueryInterface
 {
+    // 使用特性，特性中的属性和方法就如同是自己的一样
+    // QueryInterface中定义的方法Query中没有实现，而是在 QueryTrait 中实现了
     use QueryTrait;
 
     /**
@@ -54,6 +56,7 @@ class Query extends Component implements QueryInterface
      */
     public $select;
     /**
+     * select 的选项，没用过
      * @var string additional option that should be appended to the 'SELECT' keyword. For example,
      * in MySQL, the option 'SQL_CALC_FOUND_ROWS' can be used.
      */
@@ -113,6 +116,7 @@ class Query extends Component implements QueryInterface
 
 
     /**
+     * 创建command执行命令
      * Creates a DB command that can be used to execute this query.
      * @param Connection $db the database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
@@ -247,6 +251,7 @@ class Query extends Component implements QueryInterface
      */
     public function one($db = null)
     {
+        // 如果不返回值
         if ($this->emulateExecution) {
             return false;
         }
@@ -440,6 +445,7 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * 查询的字段
      * Sets the SELECT part of the query.
      * @param string|array|Expression $columns the columns to be selected.
      * Columns can be specified in either a string (e.g. "id, name") or an array (e.g. ['id', 'name']).
@@ -463,9 +469,12 @@ class Query extends Component implements QueryInterface
      */
     public function select($columns, $option = null)
     {
+        //
         if ($columns instanceof Expression) {
             $columns = [$columns];
+        // 如果不是数组
         } elseif (!is_array($columns)) {
+            // 按照逗号分隔成数组
             $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
         }
         $this->select = $columns;
@@ -504,6 +513,7 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * 去重
      * Sets the value indicating whether to SELECT DISTINCT or not.
      * @param bool $value whether to SELECT DISTINCT or not.
      * @return $this the query object itself
@@ -591,8 +601,10 @@ class Query extends Component implements QueryInterface
      */
     public function andWhere($condition, $params = [])
     {
+        // 如果之前没用 where()
         if ($this->where === null) {
             $this->where = $condition;
+        // 如果是数组形式而且数组的第一个是 and
         } elseif (is_array($this->where) && isset($this->where[0]) && strcasecmp($this->where[0], 'and') === 0) {
             $this->where[] = $condition;
         } else {

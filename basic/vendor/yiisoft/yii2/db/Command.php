@@ -199,7 +199,8 @@ class Command extends Component
         if (!isset($params[1])) {
             return strtr($this->_sql, $params);
         }
-        //??? 还没遇到过
+        // 如果是用问号替换的
+        //$str = 'select * from where id = ? and intime = ?';
         $sql = '';
         foreach (explode('?', $this->_sql) as $i => $part) {
             $sql .= (isset($params[$i]) ? $params[$i] : '') . $part;
@@ -355,6 +356,7 @@ class Command extends Component
             } else {
                 // 获取值对应的pdo类型
                 $type = $schema->getPdoType($value);
+                // 值, pdo中对应的类型
                 $this->_pendingParams[$name] = [$value, $type];
                 $this->params[$name] = $value;
             }

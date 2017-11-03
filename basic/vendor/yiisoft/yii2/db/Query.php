@@ -46,10 +46,11 @@ use yii\base\Component;
 class Query extends Component implements QueryInterface
 {
     // 使用特性，特性中的属性和方法就如同是自己的一样
-    // QueryInterface中定义的方法Query中没有实现，而是在 QueryTrait 中实现了
+    // QueryInterface中定义的方法其实是在QueryTrait中实现的，需要重写的方法在Query中又实现里一遍
     use QueryTrait;
 
     /**
+     * select 查询的字段
      * @var array the columns being selected. For example, `['id', 'name']`.
      * This is used to construct the SELECT clause in a SQL statement. If not set, it means selecting all columns.
      * @see select()
@@ -62,11 +63,13 @@ class Query extends Component implements QueryInterface
      */
     public $selectOption;
     /**
+     * 是否去重，也就是添加 Distinct 关键字
      * @var bool whether to select distinct rows of data only. If this is set true,
      * the SELECT clause would be changed to SELECT DISTINCT.
      */
     public $distinct;
     /**
+     * 
      * @var array the table(s) to be selected from. For example, `['user', 'post']`.
      * This is used to construct the FROM clause in a SQL statement.
      * @see from()
@@ -467,9 +470,19 @@ class Query extends Component implements QueryInterface
      * in MySQL, the option 'SQL_CALC_FOUND_ROWS' can be used.
      * @return $this the query object itself
      */
+    /**
+     * 查询语句
+     * @param  [type] $columns 查询的字段
+     * 可以是数组形式，也可以是字符串形式，字符串形式多个用逗号隔开，最后都是转换成数组。建议用数组  
+     * 如果是字符串形式，CONCAT(first_name, ' ', last_name)这就会发生分割错误，如果单单是怕分割错误，要借助于Expression对象
+     * 所有不希望添加反转号的都要借助于 Expression 对象
+     * 
+     * @param  [type] $option  数据库查询的额外选项
+     * @return [type]          [description]
+     */
     public function select($columns, $option = null)
     {
-        //
+        // 如果是表达式
         if ($columns instanceof Expression) {
             $columns = [$columns];
         // 如果不是数组
@@ -483,6 +496,7 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * 
      * Add more columns to the SELECT part of the query.
      *
      * Note, that if [[select]] has not been specified before, you should include `*` explicitly
@@ -496,6 +510,10 @@ class Query extends Component implements QueryInterface
      * details about the format of this parameter.
      * @return $this the query object itself
      * @see select()
+     */
+    /**
+     * 添加查询语句
+     * @param [type] $columns 和select一样
      */
     public function addSelect($columns)
     {
@@ -517,6 +535,11 @@ class Query extends Component implements QueryInterface
      * Sets the value indicating whether to SELECT DISTINCT or not.
      * @param bool $value whether to SELECT DISTINCT or not.
      * @return $this the query object itself
+     */
+    /**
+     * 是否去重
+     * @param  boolean $value 是否添加去重 Distinct 关键字
+     * @return [type]         [description]
      */
     public function distinct($value = true)
     {

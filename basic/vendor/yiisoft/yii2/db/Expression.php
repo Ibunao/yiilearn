@@ -8,6 +8,10 @@
 namespace yii\db;
 
 /**
+ * 直接翻译过来就是表达式，真实的意图也就是让存放sql表达式的  
+ * 目的是为了在生成sql的时候不给这个参数转义或者添加引号  
+ * [参考](http://www.kkh86.com/it/yii2-adv/guide-adv-db-expression.html)  
+ * 
  * Expression represents a DB expression that does not need escaping or quoting.
  *
  * When an Expression object is embedded within a SQL statement or fragment,
@@ -31,10 +35,12 @@ namespace yii\db;
 class Expression extends \yii\base\Object
 {
     /**
+     * db 表达式 就是在sql中不需要转义或加引号的部分
      * @var string the DB expression
      */
     public $expression;
     /**
+     * 参数 [':status' => $status] 的形式，用来替换拼接的sql中的 :status 
      * @var array list of parameters that should be bound for this expression.
      * The keys are placeholders appearing in [[expression]] and the values
      * are the corresponding parameter values.

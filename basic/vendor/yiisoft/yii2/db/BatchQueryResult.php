@@ -10,6 +10,7 @@ namespace yii\db;
 use yii\base\Object;
 
 /**
+ * 批量的检索数据
  * BatchQueryResult represents a batch query from which you can retrieve data in batches.
  *
  * You usually do not instantiate BatchQueryResult directly. Instead, you obtain it by
@@ -36,15 +37,18 @@ class BatchQueryResult extends Object implements \Iterator
      */
     public $db;
     /**
+     * query对象
      * @var Query the query object associated with this batch query.
      * Do not modify this property directly unless after [[reset()]] is called explicitly.
      */
     public $query;
     /**
+     * 一批多少条数据
      * @var int the number of rows to be returned in each batch.
      */
     public $batchSize = 100;
     /**
+     * 是一条一条的还是一批一批的
      * @var bool whether to return a single row during each iteration.
      * If false, a whole batch of rows will be returned in each iteration.
      */

@@ -8,6 +8,7 @@
 namespace yii\db;
 
 /**
+ * 定义要实现的方法，这些方法
  * The QueryInterface defines the minimum set of methods to be implemented by a database query.
  *
  * The default implementation of this interface is provided by [[QueryTrait]].

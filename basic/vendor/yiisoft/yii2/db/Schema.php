@@ -61,6 +61,7 @@ abstract class Schema extends Object
     const TYPE_MONEY = 'money';
 
     /**
+     * 
      * Connection
      * @var Connection the database connection
      */
@@ -487,7 +488,7 @@ abstract class Schema extends Object
         if (($value = $this->db->getSlavePdo()->quote($str)) !== false) {
             return $value;
         } else {
-            // 手动反转查询字段
+            // 把单引号 '替换成 '' ??? 
             // the driver doesn't support quote (e.g. oci)
             return "'" . addcslashes(str_replace("'", "''", $str), "\000\n\r\\\032") . "'";
         }

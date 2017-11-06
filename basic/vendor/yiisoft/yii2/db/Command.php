@@ -80,6 +80,7 @@ class Command extends Component
      */
     public $params = [];
     /**
+     * 查询结果缓存的时间。使用0表示缓存的数据永远不会过期。使用一个负数来表示不应该使用查询缓存。
      * @var int the default number of seconds that query results can remain valid in cache.
      * Use 0 to indicate that the cached data will never expire. And use a negative number to indicate
      * query cache should not be used.
@@ -87,6 +88,7 @@ class Command extends Component
      */
     public $queryCacheDuration;
     /**
+     * 缓存依赖
      * @var \yii\caching\Dependency the dependency to be associated with the cached query result for this command
      * @see cache()
      */
@@ -173,6 +175,7 @@ class Command extends Component
      */
     public function getRawSql()
     {
+        // 如果没有绑定参数
         if (empty($this->params)) {
             return $this->_sql;
         }
@@ -183,19 +186,19 @@ class Command extends Component
             if (is_string($name) && strncmp(':', $name, 1)) {
                 $name = ':' . $name;
             }
-            // 如果为字符串类型加引号，放sql注入
+            // 如果为字符串类型加引号
             if (is_string($value)) {
                 $params[$name] = $this->db->quoteValue($value);
             } elseif (is_bool($value)) {
                 $params[$name] = ($value ? 'TRUE' : 'FALSE');
             } elseif ($value === null) {
                 $params[$name] = 'NULL';
-            // 不是对象和资源类型的其他类型
+            // 不是对象和资源类型的其他类型 数值型的
             } elseif (!is_object($value) && !is_resource($value)) {
                 $params[$name] = $value;
             }
         }
-        // 如果都是 :name 的形式直接替换返回
+        // 如果都是 :name 的形式进行替换
         if (!isset($params[1])) {
             return strtr($this->_sql, $params);
         }
@@ -330,7 +333,7 @@ class Command extends Component
     }
 
     /**
-     * 绑定参数，判断类型
+     * 把绑定的值处理赋值
      * Binds a list of values to the corresponding parameters.
      * This is similar to [[bindValue()]] except that it binds multiple values at a time.
      * Note that the SQL data type of each value is determined by its PHP type.
@@ -390,6 +393,7 @@ class Command extends Component
     }
 
     /**
+     * 获取第一行数据
      * Executes the SQL statement and returns the first row of the result.
      * This method is best used when only the first row of result is needed for a query.
      * @param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://php.net/manual/en/pdostatement.setfetchmode.php)
@@ -860,7 +864,7 @@ class Command extends Component
         // 记录日志
         // 是否开启性能分析  sql语句
         list($profile, $rawSql) = $this->logQuery(__METHOD__);
-
+exit;
         if ($sql == '') {
             return 0;
         }
@@ -889,7 +893,7 @@ class Command extends Component
      * 记录查询日志
      * Logs the current database query if query logging is enabled and returns
      * the profiling token if profiling is enabled.
-     * @param string $category the log category.
+     * @param string $category the log category. 日志种类
      * @return array array of two elements, the first is boolean of whether profiling is enabled or not.
      * The second is the rawSql if it has been created.
      */
@@ -901,7 +905,7 @@ class Command extends Component
             Yii::info($rawSql, $category);
             // var_dump($rawSql, $category);exit;
         }
-        // 开启性能分析
+        // 是否开启性能分析
         if (!$this->db->enableProfiling) {
             return [false, isset($rawSql) ? $rawSql : null];
         } else {
@@ -910,6 +914,7 @@ class Command extends Component
     }
 
     /**
+     * 执行sql
      * Performs the actual DB query of a SQL statement.
      * @param string $method method of PDOStatement to be called
      * @param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
@@ -920,6 +925,7 @@ class Command extends Component
      */
     protected function queryInternal($method, $fetchMode = null)
     {
+        // 是否开启性能分析, sql语句
         list($profile, $rawSql) = $this->logQuery('yii\db\Command::query');
 
         if ($method !== '') {

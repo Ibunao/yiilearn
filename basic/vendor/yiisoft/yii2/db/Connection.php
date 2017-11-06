@@ -536,6 +536,12 @@ class Connection extends Component
      * @return array the current query cache information, or null if query cache is not enabled.
      * @internal
      */
+    /**
+     * 返回缓存信息
+     * @param  [type] $duration   设置的缓存时间
+     * @param  [type] $dependency 缓存依赖
+     * @return [type]             [description]
+     */
     public function getQueryCacheInfo($duration, $dependency)
     {
         if (!$this->enableQueryCache) {
@@ -846,6 +852,7 @@ class Connection extends Component
     }
 
     /**
+     * 给字符串值添加引号
      * Quotes a string value for use in a query.
      * Note that if the parameter is not a string, it will be returned without change.
      * @param string $value string to be quoted
@@ -944,7 +951,7 @@ array (size=3)
             if (($pos = strpos($this->dsn, ':')) !== false) {
                 $this->_driverName = strtolower(substr($this->dsn, 0, $pos));
             } else {
-                //??? 
+                //??? 应该是已经连接上了，应该不会走到这里
                 $this->_driverName = strtolower($this->getSlavePdo()->getAttribute(PDO::ATTR_DRIVER_NAME));
             }
         }

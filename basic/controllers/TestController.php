@@ -42,8 +42,8 @@ class TestController extends zController
 	public function actionDb()
 	{
 		$sql = 'select [[ding]] from {{%ran%}}  WHERE id=:id AND status=:status;';
-		var_dump(Yii::$app->db->createCommand($sql)->bindValue(':id', 1)
-           ->bindValue(':status', 1)->execute());
+		var_dump(Yii::$app->db->createCommand($sql)->bindValue(':id', "'1'--")
+           ->bindValue(':status', 1)->getRawSql());
 	}
 	public function actionBunao()
 	{
@@ -53,5 +53,13 @@ class TestController extends zController
 	public function actionDingBunao()
 	{
 		echo "bunao";
+	}
+	public function actionCache()
+	{
+		// Yii::$app->cache->set('ding', false);
+		$ding = Yii::$app->cache->get('ding');
+		var_dump($ding);
+		$ding = Yii::$app->cache->exists('ding');
+		var_dump($ding);
 	}
 }

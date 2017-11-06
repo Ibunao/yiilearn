@@ -32,6 +32,7 @@ use yii\base\Object;
 class BatchQueryResult extends Object implements \Iterator
 {
     /**
+     * 
      * @var Connection the DB connection to be used when performing batch query.
      * If null, the "db" application component will be used.
      */
@@ -82,6 +83,7 @@ class BatchQueryResult extends Object implements \Iterator
     }
 
     /**
+     * 重置
      * Resets the batch query.
      * This method will clean up the existing batch query so that a new batch query can be performed.
      */
@@ -112,6 +114,7 @@ class BatchQueryResult extends Object implements \Iterator
      */
     public function next()
     {
+        // 第一次                      不是each遍历    是each遍历
         if ($this->_batch === null || !$this->each || $this->each && next($this->_batch) === false) {
             $this->_batch = $this->fetchData();
             reset($this->_batch);
@@ -133,6 +136,7 @@ class BatchQueryResult extends Object implements \Iterator
     }
 
     /**
+     * 去下一组的数据
      * Fetches the next batch of data.
      * @return array the data fetched
      */

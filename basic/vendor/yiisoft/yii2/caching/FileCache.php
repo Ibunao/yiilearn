@@ -27,6 +27,7 @@ use yii\helpers\FileHelper;
 class FileCache extends Cache
 {
     /**
+     * 缓存key前缀
      * @var string a string prefixed to every cache key. This is needed when you store
      * cache data under the same [[cachePath]] for different applications to avoid
      * conflict.
@@ -35,11 +36,13 @@ class FileCache extends Cache
      */
     public $keyPrefix = '';
     /**
+     * 缓存的路径
      * @var string the directory to store cache files. You may use [path alias](guide:concept-aliases) here.
      * If not set, it will use the "cache" subdirectory under the application runtime path.
      */
     public $cachePath = '@runtime/cache';
     /**
+     * 缓存文件后缀
      * @var string cache file suffix. Defaults to '.bin'.
      */
     public $cacheFileSuffix = '.bin';
@@ -51,18 +54,21 @@ class FileCache extends Cache
      */
     public $directoryLevel = 1;
     /**
+     * 回收的几率  Defaults to 10, meaning 0.001% chance
      * @var int the probability (parts per million) that garbage collection (GC) should be performed
      * when storing a piece of data in the cache. Defaults to 10, meaning 0.001% chance.
      * This number should be between 0 and 1000000. A value 0 means no GC will be performed at all.
      */
     public $gcProbability = 10;
     /**
+     * 文件的权限
      * @var int the permission to be set for newly created cache files.
      * This value will be used by PHP chmod() function. No umask will be applied.
      * If not set, the permission will be determined by the current environment.
      */
     public $fileMode;
     /**
+     * 目录的权限
      * @var int the permission to be set for newly created directories.
      * This value will be used by PHP chmod() function. No umask will be applied.
      * Defaults to 0775, meaning the directory is read-writable by owner and group,
@@ -77,6 +83,7 @@ class FileCache extends Cache
     public function init()
     {
         parent::init();
+        // 创建文件夹
         $this->cachePath = Yii::getAlias($this->cachePath);
         if (!is_dir($this->cachePath)) {
             FileHelper::createDirectory($this->cachePath, $this->dirMode, true);
@@ -101,6 +108,7 @@ class FileCache extends Cache
     }
 
     /**
+     * 通过key获取缓存值
      * Retrieves a value from cache with a specified key.
      * This is the implementation of the method declared in the parent class.
      * @param string $key a unique key identifying the cached value
@@ -125,6 +133,7 @@ class FileCache extends Cache
     }
 
     /**
+     * 存值
      * Stores a value identified by a key in cache.
      * This is the implementation of the method declared in the parent class.
      *
@@ -136,19 +145,25 @@ class FileCache extends Cache
      */
     protected function setValue($key, $value, $duration)
     {
+        // 垃圾回收
         $this->gc();
+        // 获取key对应的缓存文件
         $cacheFile = $this->getCacheFile($key);
         if ($this->directoryLevel > 0) {
+            // 创建文件
             @FileHelper::createDirectory(dirname($cacheFile), $this->dirMode, true);
         }
+        // 加锁写入
         if (@file_put_contents($cacheFile, $value, LOCK_EX) !== false) {
             if ($this->fileMode !== null) {
+                // 设置权限
                 @chmod($cacheFile, $this->fileMode);
             }
+            // 小于等于0 
             if ($duration <= 0) {
                 $duration = 31536000; // 1 year
             }
-
+            // 修改文件的日期
             return @touch($cacheFile, $duration + time());
         } else {
             $error = error_get_last();
@@ -191,15 +206,18 @@ class FileCache extends Cache
     }
 
     /**
+     * 通过key获取缓存文件路径
      * Returns the cache file path given the cache key.
      * @param string $key cache key
      * @return string the cache file path
      */
     protected function getCacheFile($key)
     {
+        // 目录等级大于0
         if ($this->directoryLevel > 0) {
             $base = $this->cachePath;
             for ($i = 0; $i < $this->directoryLevel; ++$i) {
+                // key的两个字符作为文件夹
                 if (($prefix = substr($key, $i + $i, 2)) !== false) {
                     $base .= DIRECTORY_SEPARATOR . $prefix;
                 }
@@ -212,6 +230,7 @@ class FileCache extends Cache
     }
 
     /**
+     * 删除所有的缓存
      * Deletes all values from cache.
      * This is the implementation of the method declared in the parent class.
      * @return bool whether the flush operation was successful.
@@ -224,11 +243,18 @@ class FileCache extends Cache
     }
 
     /**
+     * 删除过期的文件
      * Removes expired cache files.
      * @param bool $force whether to enforce the garbage collection regardless of [[gcProbability]].
      * Defaults to false, meaning the actual deletion happens with the probability as specified by [[gcProbability]].
      * @param bool $expiredOnly whether to removed expired cache files only.
      * If false, all cache files under [[cachePath]] will be removed.
+     */
+    /**
+     * 删除过期的文件
+     * @param  boolean $force       是否强制执行垃圾回收，不管几率参数
+     * @param  boolean $expiredOnly 是否只删除过期文件
+     * @return [type]               [description]
      */
     public function gc($force = false, $expiredOnly = true)
     {
@@ -244,22 +270,33 @@ class FileCache extends Cache
      * @param bool $expiredOnly whether to only remove expired cache files. If false, all files
      * under `$path` will be removed.
      */
+    /**
+     * [gcRecursive description]
+     * @param  [type] $path        目录
+     * @param  [type] $expiredOnly 是否只删除过期的
+     * @return [type]              [description]
+     */
     protected function gcRecursive($path, $expiredOnly)
     {
         if (($handle = opendir($path)) !== false) {
             while (($file = readdir($handle)) !== false) {
+                // 只要开头是 . 的都继续，而不用判断是不是 . 或 .. 
                 if ($file[0] === '.') {
                     continue;
                 }
                 $fullPath = $path . DIRECTORY_SEPARATOR . $file;
                 if (is_dir($fullPath)) {
                     $this->gcRecursive($fullPath, $expiredOnly);
+                    // 删除目录
                     if (!$expiredOnly) {
                         if (!@rmdir($fullPath)) {
+                            // 获取错误信息
                             $error = error_get_last();
+                            // 几率错误日志
                             Yii::warning("Unable to remove directory '{$fullPath}': {$error['message']}", __METHOD__);
                         }
                     }
+                // 删除文件 过期文件
                 } elseif (!$expiredOnly || $expiredOnly && @filemtime($fullPath) < time()) {
                     if (!@unlink($fullPath)) {
                         $error = error_get_last();

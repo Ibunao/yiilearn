@@ -51,9 +51,13 @@ use yii\helpers\StringHelper;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
  */
+/**
+ * 继承 ArrayAccess ，可以让对象像数组一样访问
+ */
 abstract class Cache extends Component implements \ArrayAccess
 {
     /**
+     * 缓存前缀
      * @var string a string prefixed to every cache key so that it is unique globally in the whole cache storage.
      * It is recommended that you set a unique cache key prefix for each application if the same cache
      * storage is being used by different applications.
@@ -62,6 +66,7 @@ abstract class Cache extends Component implements \ArrayAccess
      */
     public $keyPrefix;
     /**
+     * 自定义的序列化方法
      * @var null|array|false the functions used to serialize and unserialize cached data. Defaults to null, meaning
      * using the default PHP `serialize()` and `unserialize()` functions. If you want to use some more efficient
      * serializer (e.g. [igbinary](http://pecl.php.net/package/igbinary)), you may configure this property with
@@ -73,6 +78,7 @@ abstract class Cache extends Component implements \ArrayAccess
      */
     public $serializer;
     /**
+     * 默认缓存时间
      * @var integer default duration in seconds before a cache entry will expire. Default value is 0, meaning infinity.
      * This value is used by [[set()]] if the duration is not explicitly given.
      * @since 2.0.11
@@ -90,9 +96,15 @@ abstract class Cache extends Component implements \ArrayAccess
      * @param mixed $key the key to be normalized
      * @return string the generated cache key
      */
+    /**
+     * 创建key
+     * @param  [type] $key key
+     * @return [type]      加工后的key
+     */
     public function buildKey($key)
     {
         if (is_string($key)) {
+            //做字母和数字字符检测 否全部为字母和(或)数字字符  and 字符的长度小=于32
             $key = ctype_alnum($key) && StringHelper::byteLength($key) <= 32 ? $key : md5($key);
         } else {
             $key = md5(json_encode($key));
@@ -102,6 +114,7 @@ abstract class Cache extends Component implements \ArrayAccess
     }
 
     /**
+     * 获取值
      * Retrieves a value from cache with a specified key.
      * @param mixed $key a key identifying the cached value. This can be a simple string or
      * a complex data structure consisting of factors representing the key.
@@ -110,15 +123,19 @@ abstract class Cache extends Component implements \ArrayAccess
      */
     public function get($key)
     {
+        // 获取key
         $key = $this->buildKey($key);
         $value = $this->getValue($key);
+        // 没有获取到 或者 不使用序列化直接返回
         if ($value === false || $this->serializer === false) {
             return $value;
         } elseif ($this->serializer === null) {
             $value = unserialize($value);
+        // 自定义的反序列化方法
         } else {
             $value = call_user_func($this->serializer[1], $value);
         }
+        // 使用了依赖
         if (is_array($value) && !($value[1] instanceof Dependency && $value[1]->isChanged($this))) {
             return $value[0];
         } else {
@@ -127,6 +144,7 @@ abstract class Cache extends Component implements \ArrayAccess
     }
 
     /**
+     * 返回key是否存在cache
      * Checks whether a specified key exists in the cache.
      * This can be faster than getting the value from the cache if the data is big.
      * In case a cache does not support this feature natively, this method will try to simulate it
@@ -141,6 +159,7 @@ abstract class Cache extends Component implements \ArrayAccess
     public function exists($key)
     {
         $key = $this->buildKey($key);
+        // 因为没有反序列化所以即使存的false 此时也不等于false
         $value = $this->getValue($key);
 
         return $value !== false;
@@ -216,15 +235,23 @@ abstract class Cache extends Component implements \ArrayAccess
      * This parameter is ignored if [[serializer]] is false.
      * @return bool whether the value is successfully stored into cache
      */
+    /**
+     * 存储
+     * @param [type] $key        key
+     * @param [type] $value      value
+     * @param [type] $duration   有效时间
+     * @param [type] $dependency 依赖
+     */
     public function set($key, $value, $duration = null, $dependency = null)
     {
         if ($duration === null) {
             $duration = $this->defaultDuration;
         }
-
+        // 如果设置了依赖，并且使用了序列化
         if ($dependency !== null && $this->serializer !== false) {
             $dependency->evaluateDependency($this);
         }
+        // 序列化 value
         if ($this->serializer === null) {
             $value = serialize([$value, $dependency]);
         } elseif ($this->serializer !== false) {

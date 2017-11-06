@@ -26,6 +26,10 @@ abstract class Dependency extends \yii\base\Object
      */
     public $data;
     /**
+     * 依赖是否可以重用 
+     * true 意味着依赖只会在每次请求时生成一次。这允许您
+在生成相同的缓存时，对多个单独的缓存调用使用相同的缓存依赖性
+页面没有每次重新评估依赖数据的开销
      * @var bool whether this dependency is reusable or not. True value means that dependent
      * data for this cache dependency will be generated only once per request. This allows you
      * to use the same cache dependency for multiple separate cache calls while generating the same

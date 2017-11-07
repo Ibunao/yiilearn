@@ -135,7 +135,7 @@ abstract class Cache extends Component implements \ArrayAccess
         } else {
             $value = call_user_func($this->serializer[1], $value);
         }
-        // 使用了依赖
+        // 如使用了依赖，要保证依赖没有变
         if (is_array($value) && !($value[1] instanceof Dependency && $value[1]->isChanged($this))) {
             return $value[0];
         } else {
@@ -177,6 +177,11 @@ abstract class Cache extends Component implements \ArrayAccess
      * If a value is not cached or expired, the corresponding array value will be false.
      * @deprecated This method is an alias for [[multiGet()]] and will be removed in 2.1.0.
      */
+    /**
+     * 多个键获取多个值
+     * @param  [type] $keys [description]
+     * @return [type]       [description]
+     */
     public function mget($keys)
     {
         return $this->multiGet($keys);
@@ -192,6 +197,11 @@ abstract class Cache extends Component implements \ArrayAccess
      * is returned in terms of (key, value) pairs.
      * If a value is not cached or expired, the corresponding array value will be false.
      * @since 2.0.7
+     */
+    /**
+     * 多个键获取多个值
+     * @param  [type] $keys [description]
+     * @return [type]       [description]
      */
     public function multiGet($keys)
     {
@@ -209,7 +219,7 @@ abstract class Cache extends Component implements \ArrayAccess
                 } else {
                     $value = $this->serializer === null ? unserialize($values[$newKey])
                         : call_user_func($this->serializer[1], $values[$newKey]);
-
+                    // 正常存的时候都是存的数组，第二个值是依赖即使为null
                     if (is_array($value) && !($value[1] instanceof Dependency && $value[1]->isChanged($this))) {
                         $results[$key] = $value[0];
                     }

@@ -225,19 +225,20 @@ class Command extends Component
      */
     public function prepare($forRead = null)
     {
+        // 如果已经有pdo对象了
         if ($this->pdoStatement) {
             $this->bindPendingParams();
             return;
         }
 
         $sql = $this->getSql();
-
+        // 如果开启了事务
         if ($this->db->getTransaction()) {
             // master is in a transaction. use the same connection.
             $forRead = false;
         }
         // 判断是读是写
-        // 读的话使用从库
+        // 读的话并且没使用事务and 是读的语句才使用从库
         if ($forRead || $forRead === null && $this->db->getSchema()->isReadQuery($sql)) {
             $pdo = $this->db->getSlavePdo();
         // 写的话使用主库
@@ -246,6 +247,7 @@ class Command extends Component
         }
 
         try {
+            // pdo预处理sql
             $this->pdoStatement = $pdo->prepare($sql);
             $this->bindPendingParams();
         } catch (\Exception $e) {
@@ -298,6 +300,7 @@ class Command extends Component
     }
 
     /**
+     * 给pdo绑定数据
      * Binds pending parameters that were registered via [[bindValue()]] and [[bindValues()]].
      * Note that this method requires an active [[pdoStatement]].
      */
@@ -859,16 +862,16 @@ class Command extends Component
      */
     public function execute()
     {
-        // 获取sql
+        // 获取原始sql，未处理替换的
         $sql = $this->getSql();
         // 记录日志
         // 是否开启性能分析  sql语句
         list($profile, $rawSql) = $this->logQuery(__METHOD__);
-exit;
+        
         if ($sql == '') {
             return 0;
         }
-
+        // pdo 预处理sql
         $this->prepare(false);
 
         try {

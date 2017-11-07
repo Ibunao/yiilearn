@@ -66,6 +66,7 @@ use yii\base\InvalidConfigException;
 class MemCache extends Cache
 {
     /**
+     * 使用的是memcached 还是 memcache
      * @var bool whether to use memcached or memcache as the underlying caching extension.
      * If true, [memcached](http://pecl.php.net/package/memcached) will be used.
      * If false, [memcache](http://pecl.php.net/package/memcache) will be used.
@@ -73,6 +74,7 @@ class MemCache extends Cache
      */
     public $useMemcached = false;
     /**
+     * 固定id
      * @var string an ID that identifies a Memcached instance. This property is used only when [[useMemcached]] is true.
      * By default the Memcached instances are destroyed at the end of the request. To create an instance that
      * persists between requests, you may specify a unique ID for the instance. All instances created with the
@@ -97,10 +99,12 @@ class MemCache extends Cache
     public $password;
 
     /**
+     * cache对象
      * @var \Memcache|\Memcached the Memcache instance
      */
     private $_cache;
     /**
+     * memcache 服务器数组
      * @var array list of memcache server configurations
      */
     private $_servers = [];
@@ -212,14 +216,20 @@ class MemCache extends Cache
      * @return \Memcache|\Memcached the memcache (or memcached) object used by this cache component.
      * @throws InvalidConfigException if memcache or memcached extension is not loaded
      */
+    /**
+     * 返回memcache对象
+     * @return [type] [description]
+     */
     public function getMemcache()
     {
         if ($this->_cache === null) {
+            // 确定使用的是 memcache 还是 memcached
             $extension = $this->useMemcached ? 'memcached' : 'memcache';
+            // 判断开启扩展
             if (!extension_loaded($extension)) {
                 throw new InvalidConfigException("MemCache requires PHP $extension extension to be loaded.");
             }
-
+            // 如果是 memcached
             if ($this->useMemcached) {
                 $this->_cache = $this->persistentId !== null ? new \Memcached($this->persistentId) : new \Memcached;
                 if ($this->username !== null || $this->password !== null) {

@@ -44,7 +44,9 @@ class FileDependency extends Dependency
         }
 
         $fileName = Yii::getAlias($this->fileName);
+        // 清除文件状态缓存
         clearstatcache(false, $fileName);
+        // 获取文件的修改时间
         return @filemtime($fileName);
     }
 }

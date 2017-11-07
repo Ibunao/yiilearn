@@ -42,8 +42,9 @@ class TestController extends zController
 	public function actionDb()
 	{
 		$sql = 'select [[ding]] from {{%ran%}}  WHERE id=:id AND status=:status;';
-		var_dump(Yii::$app->db->createCommand($sql)->bindValue(':id', "'1'--")
-           ->bindValue(':status', 1)->getRawSql());
+		$db = Yii::$app->db;
+		var_dump($db->createCommand($sql)->bindValue(':id', "'1'--")
+           ->bindValue(':status', 1)->execute());
 	}
 	public function actionBunao()
 	{
@@ -57,9 +58,14 @@ class TestController extends zController
 	public function actionCache()
 	{
 		// Yii::$app->cache->set('ding', false);
-		$ding = Yii::$app->cache->get('ding');
+		/*$ding = Yii::$app->cache->get('ding', );
 		var_dump($ding);
 		$ding = Yii::$app->cache->exists('ding');
-		var_dump($ding);
+		var_dump($ding);*/
+		$cache = Yii::$app->cache;
+		// $dependency = new \yii\caching\FileDependency(['fileName'=>'hw.txt', 'reusable' => true]);
+		// $cache->set('file_key','hello world!', 3000, $dependency);
+		// sleep(60);
+		var_dump($cache->get('file_key'));
 	}
 }

@@ -27,9 +27,8 @@ abstract class Dependency extends \yii\base\Object
     public $data;
     /**
      * 依赖是否可以重用 
-     * true 意味着依赖只会在每次请求时生成一次。这允许您
-在生成相同的缓存时，对多个单独的缓存调用使用相同的缓存依赖性
-页面没有每次重新评估依赖数据的开销
+     * true 表示重用，也就是每次请求只计算一次依赖数据，以后在使用此依赖，使用的是计算过的依赖数据，来节省开销
+     * 会导致一个问题，如果是一次请求，期间改动了依赖，但是获取数据的时候依旧可以获取到
      * @var bool whether this dependency is reusable or not. True value means that dependent
      * data for this cache dependency will be generated only once per request. This allows you
      * to use the same cache dependency for multiple separate cache calls while generating the same
@@ -44,6 +43,7 @@ abstract class Dependency extends \yii\base\Object
 
 
     /**
+     * cache缓存数据之前调用这个，计算出依赖的值
      * Evaluates the dependency by generating and saving the data related with dependency.
      * This method is invoked by cache before writing data into it.
      * @param Cache $cache the cache component that is currently evaluating this dependency
@@ -71,6 +71,7 @@ abstract class Dependency extends \yii\base\Object
     }
 
     /**
+     * 检查依赖是否改变
      * Checks whether the dependency is changed
      * @param Cache $cache the cache component that is currently evaluating this dependency
      * @return bool whether the dependency has changed.
@@ -91,6 +92,7 @@ abstract class Dependency extends \yii\base\Object
     }
 
     /**
+     * 重置可重复只用的依赖数据
      * Resets all cached data for reusable dependencies.
      */
     public static function resetReusableData()
@@ -99,12 +101,14 @@ abstract class Dependency extends \yii\base\Object
     }
 
     /**
+     * 生成hash
      * Generates a unique hash that can be used for retrieving reusable dependency data.
      * @return string a unique hash value for this cache dependency.
      * @see reusable
      */
     protected function generateReusableHash()
     {
+        // 为什么要赋值为null， 既然是生成重复可用的hash，序列化应该与第一次保存一直 
         $data = $this->data;
         $this->data = null;  // https://github.com/yiisoft/yii2/issues/3052
         $key = sha1(serialize($this));

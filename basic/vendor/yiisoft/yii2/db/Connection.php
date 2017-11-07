@@ -310,7 +310,7 @@ class Connection extends Component
      */
     public $serverStatusCache = 'cache';
     /**
-     * 重试连接时间
+     * 重试连接时间，也就是缓存连接异常的库的时间，在此期间内不再重连它
      * @var int the retry interval in seconds for dead servers listed in [[masters]] and [[slaves]].
      * This is used together with [[serverStatusCache]].
      */
@@ -419,11 +419,14 @@ class Connection extends Component
      */
     private $_driverName;
     /**
+     * 当前活动的从库
+     * 存放主库的 Connection对象 ，对象的  pdo属性时主库pdo
      * @var Connection the currently active master connection
      */
     private $_master = false;
     /**
      * 当前活动的从库
+     * 存放从库的 Connection对象 ，对象的  pdo属性时从库pdo
      * @var Connection the currently active slave connection
      */
     private $_slave = false;
@@ -580,6 +583,7 @@ class Connection extends Component
      */
     public function open()
     {
+        // 主库已经打开了
         if ($this->pdo !== null) {
             return;
         }
@@ -594,7 +598,7 @@ class Connection extends Component
                 throw new InvalidConfigException('None of the master DB servers is available.');
             }
         }
-        // 
+        // 设置了dsn
         if (empty($this->dsn)) {
             throw new InvalidConfigException('Connection::dsn cannot be empty.');
         }
@@ -976,6 +980,11 @@ array (size=3)
      * @return PDO the PDO instance for the currently active slave connection. `null` is returned if no slave connection
      * is available and `$fallbackToMaster` is false.
      */
+    /**
+     * 获取从库pdo
+     * @param  boolean $fallbackToMaster 如果从库不可用是否可以用主库的
+     * @return [type]                    [description]
+     */
     public function getSlavePdo($fallbackToMaster = true)
     {
         $db = $this->getSlave(false);
@@ -1010,9 +1019,10 @@ array (size=3)
     {
         // 如果关闭从库
         if (!$this->enableSlaves) {
+            // 此时返回的 $this中的主库 $this->pdo 也不一定是实例化过的
             return $fallbackToMaster ? $this : null;
         }
-        // 
+        // 开启从库
         if ($this->_slave === false) {
             // 随机开启一个从库
             $this->_slave = $this->openFromPool($this->slaves, $this->slaveConfig);
@@ -1106,6 +1116,12 @@ array (size=3)
      * @throws InvalidConfigException if a configuration does not specify "dsn"
      * @since 2.0.11
      */
+    /**
+     * 开启一个库
+     * @param  array  $pool         主库/从库数组
+     * @param  array  $sharedConfig 主库/从库配置
+     * @return [type]               [description]
+     */
     protected function openFromPoolSequentially(array $pool, array $sharedConfig)
     {
         if (empty($pool)) {
@@ -1115,7 +1131,7 @@ array (size=3)
         if (!isset($sharedConfig['class'])) {
             $sharedConfig['class'] = get_class($this);
         }
-        // 缓存对象
+        // 获取缓存对象
         $cache = is_string($this->serverStatusCache) ? Yii::$app->get($this->serverStatusCache, false) : $this->serverStatusCache;
         // 之所以循环，是为了开启第一个能用的
         foreach ($pool as $config) {
@@ -1123,7 +1139,7 @@ array (size=3)
             if (empty($config['dsn'])) {
                 throw new InvalidConfigException('The "dsn" option must be specified.');
             }
-            // 获取缓存
+            // 获取缓存的连接失败的库
             $key = [__METHOD__, $config['dsn']];
             if ($cache instanceof Cache && $cache->get($key)) {
                 // should not try this dead server now

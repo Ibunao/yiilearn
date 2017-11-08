@@ -68,4 +68,19 @@ class TestController extends zController
 		// sleep(60);
 		var_dump($cache->get('file_key'));
 	}
+	public function actionCommand()
+	{
+		$db = Yii::$app->db;
+		// [[ ]] 是要加反引号的，和数据库系统的关键词区分开
+		$sql = 'select [[name]] from {{%admin_users}}  WHERE status=:status;';
+		var_dump($query = $db->createCommand($sql)
+			// 第三个参数设置数据格式
+           ->bindValue(':status', 1, \PDO::PARAM_STR)->query());
+		// 设置pdo读取数据的格式
+		$query->setFetchMode(\PDO::FETCH_BOTH);
+		
+		foreach ($query as $key => $value) {
+			var_dump($key, $value);
+		}
+	}
 }

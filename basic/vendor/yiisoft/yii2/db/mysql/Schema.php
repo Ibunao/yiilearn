@@ -90,8 +90,9 @@ class Schema extends \yii\db\Schema
     }
 
     /**
+     * 获取表的表元素
      * Loads the metadata for the specified table.
-     * @param string $name table name
+     * @param string $name table name 表名
      * @return TableSchema driver dependent table metadata. Null if the table does not exist.
      */
     protected function loadTableSchema($name)
@@ -115,10 +116,14 @@ class Schema extends \yii\db\Schema
      */
     protected function resolveTableNames($table, $name)
     {
+        // 根据 . 分割，并将 ` 替换成空
         $parts = explode('.', str_replace('`', '', $name));
         if (isset($parts[1])) {
+            // 数据库名
             $table->schemaName = $parts[0];
+            // 表名
             $table->name = $parts[1];
+            // 全名
             $table->fullName = $table->schemaName . '.' . $table->name;
         } else {
             $table->fullName = $table->name = $parts[0];
@@ -126,13 +131,14 @@ class Schema extends \yii\db\Schema
     }
 
     /**
+     * 
      * 将列信息加载到列设计对象
      * Loads the column information into a [[ColumnSchema]] object.
      * @param array $info column information
      * @return ColumnSchema the column schema object
      */
     /*
-    例如：$info 
+    例如：$info[0] 
       Field: id
        Type: int(11)
   Collation: NULL
@@ -225,6 +231,7 @@ class Schema extends \yii\db\Schema
     }
 
     /**
+     * 收集表的列元素
      * Collects the metadata of table columns.
      * @param TableSchema $table the table metadata
      * @return bool whether the table exists in the database
@@ -232,9 +239,23 @@ class Schema extends \yii\db\Schema
      */
     protected function findColumns($table)
     {
+        // 获取表结构
         $sql = 'SHOW FULL COLUMNS FROM ' . $this->quoteTableName($table->fullName);
         try {
             $columns = $this->db->createCommand($sql)->queryAll();
+/*
+示例
+
+SHOW FULL COLUMNS FROM `meet_agent`;  
++------------+--------------+-----------------+------+-----+---------+----------------+---------------------------------+---------+
+| Field      | Type         | Collation       | Null | Key | Default | Extra          | Privileges                      | Comment |
++------------+--------------+-----------------+------+-----+---------+----------------+---------------------------------+---------+
+| agent_id   | int(10)      | NULL            | NO   | PRI | NULL    | auto_increment | select,insert,update,references |         |
+| agent_name | varchar(255) | utf8_general_ci | YES  |     | NULL    |                | select,insert,update,references |         |
+| agent_code | varchar(255) | utf8_general_ci | YES  |     | NULL    |                | select,insert,update,references |         |
+| p_order    | int(10)      | NULL            | YES  |     | 99      |                | select,insert,update,references |         |
++------------+--------------+-----------------+------+-----+---------+----------------+---------------------------------+---------+
+ */
         } catch (\Exception $e) {
             $previous = $e->getPrevious();
             if ($previous instanceof \PDOException && strpos($previous->getMessage(), 'SQLSTATE[42S02') !== false) {
@@ -245,7 +266,11 @@ class Schema extends \yii\db\Schema
             throw $e;
         }
         foreach ($columns as $info) {
+            // 获取数据库的连接属性
+            // 如果不是强制列名小写
+            // PDO::CASE_LOWER: 强制列名是小写.
             if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) !== \PDO::CASE_LOWER) {
+                // 键名全部变小写
                 $info = array_change_key_case($info, CASE_LOWER);
             }
             $column = $this->loadColumnSchema($info);

@@ -203,10 +203,12 @@ class QueryBuilder extends \yii\db\QueryBuilder
     }
 
     /**
+     * 创建插入语句
      * @inheritdoc
      */
     public function insert($table, $columns, &$params)
     {
+        // 当前的schema
         $schema = $this->db->getSchema();
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
             $columnSchemas = $tableSchema->columns;

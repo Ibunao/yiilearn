@@ -132,6 +132,11 @@ use yii\caching\Cache;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
  */
+/**
+ * 获取pdo的入口是 getSlavePdo从库
+ * 和 getMasterPod 主库
+ * 这个Connection创建Pdo是递归创建的
+ */
 class Connection extends Component
 {
     /**
@@ -178,6 +183,7 @@ class Connection extends Component
      */
     public $attributes;
     /**
+     * 存放当前Connection对象连接的pdo对象,第一个只会存放主库的
      * @var PDO the PHP PDO instance associated with this DB connection.
      * This property is mainly managed by [[open()]] and [[close()]] methods.
      * When a DB connection is active, this property will represent a PDO instance;
@@ -186,6 +192,7 @@ class Connection extends Component
      */
     public $pdo;
     /**
+     * 是否允许schema缓存
      * @var bool whether to enable schema caching.
      * Note that in order to enable truly schema caching, a valid cache component as specified
      * by [[schemaCache]] must be enabled and [[enableSchemaCache]] must be set true.
@@ -195,12 +202,14 @@ class Connection extends Component
      */
     public $enableSchemaCache = false;
     /**
+     * schema缓存的时间
      * @var int number of seconds that table metadata can remain valid in cache.
      * Use 0 to indicate that the cached data will never expire.
      * @see enableSchemaCache
      */
     public $schemaCacheDuration = 3600;
     /**
+     * 不允许缓存的表元素
      * @var array list of tables whose metadata should NOT be cached. Defaults to empty array.
      * The table names may contain schema prefix, if any. Do not quote the table names.
      * @see enableSchemaCache
@@ -213,6 +222,7 @@ class Connection extends Component
      */
     public $schemaCache = 'cache';
     /**
+     * 是否允许查询缓存
      * @var bool whether to enable query caching.
      * Note that in order to enable query caching, a valid cache component as specified
      * by [[queryCache]] must be enabled and [[enableQueryCache]] must be set true.
@@ -406,6 +416,7 @@ class Connection extends Component
     public $enableProfiling = true;
 
     /**
+     * 当前活动的事务
      * @var Transaction the currently active transaction
      */
     private $_transaction;
@@ -431,13 +442,14 @@ class Connection extends Component
      */
     private $_slave = false;
     /**
+     * 缓存查询信息
      * @var array query cache parameters for the [[cache()]] calls
      */
     private $_queryCacheInfo = [];
 
 
     /**
-     * 当前是否连接
+     * 当前是否有连接的pdo对象
      * Returns a value indicating whether the DB connection is established.
      * @return bool whether the DB connection is established
      */
@@ -547,10 +559,11 @@ class Connection extends Component
      */
     public function getQueryCacheInfo($duration, $dependency)
     {
+        // 如果不能缓存
         if (!$this->enableQueryCache) {
             return null;
         }
-
+        // 获取数组的最后一个
         $info = end($this->_queryCacheInfo);
         if (is_array($info)) {
             if ($duration === null) {
@@ -560,13 +573,15 @@ class Connection extends Component
                 $dependency = $info[1];
             }
         }
-
+        // 等于0，表示一直缓存， > 0 就是设置的缓存时间
         if ($duration === 0 || $duration > 0) {
+            // 获取缓存对象
             if (is_string($this->queryCache) && Yii::$app) {
                 $cache = Yii::$app->get($this->queryCache, false);
             } else {
                 $cache = $this->queryCache;
             }
+            // 返回 缓存对象 时间 依赖
             if ($cache instanceof Cache) {
                 return [$cache, $duration, $dependency];
             }
@@ -583,7 +598,7 @@ class Connection extends Component
      */
     public function open()
     {
-        // 主库已经打开了
+        // 库已经打开了(在获取从库的时候重新创建了一个Connection对象，此时的从库配置赋值给了这个对象的主库)
         if ($this->pdo !== null) {
             return;
         }
@@ -617,6 +632,7 @@ class Connection extends Component
     }
 
     /**
+     * 关闭当前的pdo
      * Closes the currently active DB connection.
      * It does nothing if the connection is already closed.
      */
@@ -723,7 +739,7 @@ class Connection extends Component
     }
 
     /**
-     * 获取事务
+     * 获取是否开启事务
      * Returns the currently active transaction.
      * @return Transaction the currently active transaction. Null if no active transaction.
      */
@@ -733,6 +749,7 @@ class Connection extends Component
     }
 
     /**
+     * 开启事务
      * Starts a transaction.
      * @param string|null $isolationLevel The isolation level to use for this transaction.
      * See [[Transaction::begin()]] for details.
@@ -825,6 +842,7 @@ class Connection extends Component
     }
 
     /**
+     * 创建当前数据库类型的querybuilder
      * Returns the query builder for the current DB connection.
      * @return QueryBuilder the query builder for the current DB connection.
      */
@@ -1165,16 +1183,19 @@ array (size=3)
     }
 
     /**
+     * 序列化之前关闭数据库
      * Close the connection before serializing.
      * @return array
      */
     public function __sleep()
     {
         $this->close();
+        //                  把对象的属性转换成数组
         return array_keys((array) $this);
     }
 
     /**
+     * 克隆的时候重置一些数据
      * Reset the connection after cloning.
      */
     public function __clone()

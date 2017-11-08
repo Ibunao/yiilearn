@@ -6,4 +6,5 @@ return [
     'username' => 'root',
     'password' => '123456',
     'charset' => 'utf8',
+    'tablePrefix' => 'meet_',
 ];

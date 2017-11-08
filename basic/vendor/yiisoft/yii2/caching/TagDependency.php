@@ -26,6 +26,9 @@ namespace yii\caching;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
  */
+/**
+ * tag依赖，就是一些缓存依赖某个tag(这些tag也是缓存到缓存的值为时间戳)，如果想让依赖这个tag的缓存失效使用 TagDependency::invalidate(Yii::$app->cache, $tag);即可，这个方法改变的是tag缓存的值  
+ */
 class TagDependency extends Dependency
 {
     /**
@@ -35,6 +38,7 @@ class TagDependency extends Dependency
 
 
     /**
+     * 生成依赖的数据，根据这个数据判断依赖是否改变失效
      * Generates the data needed to determine if dependency has been changed.
      * This method does nothing in this class.
      * @param Cache $cache the cache component that is currently evaluating this dependency
@@ -81,6 +85,7 @@ class TagDependency extends Dependency
     }
 
     /**
+     * 设置key
      * Generates the timestamp for the specified cache keys.
      * @param Cache $cache
      * @param string[] $keys
@@ -98,6 +103,7 @@ class TagDependency extends Dependency
     }
 
     /**
+     * 返回tag对应的缓存
      * Returns the timestamps for the specified tags.
      * @param Cache $cache
      * @param string[] $tags

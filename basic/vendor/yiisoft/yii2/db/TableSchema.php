@@ -11,6 +11,7 @@ use yii\base\Object;
 use yii\base\InvalidParamException;
 
 /**
+ * 获取表的表元素
  * TableSchema represents the metadata of a database table.
  *
  * @property array $columnNames List of column names. This property is read-only.
@@ -21,14 +22,17 @@ use yii\base\InvalidParamException;
 class TableSchema extends Object
 {
     /**
+     * 数据库名
      * @var string the name of the schema that this table belongs to.
      */
     public $schemaName;
     /**
+     * 表名
      * @var string the name of this table. The schema name is not included. Use [[fullName]] to get the name with schema name prefix.
      */
     public $name;
     /**
+     * 完整的名，如果有数据库名加上数据库名
      * @var string the full name of this table, which includes the schema name prefix, if any.
      * Note that if the schema name is the same as the [[Schema::defaultSchema|default schema name]],
      * the schema name will not be included.

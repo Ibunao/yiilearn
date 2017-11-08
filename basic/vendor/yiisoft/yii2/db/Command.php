@@ -68,7 +68,7 @@ class Command extends Component
      */
     public $pdoStatement;
     /**
-     * ???获取模式
+     * pdo获取数据模式
      * @var int the default fetch mode for this command.
      * @see http://www.php.net/manual/en/pdostatement.setfetchmode.php
      */
@@ -104,6 +104,7 @@ class Command extends Component
      */
     private $_sql;
     /**
+     * 表的字符串名，用来执行后刷新
      * @var string name of the table, which schema, should be refreshed after command execution.
      */
     private $_refreshTableName;
@@ -200,6 +201,7 @@ class Command extends Component
         }
         // 如果都是 :name 的形式进行替换
         if (!isset($params[1])) {
+        var_dump(strtr($this->_sql, $params));
             return strtr($this->_sql, $params);
         }
         // 如果是用问号替换的
@@ -208,7 +210,6 @@ class Command extends Component
         foreach (explode('?', $this->_sql) as $i => $part) {
             $sql .= (isset($params[$i]) ? $params[$i] : '') . $part;
         }
-
         return $sql;
     }
 
@@ -227,6 +228,7 @@ class Command extends Component
     {
         // 如果已经有pdo对象了
         if ($this->pdoStatement) {
+            // 绑定数据
             $this->bindPendingParams();
             return;
         }
@@ -411,6 +413,7 @@ class Command extends Component
     }
 
     /**
+     * 从结果集中的下一行返回单独的一列  返回的是第一列
      * Executes the SQL statement and returns the value of the first column in the first row of data.
      * This method is best used when only a single value is needed for a query.
      * @return string|null|false the value of the first column in the first row of the query result.
@@ -419,8 +422,11 @@ class Command extends Component
      */
     public function queryScalar()
     {
+        // 从结果集中的下一行返回单独的一列
         $result = $this->queryInternal('fetchColumn', 0);
+        // 如果是 stream资源
         if (is_resource($result) && get_resource_type($result) === 'stream') {
+            // 获取资源
             return stream_get_contents($result);
         } else {
             return $result;
@@ -440,6 +446,7 @@ class Command extends Component
     }
 
     /**
+     * 插入数据
      * Creates an INSERT command.
      * For example,
      *
@@ -867,7 +874,7 @@ class Command extends Component
         // 记录日志
         // 是否开启性能分析  sql语句
         list($profile, $rawSql) = $this->logQuery(__METHOD__);
-        
+
         if ($sql == '') {
             return 0;
         }
@@ -932,6 +939,7 @@ class Command extends Component
         list($profile, $rawSql) = $this->logQuery('yii\db\Command::query');
 
         if ($method !== '') {
+            // 如果有缓存
             $info = $this->db->getQueryCacheInfo($this->queryCacheDuration, $this->queryCacheDependency);
             if (is_array($info)) {
                 /* @var $cache \yii\caching\Cache */
@@ -945,27 +953,30 @@ class Command extends Component
                     $rawSql ?: $rawSql = $this->getRawSql(),
                 ];
                 $result = $cache->get($cacheKey);
+                // 从缓存获取
                 if (is_array($result) && isset($result[0])) {
                     Yii::trace('Query result served from cache', 'yii\db\Command::query');
                     return $result[0];
                 }
             }
         }
-
+        // 预处理
         $this->prepare(true);
 
         try {
             $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
 
             $this->pdoStatement->execute();
-
+            // 如果是query
             if ($method === '') {
                 $result = new DataReader($this);
             } else {
                 if ($fetchMode === null) {
                     $fetchMode = $this->fetchMode;
                 }
+                // 执行pdo的方法 如fetchAll fetch 
                 $result = call_user_func_array([$this->pdoStatement, $method], (array) $fetchMode);
+                // 关闭游标，使语句能再次被执行
                 $this->pdoStatement->closeCursor();
             }
 
@@ -974,7 +985,7 @@ class Command extends Component
             $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
             throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
         }
-
+        // 添加缓存
         if (isset($cache, $cacheKey, $info)) {
             $cache->set($cacheKey, [$result], $info[1], $info[2]);
             Yii::trace('Saved query result in cache', 'yii\db\Command::query');
@@ -984,6 +995,7 @@ class Command extends Component
     }
 
     /**
+     * 标记一个指定的表模式，以便在执行命令后重新刷新
      * Marks a specified table schema to be refreshed after command execution.
      * @param string $name name of the table, which schema should be refreshed.
      * @return $this this command instance
@@ -996,6 +1008,7 @@ class Command extends Component
     }
 
     /**
+     * 刷新
      * Refreshes table schema, which was marked by [[requireTableSchemaRefresh()]]
      * @since 2.0.6
      */

@@ -48,11 +48,16 @@ use yii\base\InvalidCallException;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
  */
+/**
+ * pdo的相关方法参考  
+ * https://www.cnblogs.com/vlone/p/4592846.html
+ */
 class DataReader extends \yii\base\Object implements \Iterator, \Countable
 {
     /**
      * @var \PDOStatement the PDOStatement associated with the command
      */
+    // pdo对象
     private $_statement;
     private $_closed = false;
     private $_row;
@@ -67,11 +72,14 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     public function __construct(Command $command, $config = [])
     {
         $this->_statement = $command->pdoStatement;
+        // 设置获取 从结果集中获取以列名为索引的关联数组。
+        // https://www.cnblogs.com/vlone/p/4592846.html
         $this->_statement->setFetchMode(\PDO::FETCH_ASSOC);
         parent::__construct($config);
     }
 
     /**
+     * 使用fetched的时候将值绑定到给指定的变量
      * Binds a column to a PHP variable.
      * When rows of data are being fetched, the corresponding column value
      * will be set in the variable. Note, the fetch mode must include PDO::FETCH_BOUND.
@@ -92,17 +100,21 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     }
 
     /**
+     * 设置pdo读取数据的格式
      * Set the default fetch mode for this statement
      * @param int $mode fetch mode
      * @see http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php
      */
     public function setFetchMode($mode)
     {
+        // 获取参数
         $params = func_get_args();
+        // 设置pdo读取格式
         call_user_func_array([$this->_statement, 'setFetchMode'], $params);
     }
 
     /**
+     * fetch，一次获取一行
      * Advances the reader to the next row in a result set.
      * @return array the current row, false if no more row available
      */
@@ -112,6 +124,7 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     }
 
     /**
+     * 一次读取一行，并获取 给定索引列的值
      * Returns a single column from the next row of a result set.
      * @param int $columnIndex zero-based column index
      * @return mixed the column of the current row, false if no more rows available
@@ -122,9 +135,10 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     }
 
     /**
+     * 将数据对去到对象中
      * Returns an object populated with the next row of data.
-     * @param string $className class name of the object to be created and populated
-     * @param array $fields Elements of this array are passed to the constructor
+     * @param string $className class name of the object to be created and populated  类名
+     * @param array $fields Elements of this array are passed to the constructor 赋值给构造函数的字段
      * @return mixed the populated object, false if no more row of data available
      */
     public function readObject($className, $fields)
@@ -133,6 +147,7 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     }
 
     /**
+     * 返回一个包含结果集中所有行的数组
      * Reads the whole result set into an array.
      * @return array the result set (each array element represents a row of data).
      * An empty array will be returned if the result contains no row.
@@ -143,6 +158,7 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     }
 
     /**
+     * 下一行
      * Advances the reader to the next result when reading the results of a batch of statements.
      * This method is only useful when there are multiple result sets
      * returned by the query. Not all DBMS support this feature.
@@ -158,6 +174,7 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     }
 
     /**
+     * 关闭游标，使语句能再次被执行
      * Closes the reader.
      * This frees up the resources allocated for executing this SQL statement.
      * Read attempts after this method call are unpredictable.
@@ -187,8 +204,11 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     {
         return $this->_statement->rowCount();
     }
-
+/**
+ * Countable接口的实现部分，上对象可以count
+ */
     /**
+     * 获取数据总行数
      * Returns the number of rows in the result set.
      * This method is required by the Countable interface.
      * Note, most DBMS may not give a meaningful count.
@@ -201,6 +221,7 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     }
 
     /**
+     * 返回列数
      * Returns the number of columns in the result set.
      * Note, even there's no row in the reader, this still gives correct column number.
      * @return int the number of columns in the result set.
@@ -209,7 +230,9 @@ class DataReader extends \yii\base\Object implements \Iterator, \Countable
     {
         return $this->_statement->columnCount();
     }
-
+/**
+ * Iterator接口 迭代器的实现部分，上对象可以foreach遍历
+ */
     /**
      * Resets the iterator to the initial state.
      * This method is required by the interface [[\Iterator]].

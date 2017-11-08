@@ -92,6 +92,7 @@ abstract class Schema extends Object
      */
     private $_tableNames = [];
     /**
+     * 存放加载的表名及元数据
      * @var array list of loaded table metadata (table name => TableSchema)
      */
     private $_tables = [];
@@ -123,23 +124,33 @@ abstract class Schema extends Object
      * @param bool $refresh whether to reload the table schema even if it is found in the cache.
      * @return null|TableSchema table metadata. Null if the named table does not exist.
      */
+    /**
+     * 获得命名表的元数据。
+     * @param  string  $name    表名 表名可能包含模式名。表名不要加引号
+     * @param  boolean $refresh 是否重新加载表模式
+     * @return [type]           [description]
+     */
     public function getTableSchema($name, $refresh = false)
     {
+        // 如果存在 and 不让刷新
         if (array_key_exists($name, $this->_tables) && !$refresh) {
             return $this->_tables[$name];
         }
 
         $db = $this->db;
+        // 获取真实表名
         $realName = $this->getRawTableName($name);
-
+        // 使用缓存
         if ($db->enableSchemaCache && !in_array($name, $db->schemaCacheExclude, true)) {
             /* @var $cache Cache */
             $cache = is_string($db->schemaCache) ? Yii::$app->get($db->schemaCache, false) : $db->schemaCache;
             if ($cache instanceof Cache) {
                 $key = $this->getCacheKey($name);
+                // 如果刷新 或者 没有获取到缓存
                 if ($refresh || ($table = $cache->get($key)) === false) {
                     $this->_tables[$name] = $table = $this->loadTableSchema($realName);
                     if ($table !== null) {
+                        // 存入缓存 使用tag依赖
                         $cache->set($key, $table, $db->schemaCacheDuration, new TagDependency([
                             'tags' => $this->getCacheTag(),
                         ]));
@@ -156,6 +167,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 获取缓存key
      * Returns the cache key for the specified table name.
      * @param string $name the table name
      * @return mixed the cache key
@@ -171,6 +183,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 生成tag依赖的数据
      * Returns the cache tag name.
      * This allows [[refresh()]] to invalidate all cached table schemas.
      * @return string the cache tag name
@@ -241,6 +254,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 创建querybuilder
      * @return QueryBuilder the query builder for this connection.
      */
     public function getQueryBuilder()
@@ -291,6 +305,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 刷新
      * Refreshes the particular table schema.
      * This method cleans up cached table schema so that it can be re-created later
      * to reflect the database schema change.
@@ -582,6 +597,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 返回表名的真实表名 替换表前缀{{%table}}
      * Returns the actual name of a given table name.
      * This method will strip off curly brackets from the given table name
      * and replace the percentage character '%' with [[Connection::tablePrefix]].

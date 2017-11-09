@@ -39,10 +39,12 @@ class TableSchema extends Object
      */
     public $fullName;
     /**
+     * 存放表的主键
      * @var string[] primary keys of this table.
      */
     public $primaryKey = [];
     /**
+     * ''空为主键自动增长
      * @var string sequence name for the primary key. Null if no sequence.
      */
     public $sequenceName;
@@ -59,6 +61,7 @@ class TableSchema extends Object
      */
     public $foreignKeys = [];
     /**
+     * 字段对象 ColumnSchema 里面存放的是字段的详细信息
      * @var ColumnSchema[] column metadata of this table. Each array element is a [[ColumnSchema]] object, indexed by column names.
      */
     public $columns = [];

@@ -210,34 +210,45 @@ class QueryBuilder extends \yii\db\QueryBuilder
     {
         // 当前的schema
         $schema = $this->db->getSchema();
+        // 获取表结构
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
+            // 字段信息
             $columnSchemas = $tableSchema->columns;
         } else {
             $columnSchemas = [];
         }
+        // 插入的字段名
         $names = [];
+        // 值的占位符
         $placeholders = [];
         $values = ' DEFAULT VALUES';
+        // 列给的是 Query对象，如子查询插入
         if ($columns instanceof \yii\db\Query) {
             list($names, $values, $params) = $this->prepareInsertSelectSubQuery($columns, $schema, $params);
         } else {
             foreach ($columns as $name => $value) {
+                // 给字段加反引号
                 $names[] = $schema->quoteColumnName($name);
+                // 如果值是 Expression对象
                 if ($value instanceof Expression) {
                     $placeholders[] = $value->expression;
                     foreach ($value->params as $n => $v) {
                         $params[$n] = $v;
                     }
+                // 如果是Query，就是sql语句，如子查询
                 } elseif ($value instanceof \yii\db\Query) {
                     list($sql, $params) = $this->build($value, $params);
                     $placeholders[] = "($sql)";
+                // 给设置占位符
                 } else {
                     $phName = self::PARAM_PREFIX . count($params);
                     $placeholders[] = $phName;
                     $params[$phName] = !is_array($value) && isset($columnSchemas[$name]) ? $columnSchemas[$name]->dbTypecast($value) : $value;
                 }
             }
+            // 如果插入的字段为空 ，并且tableSchema存在
             if (empty($names) && $tableSchema !== null) {
+                // 主键 或者第一列
                 $columns = !empty($tableSchema->primaryKey) ? $tableSchema->primaryKey : [reset($tableSchema->columns)->name];
                 foreach ($columns as $name) {
                     $names[] = $schema->quoteColumnName($name);
@@ -245,7 +256,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
                 }
             }
         }
-
+        // 拼接插入语句
         return 'INSERT INTO ' . $schema->quoteTableName($table)
             . (!empty($names) ? ' (' . implode(', ', $names) . ')' : '')
             . (!empty($placeholders) ? ' VALUES (' . implode(', ', $placeholders) . ')' : $values);

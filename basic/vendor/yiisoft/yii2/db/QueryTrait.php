@@ -162,6 +162,9 @@ trait QueryTrait
      * @see andFilterWhere()
      * @see orFilterWhere()
      */
+    /*
+    过滤掉where中设置的空值
+     */
     public function filterWhere(array $condition)
     {
         $condition = $this->filterCondition($condition);
@@ -226,13 +229,15 @@ trait QueryTrait
      */
     protected function filterCondition($condition)
     {
+        // 条件不是数组形式
         if (!is_array($condition)) {
             return $condition;
         }
-
+        // 如果是关联数组的形式
         if (!isset($condition[0])) {
             // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
             foreach ($condition as $name => $value) {
+                // 删除值为空的条件
                 if ($this->isEmpty($value)) {
                     unset($condition[$name]);
                 }
@@ -241,7 +246,7 @@ trait QueryTrait
         }
 
         // operator format: operator, operand 1, operand 2, ...
-
+        // 移除数组的第一个元素
         $operator = array_shift($condition);
 
         switch (strtoupper($operator)) {
@@ -263,6 +268,7 @@ trait QueryTrait
                 break;
             case 'BETWEEN':
             case 'NOT BETWEEN':
+                // 如果存在
                 if (array_key_exists(1, $condition) && array_key_exists(2, $condition)) {
                     if ($this->isEmpty($condition[1]) || $this->isEmpty($condition[2])) {
                         return [];
@@ -274,13 +280,14 @@ trait QueryTrait
                     return [];
                 }
         }
-
+        // 插入第一个
         array_unshift($condition, $operator);
 
         return $condition;
     }
 
     /**
+     * 返回是否为空
      * Returns a value indicating whether the give value is "empty".
      *
      * The value is considered "empty", if one of the following conditions is satisfied:
@@ -376,6 +383,7 @@ trait QueryTrait
     }
 
     /**
+     * 查询结果的条数
      * Sets the LIMIT part of the query.
      * @param int|Expression|null $limit the limit. Use null or negative value to disable limit.
      * @return $this the query object itself

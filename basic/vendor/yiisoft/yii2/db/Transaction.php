@@ -78,12 +78,14 @@ class Transaction extends \yii\base\Object
     public $db;
 
     /**
+     * 事务嵌套的级别
      * @var int the nesting level of the transaction. 0 means the outermost level.
      */
     private $_level = 0;
 
 
     /**
+     * 是否是互动状态
      * Returns a value indicating whether this transaction is active.
      * @return bool whether this transaction is active. Only an active transaction
      * can [[commit()]] or [[rollBack()]].
@@ -94,6 +96,7 @@ class Transaction extends \yii\base\Object
     }
 
     /**
+     * 开始事务
      * Begins a transaction.
      * @param string|null $isolationLevel The [isolation level][] to use for this transaction.
      * This can be one of [[READ_UNCOMMITTED]], [[READ_COMMITTED]], [[REPEATABLE_READ]] and [[SERIALIZABLE]] but
@@ -116,15 +119,18 @@ class Transaction extends \yii\base\Object
         if ($this->db === null) {
             throw new InvalidConfigException('Transaction::db must be set.');
         }
+        // 有开启连接
         $this->db->open();
-
+        // 最外层事务
         if ($this->_level === 0) {
+            // 设置隔离事务级别
             if ($isolationLevel !== null) {
                 $this->db->getSchema()->setTransactionIsolationLevel($isolationLevel);
             }
             Yii::trace('Begin transaction' . ($isolationLevel ? ' with isolation level ' . $isolationLevel : ''), __METHOD__);
 
             $this->db->trigger(Connection::EVENT_BEGIN_TRANSACTION);
+            // pdo开启事务
             $this->db->pdo->beginTransaction();
             $this->_level = 1;
 
@@ -132,6 +138,7 @@ class Transaction extends \yii\base\Object
         }
 
         $schema = $this->db->getSchema();
+        // 设置回滚点
         if ($schema->supportsSavepoint()) {
             Yii::trace('Set savepoint ' . $this->_level, __METHOD__);
             $schema->createSavepoint('LEVEL' . $this->_level);
@@ -142,6 +149,7 @@ class Transaction extends \yii\base\Object
     }
 
     /**
+     * 提交事务
      * Commits a transaction.
      * @throws Exception if the transaction is not active
      */
@@ -154,12 +162,14 @@ class Transaction extends \yii\base\Object
         $this->_level--;
         if ($this->_level === 0) {
             Yii::trace('Commit transaction', __METHOD__);
+            // 提交事务
             $this->db->pdo->commit();
             $this->db->trigger(Connection::EVENT_COMMIT_TRANSACTION);
             return;
         }
 
         $schema = $this->db->getSchema();
+        // 释放回滚点
         if ($schema->supportsSavepoint()) {
             Yii::trace('Release savepoint ' . $this->_level, __METHOD__);
             $schema->releaseSavepoint('LEVEL' . $this->_level);
@@ -169,6 +179,7 @@ class Transaction extends \yii\base\Object
     }
 
     /**
+     * 回滚
      * Rolls back a transaction.
      * @throws Exception if the transaction is not active
      */
@@ -183,12 +194,14 @@ class Transaction extends \yii\base\Object
         $this->_level--;
         if ($this->_level === 0) {
             Yii::trace('Roll back transaction', __METHOD__);
+            // 回滚
             $this->db->pdo->rollBack();
             $this->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
             return;
         }
 
         $schema = $this->db->getSchema();
+        // 回滚到上一个回滚点
         if ($schema->supportsSavepoint()) {
             Yii::trace('Roll back to savepoint ' . $this->_level, __METHOD__);
             $schema->rollBackSavepoint('LEVEL' . $this->_level);
@@ -200,6 +213,7 @@ class Transaction extends \yii\base\Object
     }
 
     /**
+     * 为事务设置隔离级别
      * Sets the transaction isolation level for this transaction.
      *
      * This method can be used to set the isolation level while the transaction is already active.

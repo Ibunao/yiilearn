@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use Yii;
 use app\helpers\zController;
+use yii\db\Query;
 
 class TestController extends zController
 {
@@ -71,16 +72,35 @@ class TestController extends zController
 	public function actionCommand()
 	{
 		$db = Yii::$app->db;
-		// [[ ]] 是要加反引号的，和数据库系统的关键词区分开
-		$sql = 'select [[name]] from {{%admin_users}}  WHERE status=:status;';
-		var_dump($query = $db->createCommand($sql)
-			// 第三个参数设置数据格式
-           ->bindValue(':status', 1, \PDO::PARAM_STR)->query());
-		// 设置pdo读取数据的格式
-		$query->setFetchMode(\PDO::FETCH_BOTH);
-		
-		foreach ($query as $key => $value) {
-			var_dump($key, $value);
+		// // [[ ]] 是要加反引号的，和数据库系统的关键词区分开
+		// $sql = 'select [[name]] from {{%admin_users}}  WHERE status=:status;';
+		// var_dump($query = $db->createCommand($sql)
+		// 	// 第三个参数设置数据格式
+  //          ->bindValue(':status', 1, \PDO::PARAM_STR)->query());
+		// // 设置pdo读取数据的格式
+		// $query->setFetchMode(\PDO::FETCH_BOTH);
+
+		// foreach ($query as $key => $value) {
+		// 	var_dump($key, $value);
+		// }
+
+		// 插入不可以使用bindValue
+		// var_dump($query = $db->createCommand()->insert('{{%admin_users}}', ['status'=>':status', 'super'=> ':super'])->bindValue(':status', 1)->bindValue(':super', 1)->execute());
+
+		(new Query)->where(['in', 'a' , [10, 30]])
+            ->andWhere(['between', 'b', 10, 20])
+            ->orWhere('status=:status', [':status' => 1])
+            ->all();
+	}
+	public function actionQuery()
+	{
+		$query = (new Query())
+		    ->from('{{%admin_users}}')
+		    ->orderBy('user_id');
+
+		foreach ($query->batch() as $users) {
+		    // $users 是一个包含100条或小于100条用户表数据的数组
 		}
+
 	}
 }

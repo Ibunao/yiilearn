@@ -99,6 +99,7 @@ class BatchQueryResult extends Object implements \Iterator
     }
 
     /**
+     * 开始 重置
      * Resets the iterator to the initial state.
      * This method is required by the interface [[\Iterator]].
      */
@@ -109,6 +110,7 @@ class BatchQueryResult extends Object implements \Iterator
     }
 
     /**
+     * 向下移动一步
      * Moves the internal pointer to the next dataset.
      * This method is required by the interface [[\Iterator]].
      */
@@ -144,6 +146,7 @@ class BatchQueryResult extends Object implements \Iterator
     {
         if ($this->_dataReader === null) {
             $this->_dataReader = $this->query->createCommand($this->db)->query();
+            var_dump($this->_dataReader);exit;
         }
 
         $rows = [];
@@ -156,6 +159,7 @@ class BatchQueryResult extends Object implements \Iterator
     }
 
     /**
+     * 当前的key
      * Returns the index of the current dataset.
      * This method is required by the interface [[\Iterator]].
      * @return int the index of the current row.
@@ -166,6 +170,7 @@ class BatchQueryResult extends Object implements \Iterator
     }
 
     /**
+     * 当前的值
      * Returns the current dataset.
      * This method is required by the interface [[\Iterator]].
      * @return mixed the current dataset.
@@ -176,6 +181,7 @@ class BatchQueryResult extends Object implements \Iterator
     }
 
     /**
+     * 验证
      * Returns whether there is a valid dataset at the current position.
      * This method is required by the interface [[\Iterator]].
      * @return bool whether there is a valid dataset at the current position.

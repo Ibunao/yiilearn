@@ -308,6 +308,7 @@ class Connection extends Component
      */
     public $commandClass = 'yii\db\Command';
     /**
+     * 是否允许设置回滚点
      * @var bool whether to enable [savepoint](http://en.wikipedia.org/wiki/Savepoint).
      * Note that if the underlying DBMS does not support savepoint, setting this property to be true will have no effect.
      */
@@ -757,17 +758,20 @@ class Connection extends Component
      */
     public function beginTransaction($isolationLevel = null)
     {
+        // 开启连接
         $this->open();
-
+        // 获取事务对象
         if (($transaction = $this->getTransaction()) === null) {
             $transaction = $this->_transaction = new Transaction(['db' => $this]);
         }
+        // 开始事务
         $transaction->begin($isolationLevel);
 
         return $transaction;
     }
 
     /**
+     * 执行事务
      * Executes callback provided in a transaction.
      *
      * @param callable $callback a valid PHP callback that performs the job. Accepts connection instance as parameter.
@@ -782,7 +786,9 @@ class Connection extends Component
         $level = $transaction->level;
 
         try {
+            // 执行回调函数
             $result = call_user_func($callback, $this);
+            // 提交事务
             if ($transaction->isActive && $transaction->level === $level) {
                 $transaction->commit();
             }
@@ -798,6 +804,7 @@ class Connection extends Component
     }
 
     /**
+     * 回滚
      * Rolls back given [[Transaction]] object if it's still active and level match.
      * In some cases rollback can fail, so this method is fail safe. Exception thrown
      * from rollback will be caught and just logged with [[\Yii::error()]].

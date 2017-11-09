@@ -98,9 +98,11 @@ class Schema extends \yii\db\Schema
     protected function loadTableSchema($name)
     {
         $table = new TableSchema;
+        // 解析表名到 TableSchema
         $this->resolveTableNames($table, $name);
-
+        // 解析字段信息
         if ($this->findColumns($table)) {
+            // 获取外键
             $this->findConstraints($table);
 
             return $table;
@@ -110,6 +112,7 @@ class Schema extends \yii\db\Schema
     }
 
     /**
+     * 解析表名
      * Resolves the table name and schema name (if any).
      * @param TableSchema $table the table metadata object
      * @param string $name the table name
@@ -138,7 +141,7 @@ class Schema extends \yii\db\Schema
      * @return ColumnSchema the column schema object
      */
     /*
-    例如：$info[0] 
+    例如：$info
       Field: id
        Type: int(11)
   Collation: NULL
@@ -151,7 +154,7 @@ class Schema extends \yii\db\Schema
      */
     protected function loadColumnSchema($info)
     {
-        // 创建列设计对象
+        // 创建列设计对象ColumnSchema
         $column = $this->createColumnSchema();
         // 字段名
         $column->name = $info['field'];
@@ -184,7 +187,7 @@ class Schema extends \yii\db\Schema
                     foreach ($values[0] as $i => $value) {
                         $values[$i] = trim($value, "'");
                     }
-                    // 权举值
+                    // 权举类型的权举值
                     $column->enumValues = $values;
                 // 如果不是枚举类型，那么括号中的内容就是精度了，如 decimal(19,4)
                 } else {
@@ -273,7 +276,9 @@ SHOW FULL COLUMNS FROM `meet_agent`;
                 // 键名全部变小写
                 $info = array_change_key_case($info, CASE_LOWER);
             }
+            // 把字段的信息转换赋值给 ColumnSchema 对象
             $column = $this->loadColumnSchema($info);
+            // 字段对象存入到 TableSchema 表对象中
             $table->columns[$column->name] = $column;
             if ($column->isPrimaryKey) {
                 $table->primaryKey[] = $column->name;
@@ -287,6 +292,7 @@ SHOW FULL COLUMNS FROM `meet_agent`;
     }
 
     /**
+     * 获取创建表的sql
      * Gets the CREATE TABLE sql string.
      * @param TableSchema $table the table metadata
      * @return string $sql the result of 'SHOW CREATE TABLE'
@@ -305,6 +311,7 @@ SHOW FULL COLUMNS FROM `meet_agent`;
     }
 
     /**
+     * 查找外键信息
      * Collects the foreign key column details for the given table.
      * @param TableSchema $table the table metadata
      * @throws \Exception
@@ -330,6 +337,7 @@ AND rc.table_name = :tableName AND kcu.table_name = :tableName1
 SQL;
 
         try {
+            //??? 这应该是使用yii创建表的时候保存了一些信息到这个表里面了
             $rows = $this->db->createCommand($sql, [':tableName' => $table->name, ':tableName1' => $table->name])->queryAll();
             $constraints = [];
 
@@ -350,7 +358,7 @@ SQL;
             if (!$previous instanceof \PDOException || strpos($previous->getMessage(), 'SQLSTATE[42S02') === false) {
                 throw $e;
             }
-
+            // 从创建表的sql语句中获取外键
             // table does not exist, try to determine the foreign keys using the table creation sql
             $sql = $this->getCreateTableSql($table);
             $regexp = '/FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)/mi';

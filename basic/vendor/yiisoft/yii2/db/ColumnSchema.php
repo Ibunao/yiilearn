@@ -130,9 +130,11 @@ class ColumnSchema extends Object
      */
     protected function typecast($value)
     {
+        // 如果只为空 and type不是下面的几种直接返回null
         if ($value === '' && $this->type !== Schema::TYPE_TEXT && $this->type !== Schema::TYPE_STRING && $this->type !== Schema::TYPE_BINARY && $this->type !== Schema::TYPE_CHAR) {
             return null;
         }
+        // 值为null or 类型和phpType类型一样 or 
         if ($value === null || gettype($value) === $this->phpType || $value instanceof Expression || $value instanceof Query) {
             return $value;
         }

@@ -10,6 +10,7 @@ namespace yii\helpers;
 use Yii;
 
 /**
+ * 偏转器
  * BaseInflector provides concrete implementation for [[Inflector]].
  *
  * Do not use BaseInflector. Use [[Inflector]] instead.

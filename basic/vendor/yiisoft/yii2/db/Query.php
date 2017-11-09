@@ -207,6 +207,7 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * 执行查询
      * Executes the query and returns all results as an array.
      * @param Connection $db the database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
@@ -214,6 +215,7 @@ class Query extends Component implements QueryInterface
      */
     public function all($db = null)
     {
+        // 是否返回结果
         if ($this->emulateExecution) {
             return [];
         }
@@ -579,9 +581,16 @@ class Query extends Component implements QueryInterface
      *
      * @return $this the query object itself
      */
+    /**
+     * 查询的表
+     * @param  [type] $tables [description]
+     * @return [type]         [description]
+     */
     public function from($tables)
     {
+        // 如果不是数组
         if (!is_array($tables)) {
+            // 返回分割后的非空部分，按照逗号分隔
             $tables = preg_split('/\s*,\s*/', trim($tables), -1, PREG_SPLIT_NO_EMPTY);
         }
         $this->from = $tables;
@@ -604,6 +613,12 @@ class Query extends Component implements QueryInterface
      * @see andWhere()
      * @see orWhere()
      * @see QueryInterface::where()
+     */
+    /**
+     * 条件
+     * @param  [type] $condition 条件
+     * @param  array  $params    替换占位符的参数
+     * @return [type]            [description]
      */
     public function where($condition, $params = [])
     {
@@ -724,6 +739,9 @@ class Query extends Component implements QueryInterface
      *
      * @param array $params the parameters (name => value) to be bound to the query.
      * @return $this the query object itself
+     */
+    /**
+     * 插入语句
      */
     public function join($type, $table, $on = '', $params = [])
     {
@@ -1028,6 +1046,7 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * 添加占位符替换的数组
      * Adds additional parameters to be bound to the query.
      * @param array $params list of query parameter values indexed by parameter placeholders.
      * For example, `[':name' => 'Dan', ':age' => 31]`.

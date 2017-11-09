@@ -148,6 +148,7 @@ abstract class Schema extends Object
                 $key = $this->getCacheKey($name);
                 // 如果刷新 或者 没有获取到缓存
                 if ($refresh || ($table = $cache->get($key)) === false) {
+                    // 表信息
                     $this->_tables[$name] = $table = $this->loadTableSchema($realName);
                     if ($table !== null) {
                         // 存入缓存 使用tag依赖
@@ -421,6 +422,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 设置回滚点
      * Creates a new savepoint.
      * @param string $name the savepoint name
      */
@@ -430,6 +432,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 释放回滚点
      * Releases an existing savepoint.
      * @param string $name the savepoint name
      */
@@ -448,6 +451,7 @@ abstract class Schema extends Object
     }
 
     /**
+     * 设置隔离事务的级别
      * Sets the isolation level of the current transaction.
      * @param string $level The transaction isolation level to use for this transaction.
      * This can be one of [[Transaction::READ_UNCOMMITTED]], [[Transaction::READ_COMMITTED]], [[Transaction::REPEATABLE_READ]]
@@ -540,7 +544,7 @@ abstract class Schema extends Object
     }
 
     /**
-     * 处理sql中 [[field]] 形式的字段，给加引号
+     * 处理sql中 field 字段，给加引号
      * Quotes a column name for use in a query.
      * If the column name contains prefix, the prefix will also be properly quoted.
      * If the column name is already quoted or contains '(', '[[' or '{{',

@@ -76,9 +76,13 @@ use yii\helpers\StringHelper;
  * @author Carsten Brandt <mail@cebe.cc>
  * @since 2.0
  */
+/**
+ AR事务的研究并没有太多的文献，暂时也看不出特别的作用  
+ */
 class ActiveRecord extends BaseActiveRecord
 {
     /**
+     * 插入操作
      * The insert operation. This is mainly used when overriding [[transactions()]] to specify which operations are transactional.
      */
     const OP_INSERT = 0x01;
@@ -319,6 +323,7 @@ class ActiveRecord extends BaseActiveRecord
      */
     public static function tableName()
     {
+        // 默认从类名转换出表名
         return '{{%' . Inflector::camel2id(StringHelper::basename(get_called_class()), '_') . '}}';
     }
 
@@ -326,6 +331,10 @@ class ActiveRecord extends BaseActiveRecord
      * Returns the schema information of the DB table associated with this AR class.
      * @return TableSchema the schema information of the DB table associated with this AR class.
      * @throws InvalidConfigException if the table for the AR class does not exist.
+     */
+    /**
+     * 返回表的信息
+     * @return [type] [description]
      */
     public static function getTableSchema()
     {
@@ -362,6 +371,10 @@ class ActiveRecord extends BaseActiveRecord
      * Returns the list of all attribute names of the model.
      * The default implementation will return all column names of the table associated with this AR class.
      * @return array list of attribute names.
+     */
+    /**
+     * 返回表的字段 属性名
+     * @return [type] [description]
      */
     public function attributes()
     {
@@ -454,17 +467,24 @@ class ActiveRecord extends BaseActiveRecord
      * @return bool whether the attributes are valid and the record is inserted successfully.
      * @throws \Exception in case insert failed.
      */
+    /**
+     * 插入数据
+     * @param  boolean $runValidation 实行验证
+     * @param  [type]  $attributes    插入的字段
+     * @return [type]                 [description]
+     */
     public function insert($runValidation = true, $attributes = null)
     {
+        // 如果验证执行验证
         if ($runValidation && !$this->validate($attributes)) {
             Yii::info('Model not inserted due to validation error.', __METHOD__);
             return false;
         }
-
+        // 有没有定义要启用事务
         if (!$this->isTransactional(self::OP_INSERT)) {
             return $this->insertInternal($attributes);
         }
-
+        // 事务插入
         $transaction = static::getDb()->beginTransaction();
         try {
             $result = $this->insertInternal($attributes);
@@ -489,12 +509,20 @@ class ActiveRecord extends BaseActiveRecord
      * meaning all attributes that are loaded from DB will be saved.
      * @return bool whether the record is inserted successfully.
      */
+    /**
+     * 插入数据
+     * @param  [type] $attributes 需要插入的列
+     * @return [type]             [description]
+     */
     protected function insertInternal($attributes = null)
     {
+        // 触发事件
         if (!$this->beforeSave(true)) {
             return false;
         }
+        // 获取脏数据，改动过的
         $values = $this->getDirtyAttributes($attributes);
+        // 插入
         if (($primaryKeys = static::getDb()->schema->insert(static::tableName(), $values)) === false) {
             return false;
         }
@@ -681,13 +709,16 @@ class ActiveRecord extends BaseActiveRecord
     }
 
     /**
+     * 返回当前场景是否使用事务
      * Returns a value indicating whether the specified operation is transactional in the current [[$scenario]].
      * @param int $operation the operation to check. Possible values are [[OP_INSERT]], [[OP_UPDATE]] and [[OP_DELETE]].
      * @return bool whether the specified operation is transactional in the current [[scenario]].
      */
     public function isTransactional($operation)
     {
+        // 当前场景
         $scenario = $this->getScenario();
+        // 定义的场景事务
         $transactions = $this->transactions();
 
         return isset($transactions[$scenario]) && ($transactions[$scenario] & $operation);

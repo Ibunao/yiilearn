@@ -373,6 +373,7 @@ class BaseInflector
     }
 
     /**
+     * 
      * Converts a CamelCase name into an ID in lowercase.
      * Words in the ID may be concatenated using the specified character (defaults to '-').
      * For example, 'PostTag' will be converted to 'post-tag'.
@@ -381,12 +382,22 @@ class BaseInflector
      * @param bool|string $strict whether to insert a separator between two consecutive uppercase chars, defaults to false
      * @return string the resulting ID
      */
+    /**
+     * 驼峰类名转成id
+     * @param  [type]  $name      驼峰类名
+     * @param  string  $separator 分割符
+     * @param  boolean $strict    是否连着大写之间都加分割符
+     * @return [type]             [description]
+     */
     public static function camel2id($name, $separator = '-', $strict = false)
     {
+        // ???  /(?<![A-Z])[A-Z]/ 这个正则不太理解
         $regex = $strict ? '/[A-Z]/' : '/(?<![A-Z])[A-Z]/';
         if ($separator === '_') {
+            // \0 匹配到的第一个字符
             return strtolower(trim(preg_replace($regex, '_\0', $name), '_'));
         } else {
+            // 如果分割符不是 _ 
             return strtolower(trim(str_replace('_', $separator, preg_replace($regex, $separator . '\0', $name)), $separator));
         }
     }
@@ -398,6 +409,12 @@ class BaseInflector
      * @param string $id the ID to be converted
      * @param string $separator the character used to separate the words in the ID
      * @return string the resulting CamelCase name
+     */
+    /**
+     * id 转驼峰 和上面的相反
+     * @param  [type] $id        id
+     * @param  string $separator 分割符
+     * @return [type]            [description]
      */
     public static function id2camel($id, $separator = '-')
     {

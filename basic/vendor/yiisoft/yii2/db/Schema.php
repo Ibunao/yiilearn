@@ -473,10 +473,12 @@ abstract class Schema extends Object
      */
     public function insert($table, $columns)
     {
+        // 执行插入操作
         $command = $this->db->createCommand()->insert($table, $columns);
         if (!$command->execute()) {
             return false;
         }
+        // 获取表结构数据
         $tableSchema = $this->getTableSchema($table);
         $result = [];
         foreach ($tableSchema->primaryKey as $name) {

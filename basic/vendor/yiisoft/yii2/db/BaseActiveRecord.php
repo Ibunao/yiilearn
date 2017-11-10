@@ -303,6 +303,11 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * @param string $name property name
      * @param mixed $value property value
      */
+    /**
+     * 设置属性值
+     * @param [type] $name  属性名
+     * @param [type] $value 属性值
+     */
     public function __set($name, $value)
     {
         if ($this->hasAttribute($name)) {
@@ -473,6 +478,11 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * @param string $name the name of the attribute
      * @return bool whether the model has an attribute with the specified name.
      */
+    /**
+     * 返回是否含有这个属性名
+     * @param  [type]  $name 属性名
+     * @return boolean       [description]
+     */
     public function hasAttribute($name)
     {
         return isset($this->_attributes[$name]) || in_array($name, $this->attributes(), true);
@@ -598,13 +608,21 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * changed recently. If null, [[attributes()]] will be used.
      * @return array the changed attribute values (name-value pairs)
      */
+    /**
+     * 返回已经修改过值的字段
+     * @param  [type] $names 需要判断的字段
+     * @return [type]        [description]
+     */
     public function getDirtyAttributes($names = null)
     {
+        // 如果为null 获取所有的字段
         if ($names === null) {
             $names = $this->attributes();
         }
+        // 交换 key 和 value的值
         $names = array_flip($names);
         $attributes = [];
+        // 如果没有old数据，也就是通过new获得的AR对象，而不是通过findone查询到的对象
         if ($this->_oldAttributes === null) {
             foreach ($this->_attributes as $name => $value) {
                 if (isset($names[$name])) {
@@ -643,8 +661,15 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
      * meaning all attributes that are loaded from DB will be saved.
      * @return bool whether the saving succeeded (i.e. no validation errors occurred).
      */
+    /**
+     * 保存
+     * @param  boolean $runValidation  是否验证
+     * @param  [type]  $attributeNames 需要保存的字段
+     * @return [type]                  [description]
+     */
     public function save($runValidation = true, $attributeNames = null)
     {
+        // 是插入还是更新
         if ($this->getIsNewRecord()) {
             return $this->insert($runValidation, $attributeNames);
         } else {
@@ -884,6 +909,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     }
 
     /**
+     * 返回当前记录是否是新的
      * Returns a value indicating whether the current record is new.
      * @return bool whether the record is new and should be inserted when calling [[save()]].
      */
@@ -1643,7 +1669,7 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
     public function fields()
     {
         $fields = array_keys($this->_attributes);
-
+        // 创建一个数组，用一个数组的值作为其键名，另一个数组的值作为其值 
         return array_combine($fields, $fields);
     }
 

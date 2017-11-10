@@ -49,6 +49,7 @@ class BaseStringHelper
     }
 
     /**
+     * 从命名空间获取类名
      * Returns the trailing name component of a path.
      * This method is similar to the php function `basename()` except that it will
      * treat both \ and / as directory separators, independent of the operating system.
@@ -63,10 +64,13 @@ class BaseStringHelper
      */
     public static function basename($path, $suffix = '')
     {
+        // 如果有后缀，去掉后缀获得路径
         if (($len = mb_strlen($suffix)) > 0 && mb_substr($path, -$len) === $suffix) {
             $path = mb_substr($path, 0, -$len);
         }
+        // 把 \ 替换成 /
         $path = rtrim(str_replace('\\', '/', $path), '/\\');
+        // 截取最后一个 / 到最后的内容 
         if (($pos = mb_strrpos($path, '/')) !== false) {
             return mb_substr($path, $pos + 1);
         }

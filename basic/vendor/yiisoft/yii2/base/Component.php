@@ -100,6 +100,7 @@ use Yii;
 class Component extends Object
 {
     /**
+     * 绑定的事件数组  [事件名 => 事件处理程序]
      * @var array the attached event handlers (event name => handlers)
      */
     private $_events = [];
@@ -671,8 +672,10 @@ class Component extends Object
      */
     public function ensureBehaviors()
     {
+        // 如果没有绑定过
         if ($this->_behaviors === null) {
             $this->_behaviors = [];
+            // 将方法中定义的行为绑定
             foreach ($this->behaviors() as $name => $behavior) {
                 // 将行为绑定到自身
                 $this->attachBehaviorInternal($name, $behavior);
@@ -693,11 +696,12 @@ class Component extends Object
     {
         // 如果是配置数组进行创建
         if (!($behavior instanceof Behavior)) {
+            // 使用全局容器来创建对象
             $behavior = Yii::createObject($behavior);
         }
-        // 绑定
+        // 如果没有设置key值直接绑定
         if (is_int($name)) {
-            // 将behavior中定义的事件events绑定到$this
+            // 将behavior中定义的事件events绑定到当前对象
             $behavior->attach($this);
             // 放进自身的 behaviors数组
             $this->_behaviors[] = $behavior;

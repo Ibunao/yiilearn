@@ -224,16 +224,15 @@ class Container extends Component
      */
     public function get($class, $params = [], $config = [])
     {
-        // 如果已经创建过了
+        // 如果已经有了单例对象，则直接返回创建好的单例对象  
         if (isset($this->_singletons[$class])) {
-            // singleton
             return $this->_singletons[$class];
-        // 如果没有 set() 直接get()了
+        // 如果没有注册依赖而直接get(),$class必须是类，不能是别名
         } elseif (!isset($this->_definitions[$class])) {
             // 创建对象
             return $this->build($class, $params, $config);
         }
-        // 获取依赖
+        // 获取依赖信息
         $definition = $this->_definitions[$class];
         // 依赖是匿名函数
         if (is_callable($definition, true)) {
@@ -246,7 +245,7 @@ class Container extends Component
         } elseif (is_array($definition)) {
             $concrete = $definition['class'];
             unset($definition['class']);
-            // 合并属性配置值
+            // 合并属性配置
             $config = array_merge($definition, $config);
             // 合并 $class 构造函数参数配置值
             $params = $this->mergeParams($class, $params);
@@ -337,71 +336,69 @@ class Container extends Component
      * @return $this the container itself
      */
 
-/*
-=======================================================
-示例   
-$container = new \yii\di\Container;
 
-// 直接以类名注册一个依赖，虽然这么做没什么意义。
-// $_definition['yii\db\Connection'] = ['class' => 'yii\db\Connetcion']
-$container->set('yii\db\Connection');
+// =======================================================
+// 示例   
+// $container = new \yii\di\Container;
 
-// 注册一个接口，当一个类依赖于该接口时，定义中的类会自动被实例化，并供
-// 有依赖需要的类使用。
-// $_definition['yii\mail\MailInterface'] = ['class' => 'yii\swiftmailer\Mailer']
-$container->set('yii\mail\MailInterface', 'yii\swiftmailer\Mailer');
+// // 直接以类名注册一个依赖，虽然这么做没什么意义。
+// $container->set('yii\db\Connection');
+// // $_definition['yii\db\Connection'] = ['class' => 'yii\db\Connetcion']
 
-// 注册一个别名，当调用$container->get('foo')时，可以得到一个
-// yii\db\Connection 实例。
-// $_definition['foo'] = ['class' => 'yii\db\Connection']
-$container->set('foo', 'yii\db\Connection');
 
-// 用一个配置数组来注册一个类，需要这个类的实例时，这个配置数组会发生作用。
+// // 注册一个接口，当一个类依赖于该接口时，注册的接口对应的类会自动被实例化，并供有依赖需要的类使用。
+// $container->set('yii\mail\MailInterface', 'yii\swiftmailer\Mailer');
+// // $_definition['yii\mail\MailInterface'] = ['class' => 'yii\swiftmailer\Mailer']
+
+// // 注册一个别名，当调用$container->get('foo')时，可以得到一个 yii\db\Connection 实例。
+// $container->set('foo', 'yii\db\Connection');
+// // $_definition['foo'] = ['class' => 'yii\db\Connection']
+
+// // 用一个配置数组来注册一个类，需要这个类的实例时，这个配置数组会发生作用。
+// $container->set('yii\db\Connection', [
+//     'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
+//     'username' => 'root',
+//     'password' => '',
+//     'charset' => 'utf8',
+// ]);
 // $_definition['yii\db\Connection'] = [
 //    'class' => 'yii\db\Connection',
 //    'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
 //    'username' => 'root',
 //    'password' => '',
 //    'charset' => 'utf8',
-//];
-$container->set('yii\db\Connection', [
-    'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
-    'username' => 'root',
-    'password' => '',
-    'charset' => 'utf8',
-]);
+// ];
 
-// 用一个配置数组来注册一个别名，由于别名的类型不详，因此配置数组中需要
-// 有 class 元素。
-// $_definition['db'] = [
+// // 用一个配置数组来注册一个别名，由于别名的类型不详，因此配置数组中需要有 class 元素。
+// $container->set('db', [
+//     'class' => 'yii\db\Connection', 
+//     'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
+//     'username' => 'root',
+//     'password' => '',
+//     'charset' => 'utf8',
+// ]);
+
+// /*$_definition['db'] = [
 //    'class' => 'yii\db\Connection',
 //    'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
 //    'username' => 'root',
 //    'password' => '',
 //    'charset' => 'utf8',
-//];
-$container->set('db', [
-    'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
-    'username' => 'root',
-    'password' => '',
-    'charset' => 'utf8',
-]);
+// ];*/
+// // 用一个PHP callable来注册一个别名，每次引用这个别名时，这个callable都会被调用。
+// $container->set('db', function ($container, $params, $config) {
+//     return new \yii\db\Connection($config);
+// });
+// // $_definition['db'] = function(...){...}
 
-// 用一个PHP callable来注册一个别名，每次引用这个别名时，这个callable都会被调用。
-// $_definition['db'] = function(...){...}
-$container->set('db', function ($container, $params, $config) {
-    return new \yii\db\Connection($config);
-});
-
-// 用一个对象来注册一个别名，每次引用这个别名时，这个对象都会被引用。
-// $_definition['pageCache'] = anInstanceOfFileCache
-$container->set('pageCache', new FileCache);
+// // 用一个对象来注册一个别名，每次引用这个别名时，这个对象都会被引用。
+// $container->set('pageCache', new FileCache);
+// // $_definition['pageCache'] = an InstanceOf FileCache 一个FileCache的实例  
 
 
 
-=======================================================
- */
+// =======================================================
+ 
     /**
      * 注册依赖
      * @param [type] $class      类名/接口名/别名
@@ -501,6 +498,7 @@ $container->set('pageCache', new FileCache);
         } elseif (is_array($definition)) {
             // 没有定义类
             if (!isset($definition['class'])) {
+                // 
                 if (strpos($class, '\\') !== false) {
                     $definition['class'] = $class;
                 } else {
@@ -591,9 +589,9 @@ $container->set('pageCache', new FileCache);
     }
 
     /**
-     * 返回类的依赖
+     * 返回依赖项
      * Returns the dependencies of the specified class.
-     * @param string $class class name, interface name or alias name
+     * @param string $class class name, interface name or alias name 不能是别名
      * @return array the dependencies of the specified class.
      */
     protected function getDependencies($class)
@@ -604,7 +602,7 @@ $container->set('pageCache', new FileCache);
         }
 
         $dependencies = [];
-        // 反射
+        // 反射 这就要求不能是别名，别名会导致出错
         $reflection = new ReflectionClass($class);
         // 获取构造函数
         $constructor = $reflection->getConstructor();
@@ -613,10 +611,12 @@ $container->set('pageCache', new FileCache);
             foreach ($constructor->getParameters() as $param) {
                 // 是否有有效的默认值 假设 ding($d = 'a', $b) $d就不是有效的默认值，必须要赋值的
                 if ($param->isDefaultValueAvailable()) {
-                    // 获取默认值
+                    // 默认值作为依赖，既然有默认值，就肯定是基本类型，也就不需要依赖了
                     $dependencies[] = $param->getDefaultValue();
+                // 没默认值的
                 } else {
                     // 获取强制类型的类，如 function ding(RanClass ran)  获取Ranclass
+                    // 如果是基本类型则获取到的是 null 
                     $c = $param->getClass();
                     // 创建Instance实例
                     $dependencies[] = Instance::of($c === null ? null : $c->getName());
@@ -632,18 +632,19 @@ $container->set('pageCache', new FileCache);
     }
 
     /**
-     * 解析依赖通过使用instances对象
+     * 解析构造函数参数的依赖
      * Resolves dependencies by replacing them with the actual object instances.
-     * @param array $dependencies the dependencies  赋值后的参数
-     * @param ReflectionClass $reflection the class reflection associated with the dependencies
+     * @param array $dependencies the dependencies  构造参数的依赖信息
+     * @param ReflectionClass $reflection the class reflection associated with the dependencies 反射对象
      * @return array the resolved dependencies
      * @throws InvalidConfigException if a dependency cannot be resolved or if a dependency cannot be fulfilled.
      */
     protected function resolveDependencies($dependencies, $reflection = null)
     {
         foreach ($dependencies as $index => $dependency) {
-            // 如果参数使用了Instance对象
+            // 如果参数是没有默认值  
             if ($dependency instanceof Instance) {
+                // 如果参数是类类型
                 if ($dependency->id !== null) {
                     // 获取对象，解析依赖
                     $dependencies[$index] = $this->get($dependency->id);

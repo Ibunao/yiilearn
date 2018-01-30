@@ -140,8 +140,15 @@ class BaseYii
      * @throws InvalidParamException if the alias is invalid while $throwException is true.
      * @see setAlias()
      */
+    /**
+     * 获取别名的路径
+     * @param  [type]  $alias          别名
+     * @param  boolean $throwException 不存在是否抛出异常
+     * @return [type]                  [description]
+     */
     public static function getAlias($alias, $throwException = true)
     {
+        // 如果不是别名的形式 @xxx 直接返回
         //$alias 的第一个字符和 @ 比较，如果相等返回0进入if，不相等返回的结果可能是1或-1
         if (strncmp($alias, '@', 1)) {
             // not an alias
@@ -158,6 +165,7 @@ class BaseYii
                 // 拼接上 / 以后的路径
                 return $pos === false ? static::$aliases[$root] : static::$aliases[$root] . substr($alias, $pos);
             }
+            // 如果对应的是数组
             foreach (static::$aliases[$root] as $name => $path) {
                 // 在 $alias/ 中匹配 $name/ ,如果存在，就截取路径
                 if (strpos($alias . '/', $name . '/') === 0) {
@@ -232,6 +240,11 @@ class BaseYii
      * @throws InvalidParamException if $path is an invalid alias.
      * @see getAlias()
      */
+    /**
+     * 设置/删除别名
+     * @param [type] $alias 别名 
+     * @param [type] $path  路径 
+     */
     public static function setAlias($alias, $path)
     {
         //如果不是以 @ 开头的添加 @
@@ -258,10 +271,10 @@ class BaseYii
                 }
             // 已存在并且为字符串，进行修改
             } elseif (is_string(static::$aliases[$root])) {
-                // 如果为 如@yii 的形式，添加
+                // 如果为 如@yii 的形式，覆盖
                 if ($pos === false) {
                     static::$aliases[$root] = $path;
-                // 如果为 如@yii/ding 的形式
+                // 如果为 如@yii/ding 的形式，添加到数组
                 } else {
                     static::$aliases[$root] = [
                         $alias => $path,

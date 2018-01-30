@@ -5,7 +5,7 @@ namespace app\controllers;
 use Yii;
 use app\helpers\zController;
 use yii\db\Query;
-
+use yii\di\Instance;
 class TestController extends zController
 {
 	public function behaviors()
@@ -35,10 +35,10 @@ class TestController extends zController
 
 		// return $this->run('site/index');
 
+		// var_dump(Instance::of(null));
 		// 容器
-		// Yii::$container->get('app\controllers\SiteController');
-
-		return $this->renderAjax('test');
+		Yii::$container->get('app\events\Mourse');
+		// return $this->renderAjax('test');
 	}
 	public function actionDb()
 	{

@@ -98,6 +98,7 @@ class BaseHtml
 
 
     /**
+     * 转码
      * Encodes special characters into HTML entities.
      * The [[\yii\base\Application::charset|application charset]] will be used for encoding.
      * @param string $content the content to be encoded

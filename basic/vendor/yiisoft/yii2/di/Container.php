@@ -216,7 +216,7 @@ class Container extends Component
      * @throws NotInstantiableException If resolved to an abstract class or an interface (since 2.0.9)
      */
     /**
-     * 获取实例，自动解析依赖      
+     * 获取实例，自动解析依赖
      * @param  [type] $class  类名或者别名
      * @param  array  $params 构造方法的参数值，要按顺序来 []
      * @param  array  $config 要给实例属性赋值的配置数组 如 ：['id' => 11];
@@ -224,19 +224,19 @@ class Container extends Component
      */
     public function get($class, $params = [], $config = [])
     {
-        // 如果已经有了单例对象，则直接返回创建好的单例对象  
+        // 如果已经有了单例对象，则直接返回创建好的单例对象
         if (isset($this->_singletons[$class])) {
             return $this->_singletons[$class];
-        // 如果没有注册依赖而直接get(),$class必须是类，不能是别名
+        // 如果没有注册依赖而直接get()
         } elseif (!isset($this->_definitions[$class])) {
-            // 创建对象
+            // 创建对象,$class必须是类，不能是别名
             return $this->build($class, $params, $config);
         }
         // 获取依赖信息
         $definition = $this->_definitions[$class];
         // 依赖是匿名函数
         if (is_callable($definition, true)) {
-            // 合并参数
+            // 合并参数,实例化参数的依赖
             $params = $this->resolveDependencies($this->mergeParams($class, $params));
             // 把第一个参数作为回调函数调用
             // 回调函数 $definition 要接收三个参数
@@ -249,7 +249,7 @@ class Container extends Component
             $config = array_merge($definition, $config);
             // 合并 $class 构造函数参数配置值
             $params = $this->mergeParams($class, $params);
-            // 依赖如果和自己相等 
+            // 依赖如果和自己相等
             if ($concrete === $class) {
                 // 创建对象
                 $object = $this->build($class, $params, $config);
@@ -320,7 +320,7 @@ class Container extends Component
      * If a class definition with the same name already exists, it will be overwritten with the new one.
      * You may use [[has()]] to check if a class definition already exists.
      *
-     * @param string $class class name, interface name or alias name 
+     * @param string $class class name, interface name or alias name
      * @param mixed $definition the definition associated with `$class`. It can be one of the following:
      *
      * - a PHP callable: The callable will be executed when [[get()]] is invoked. The signature of the callable
@@ -338,7 +338,7 @@ class Container extends Component
 
 
 // =======================================================
-// 示例   
+// 示例
 // $container = new \yii\di\Container;
 
 // // 直接以类名注册一个依赖，虽然这么做没什么意义。
@@ -371,7 +371,7 @@ class Container extends Component
 
 // // 用一个配置数组来注册一个别名，由于别名的类型不详，因此配置数组中需要有 class 元素。
 // $container->set('db', [
-//     'class' => 'yii\db\Connection', 
+//     'class' => 'yii\db\Connection',
 //     'dsn' => 'mysql:host=127.0.0.1;dbname=demo',
 //     'username' => 'root',
 //     'password' => '',
@@ -393,12 +393,12 @@ class Container extends Component
 
 // // 用一个对象来注册一个别名，每次引用这个别名时，这个对象都会被引用。
 // $container->set('pageCache', new FileCache);
-// // $_definition['pageCache'] = an InstanceOf FileCache 一个FileCache的实例  
+// // $_definition['pageCache'] = an InstanceOf FileCache 一个FileCache的实例
 
 
 
 // =======================================================
- 
+
     /**
      * 注册依赖
      * @param [type] $class      类名/接口名/别名
@@ -491,14 +491,14 @@ class Container extends Component
         // 字符串也直接为类
         } elseif (is_string($definition)) {
             return ['class' => $definition];
-        // 回调函数或者是对象 
+        // 回调函数或者是对象
         } elseif (is_callable($definition, true) || is_object($definition)) {
             return $definition;
         // 数组
         } elseif (is_array($definition)) {
             // 没有定义类
             if (!isset($definition['class'])) {
-                // 
+                //
                 if (strpos($class, '\\') !== false) {
                     $definition['class'] = $class;
                 } else {
@@ -536,23 +536,23 @@ class Container extends Component
         // 反射对象 参数依赖信息
         /* @var $reflection ReflectionClass */
         list ($reflection, $dependencies) = $this->getDependencies($class);
-        // 给参数赋值
+        // 给构造参数赋值
         foreach ($params as $index => $param) {
             $dependencies[$index] = $param;
         }
-        // 解析依赖，实例化构造参数依赖对象
+        // 递归解析依赖，实例化构造参数依赖对象
         $dependencies = $this->resolveDependencies($dependencies, $reflection);
         // 检查类是否可实例化, 排除抽象类abstract和对象接口interface
         if (!$reflection->isInstantiable()) {
             throw new NotInstantiableException($reflection->name);
         }
-        // 反射实例化对象
+        // 通过反射传递构造参数实例化对象
         if (empty($config)) {
             return $reflection->newInstanceArgs($dependencies);
         }
-        // 检查它是否实现了一个Configurable接口，也就是继承自Object对象  
+        // 检查它是否实现了一个Configurable接口，也就是继承自Object对象
         if (!empty($dependencies) && $reflection->implementsInterface('yii\base\Configurable')) {
-            // 继承object后，规则上，是要在构造函数中最后一个参数和Object中的一直，并调用Object中的构造函数  
+            // 继承object后，规则上，是要在构造函数中最后一个参数和Object中的一直，并调用Object中的构造函数
             // set $config as the last parameter (existing one will be overwritten)
             $dependencies[count($dependencies) - 1] = $config;
             return $reflection->newInstanceArgs($dependencies);
@@ -616,7 +616,7 @@ class Container extends Component
                 // 没默认值的
                 } else {
                     // 获取强制类型的类，如 function ding(RanClass ran)  获取Ranclass
-                    // 如果是基本类型则获取到的是 null 
+                    // 如果是基本类型则获取到的是 null
                     $c = $param->getClass();
                     // 创建Instance实例
                     $dependencies[] = Instance::of($c === null ? null : $c->getName());
@@ -642,7 +642,7 @@ class Container extends Component
     protected function resolveDependencies($dependencies, $reflection = null)
     {
         foreach ($dependencies as $index => $dependency) {
-            // 如果参数是没有默认值  
+            // 如果参数是没有默认值
             if ($dependency instanceof Instance) {
                 // 如果参数是类类型
                 if ($dependency->id !== null) {
@@ -726,7 +726,7 @@ class Container extends Component
         // 反射获取参数遍历
         foreach ($reflection->getParameters() as $param) {
             $name = $param->getName();
-            // 看是否是类class
+            // 看是否是类类型
             if (($class = $param->getClass()) !== null) {
                 $className = $class->getName();
                 //是关联数组 and 是给参数赋值的值 and 继承关系

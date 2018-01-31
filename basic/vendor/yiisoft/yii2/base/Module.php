@@ -233,6 +233,14 @@ class Module extends ServiceLocator
      */
     public function getBasePath()
     {
+        $class = new \ReflectionClass($this);
+        // 获取的是调用者所在文件的路径
+        // /Users/echo-ding/Documents/ding/www/yii/learn/yiilearn/basic/vendor/yiisoft/yii2/web
+        $basePath = dirname($class->getFileName());
+        // 获取的是该文件的绝对路径  
+        // /Users/echo-ding/Documents/ding/www/yii/learn/yiilearn/basic/vendor/yiisoft/yii2/base
+        $basePath = __DIR__;
+
         if ($this->_basePath === null) {
             // 反射获取文件目录
             $class = new \ReflectionClass($this);
@@ -253,12 +261,13 @@ class Module extends ServiceLocator
     {
         $path = Yii::getAlias($path);
         $p = strncmp($path, 'phar://', 7) === 0 ? $path : realpath($path);
+        // 没找到为什么
         //$path = D:\ding\wamp64\www\learn\yii\yiilearn\basic;进入到 $ding = $path;
-        // if (strncmp($path, 'phar://', 7) === 0) {
-        //     $ding = $path;
-        // }else {
-        //     $ding = realpath($path);
-        // }
+        if (strncmp($path, 'phar://', 7) === 0) {
+            $ding = $path;
+        }else {
+            $ding = realpath($path);
+        }
         if ($p !== false && is_dir($p)) {
             $this->_basePath = $p;
         } else {
@@ -364,7 +373,7 @@ class Module extends ServiceLocator
     }
 
     /**
-     * 
+     *
      * Returns default module version.
      * Child class may override this method to provide more specific version detection.
      * @return string the version of this module.
@@ -426,11 +435,11 @@ class Module extends ServiceLocator
 
     /**
      * 获取模块对象，可以是多级模块
-     * 返回最后一个module 
+     * 返回最后一个module
      * 例如 ding/ran/bunao
-     * 返回的是bunao模块对象  
+     * 返回的是bunao模块对象
      * 在创建的同时又会检查各个模块是否已经在配置中配置，假设，bunao模块没有配置，将会返回null
-     * 
+     *
      * Retrieves the child module of the specified ID.
      * This method supports retrieving both child modules and grand child modules.
      * @param string $id module ID (case-sensitive). To retrieve grand child modules,
@@ -552,7 +561,7 @@ class Module extends ServiceLocator
      */
     public function runAction($route, $params = [])
     {
-        // 根据路由创建控制器，会找到最后一层的module，并根据此module来创建控制器  
+        // 根据路由创建控制器，会找到最后一层的module，并根据此module来创建控制器
         $parts = $this->createController($route);
         if (is_array($parts)) {
             /* @var $controller Controller */
@@ -604,7 +613,7 @@ class Module extends ServiceLocator
 
         // double slashes or leading/ending slashes may cause substr problem
         $route = trim($route, '/');
-        // 如果存在 // 格式错误的 
+        // 如果存在 // 格式错误的
         if (strpos($route, '//') !== false) {
             return false;
         }
@@ -629,7 +638,7 @@ class Module extends ServiceLocator
             // 通过此 Modules创建控制器，递归调用，可以有多个module嵌套
             return $module->createController($route);
         }
-        // module层已经处理创建完成  
+        // module层已经处理创建完成
         // / 最后一次出现的位置
         // 控制器 控制器文件夹 controllers中又创建了一个文件夹，请求里层文件夹内的控制器
         if (($pos = strrpos($route, '/')) !== false) {

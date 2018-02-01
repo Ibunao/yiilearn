@@ -6,6 +6,7 @@ use Yii;
 use app\helpers\zController;
 use yii\db\Query;
 use yii\di\Instance;
+use yii\db\Connection;
 class TestController extends zController
 {
 	public function behaviors()
@@ -37,8 +38,15 @@ class TestController extends zController
 
 		// var_dump(Instance::of(null));
 		// 容器
-		Yii::$container->get('app\events\Mourse');
+		// Yii::$container->get('app\events\Mourse');
 		// return $this->renderAjax('test');
+
+
+
+        // returns Yii::$app->db
+        $db = Instance::ensure('db', Connection::className());
+        // returns an instance of Connection using the given configuration
+        $db = Instance::ensure(['dsn' => 'sqlite:path/to/my.db'], Connection::className());
 	}
 	public function actionDb()
 	{

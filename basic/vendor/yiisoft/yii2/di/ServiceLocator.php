@@ -216,7 +216,7 @@ class ServiceLocator extends Component
     {
         // 从组件数组删除此id
         unset($this->_components[$id]);
-        // 删除定义
+        // 删除
         if ($definition === null) {
             unset($this->_definitions[$id]);
             return;

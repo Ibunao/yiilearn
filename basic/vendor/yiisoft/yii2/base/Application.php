@@ -218,9 +218,9 @@ abstract class Application extends Module
         $this->preInit($config);
         //加载配置文件中的异常组件
         $this->registerErrorHandler($config);
-        //将配置文件中的所有信息赋值给Object，也就是Yii::$app->配置文件参数可以直接调用配置文件的内容 如：Yii::$app->vendorPath
-        //输出框架路径  Yii::$app->components['redis']//输出redis配置信息
-        //将定义的配置文件从的 components数组中的组件注册到服务定位器 ServiceLocator
+        // 将会调用父类Object的构造函数 使用 Yii::configure($this, $config); 进行属性的赋值
+        // Yii::$app->components['redis']//输出redis组件实例
+        // 将定义的配置文件从的 components 数组中的组件注册到服务定位器 ServiceLocator
         // 将modules数组中的模块注册到Module中的module数组中
         Component::__construct($config);//之后调用init()
     }
@@ -269,10 +269,9 @@ abstract class Application extends Module
         } elseif (!ini_get('date.timezone')) {
             $this->setTimeZone('UTC');
         }
-        // 配置容器属性参数
+        // 配置容器属性值
         if (isset($config['container'])) {
             $this->setContainer($config['container']);
-
             unset($config['container']);
         }
         // 合并配置中与核心的模块
@@ -306,6 +305,7 @@ abstract class Application extends Module
     protected function bootstrap()
     {
         // 预先加载extensions文件中的数据
+        // 没用到不知道干嘛
         if ($this->extensions === null) {
             $file = Yii::getAlias('@vendor/yiisoft/extensions.php');
             $this->extensions = is_file($file) ? include($file) : [];
@@ -323,7 +323,6 @@ abstract class Application extends Module
                 if ($component instanceof BootstrapInterface) {
                     // 记录日志
                     Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
-                    // debug 模块可以参考
                     $component->bootstrap($this);
                 } else {
                     Yii::trace('Bootstrap with ' . get_class($component), __METHOD__);
@@ -334,7 +333,7 @@ abstract class Application extends Module
         foreach ($this->bootstrap as $class) {
             $component = null;
             if (is_string($class)) {
-                // 服务定位器 ServiceLocator判断是否有
+                // 服务定位器 ServiceLocator判断是否有，也就是是否已经注册这个组件
                 if ($this->has($class)) {
                     // ServiceLocator 获取
                     $component = $this->get($class);
@@ -350,7 +349,7 @@ abstract class Application extends Module
             if (!isset($component)) {
                 $component = Yii::createObject($class);
             }
-
+            // 如果这个组件继承自 BootstrapInterface 接口，调用启动加载方法
             if ($component instanceof BootstrapInterface) {
                 Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
                 // debug 模块有用，并在里边进行了事件的绑定
@@ -419,8 +418,8 @@ abstract class Application extends Module
         try {
             // 更改状态 相应前
             $this->state = self::STATE_BEFORE_REQUEST;
-            // 触发事件  
-            // 配置中bootstop模块如果有bootstop 或者 extentions 中的bootstop  
+            // 触发事件
+            // 配置中bootstop模块如果有bootstop 或者 extentions 中的bootstop
             // 例如debug 模块的bootstop方法就注册on了事件
             $this->trigger(self::EVENT_BEFORE_REQUEST);
 

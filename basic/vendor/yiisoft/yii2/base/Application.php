@@ -305,7 +305,7 @@ abstract class Application extends Module
     protected function bootstrap()
     {
         // 预先加载extensions文件中的数据
-        // 没用到不知道干嘛
+        // 没用到不知道具体用处
         if ($this->extensions === null) {
             $file = Yii::getAlias('@vendor/yiisoft/extensions.php');
             $this->extensions = is_file($file) ? include($file) : [];
@@ -427,7 +427,7 @@ abstract class Application extends Module
             // 适应请求request对象处理相应
             $response = $this->handleRequest($this->getRequest());
 
-            // 相应后
+            // 响应后
             $this->state = self::STATE_AFTER_REQUEST;
             // 触发事件
             $this->trigger(self::EVENT_AFTER_REQUEST);

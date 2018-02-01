@@ -134,7 +134,7 @@ class UrlManager extends Component
      */
     public $cache = 'cache';
     /**
-     *
+     * 配置 UrlRule管理类，一般默认使用系统提供的
      * @var array the default configuration of URL rules. Individual rule configurations
      * specified via [[rules]] will take precedence when the same property of the rule is configured.
      */
@@ -171,12 +171,13 @@ class UrlManager extends Component
 
 
     /**
+     * 初始化
      * Initializes UrlManager.
      */
     public function init()
     {
         parent::init();
-        // 检查标准化属性配置是否正确
+        // 是否配置了标准化对象，一般不用
         if ($this->normalizer !== false) {
             $this->normalizer = Yii::createObject($this->normalizer);
             if (!$this->normalizer instanceof UrlNormalizer) {
@@ -187,15 +188,17 @@ class UrlManager extends Component
         if (!$this->enablePrettyUrl || empty($this->rules)) {
             return;
         }
-        // 如果设置了缓存,获取缓存对象
+        // 获取缓存组件
         if (is_string($this->cache)) {
             // 获取缓存
             $this->cache = Yii::$app->get($this->cache, false);
         }
         // 缓存创建的规则
         if ($this->cache instanceof Cache) {
+            // 以当前类作为缓存的key
             $cacheKey = $this->cacheKey;
             $hash = md5(json_encode($this->rules));
+            // 获取缓存的key 并且比较hash值，看是否更改rules值
             if (($data = $this->cache->get($cacheKey)) !== false && isset($data[1]) && $data[1] === $hash) {
                 $this->rules = $data[0];
             } else {
@@ -244,6 +247,7 @@ class UrlManager extends Component
     protected function buildRules($rules)
     {
         $compiledRules = [];
+        // 请求的动词
         $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
         foreach ($rules as $key => $rule) {
             if (is_string($rule)) {
@@ -268,6 +272,7 @@ class UrlManager extends Component
                 $rule['pattern'] = $key;
             }
             if (is_array($rule)) {
+                // 根据rule创建UrlRule类
                 $rule = Yii::createObject(array_merge($this->ruleConfig, $rule));
             }
             if (!$rule instanceof UrlRuleInterface) {

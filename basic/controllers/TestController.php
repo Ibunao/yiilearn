@@ -41,7 +41,7 @@ class TestController extends zController
 		// Yii::$container->get('app\events\Mourse');
 		// return $this->renderAjax('test');
 
-
+		var_dump(__CLASS__);exit;
 
         // returns Yii::$app->db
         $db = Instance::ensure('db', Connection::className());

@@ -285,7 +285,7 @@ class UrlRule extends Object implements UrlRuleInterface
         $this->pattern = $this->trimSlashes($this->pattern);
         $this->route = trim($this->route, '/');
 
-        // 设置了 host 则拼接 pattern
+        // 设置了 host 域名则拼接 pattern
         if ($this->host !== null) {
             $this->host = rtrim($this->host, '/');
             $this->pattern = rtrim($this->host . '/' . $this->pattern, '/');
@@ -297,11 +297,12 @@ class UrlRule extends Object implements UrlRuleInterface
         } elseif ($this->pattern === '') {
             // 生成url模板为空
             $this->_template = '';
-            // 随便的字符串
+            // 正则懒惰匹配，# 为分界符 u为懒惰模式
             $this->pattern = '#^$#u';
 
             return;
-        // pattern中存在 :// 如http://   获取域名
+        // 获取路由规则请求部分定义的域名
+        // pattern中存在 :// 如http://www.bunao.me   获取域名
         } elseif (($pos = strpos($this->pattern, '://')) !== false) {
             // 处理 :// 后还包含 /
             if (($pos2 = strpos($this->pattern, '/', $pos + 3)) !== false) {
@@ -310,7 +311,8 @@ class UrlRule extends Object implements UrlRuleInterface
             } else {
                 $this->host = $this->pattern;
             }
-        // 以 // 开头    获取域名
+        // 获取路由规则请求部分定义的域名
+        // 以 // 开头  如 //www.bunao.me   获取域名
         } elseif (strpos($this->pattern, '//') === 0) {
             // 除了 // 还有 /
             if (($pos2 = strpos($this->pattern, '/', 2)) !== false) {
@@ -322,7 +324,9 @@ class UrlRule extends Object implements UrlRuleInterface
         } else {
             $this->pattern = '/' . $this->pattern . '/';
         }
-        // route 中含有 <参数> ，则将所有参数提取成 [参数 => <参数>]
+        // route 中含有 <参数> ,如下面的规则
+        // ['<controller:(test|comment)>/<id:\d+>/<action:(bunao|update|delete)>' => '<controller>/<action>']
+        // 则将所有参数提取成 [参数 => <参数>]
         // 如 ['controller' => '<controller>', 'action' => '<action>'],
         // 获取 route 参数
         if (strpos($this->route, '<') !== false && preg_match_all('/<([\w._-]+)>/', $this->route, $matches)) {
@@ -359,7 +363,7 @@ class UrlRule extends Object implements UrlRuleInterface
         $requiredPatternPart = $this->pattern;
         $oldOffset = 0;
         // pattern 中含有 <参数名:参数pattern> ，
-        // 其中 ':参数pattern' 部分是可选的。 ? 前面的原子重复0次或1次  [^>] 表示除了 > 以外的任意字符
+        // 其中 ':参数pattern' 部分是可选的。
 /**
 如  '/post/<ding:\w>/<id:\d+>/<ran>' 
 结果 ： json_encode($matches)
@@ -427,7 +431,14 @@ class UrlRule extends Object implements UrlRuleInterface
                 // 占位符
                 $placeholder = 'a' . hash('crc32b', $name); // placeholder must begin with a letter
                 $this->placeholders[$placeholder] = $name;
-                // 如果 defaults[] 中有同名参数，
+                // 如果 defaults[] 中有同名参数，如下面定义的这条规则
+                /*
+                [
+                    'pattern' => '/post/<ding:\w>/<id:\d+>/<ran>',// 请求部分
+                    'route' => 'post/index',// 解析部分
+                    'defaults' => ['ding' => 'bunao', 'id' => 1],// 默认值
+                ],
+                 */
                 if (array_key_exists($name, $this->defaults)) {
                     // 匹配到整体的长度
                     /*
@@ -439,8 +450,10 @@ class UrlRule extends Object implements UrlRuleInterface
                     $length = strlen($match[0][0]);
                     // 开始位置
                     $offset = $match[0][1];
-                    // 将 $requiredPatternPart 中的 /{$match[0][0]}/ 替换成 //
+                    // 将 $requiredPatternPart /post/<ding:\w>/<id:\d+>/<ran> 中的 /{$match[0][0]}/ 替换成 //
+                    // /post////<id:\d+>/<ran>
                     $requiredPatternPart = str_replace("/{$match[0][0]}/", '//', $requiredPatternPart);
+                    // 从第一个开始的匹配到的
                     if (
                         //允许开头有斜线 /
                         $allowAppendSlash  
@@ -456,9 +469,12 @@ class UrlRule extends Object implements UrlRuleInterface
                         // if pattern starts from optional params, put slash at the end of param pattern
                         // @see https://github.com/yiisoft/yii2/issues/13086
                         $appendSlash = true;
+                        // ?P<$placeholder> 分组其别名的格式，如python的一个例子
+                        // re.match(r"<(?P<name1>\w*)><(?P<name2>\w*)>.*</(?P=name2)></(?P=name1)>", "<html><h1>www.itcast.cn</h1></html>")
                         // $tr["<ding>/"] = "((?P<$placeholder>\\w)/)?";
                         // 如果有就是第一个 bunao 匹配到了，之后的才有可能以这种形式存
                         $tr["<$name>/"] = "((?P<$placeholder>$pattern)/)?";
+                    // 从中间开始匹配到的
                     } elseif (
                         // 中间的
                         $offset > 1
@@ -490,7 +506,9 @@ class UrlRule extends Object implements UrlRuleInterface
             $this->translatePattern(false);
             return;
         }
-        // 将 pattern 中所有的 <参数名:参数pattern> 替换成 <参数名> 后作为 _template
+        // 将 pattern 中所有的 <参数名:参数pattern> 替换成 <参数名> 后作为 _template 如
+        // /<bunao:\d>/<ding:\w>/<id:\d+>/<ran> 转换成下面的
+        // /<bunao>/<ding>/<id>/<ran>
         $this->_template = preg_replace('/<([\w._-]+):?([^>]+)?>/', '<$1>', $this->pattern);
         // 将 _template 中的特殊字符及字符串使用 tr[] 进行转换，并作为最终的pattern
         $this->pattern = '#^' . trim(strtr($this->_template, $tr), '/') . '$#u';

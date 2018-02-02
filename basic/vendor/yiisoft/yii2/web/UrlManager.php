@@ -251,7 +251,7 @@ class UrlManager extends Component
         $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
         foreach ($rules as $key => $rule) {
             if (is_string($rule)) {
-                // 路由部分
+                // 路由规则的路由部分
                 $rule = ['route' => $rule];
                 // 获取允许的请求
                 /* $patten= '/^((?:(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS),)*(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS))\s+(.*)$/';
@@ -259,18 +259,22 @@ class UrlManager extends Component
                 例如
                 $key = 'DELETE,POST <controller:\w+>/<id:\d+>';
                 */
+                // ?: 参考 https://segmentfault.com/q/1010000010110245
                 if (preg_match("/^((?:($verbs),)*($verbs))\\s+(.*)$/", $key, $matches)) {
                     // 允许的请求方式
                     $rule['verb'] = explode(',', $matches[1]);
                     // rules that do not apply for GET requests should not be use to create urls
+                    // 如果不允许get请求则只能解析???
                     if (!in_array('GET', $rule['verb'])) {
                         $rule['mode'] = UrlRule::PARSING_ONLY;
                     }
+                    // 路由规则的请求部分
                     $key = $matches[4];
                 }
                 // 请求部分
                 $rule['pattern'] = $key;
             }
+            // 解析后的格式为数组
             if (is_array($rule)) {
                 // 根据rule创建UrlRule类
                 $rule = Yii::createObject(array_merge($this->ruleConfig, $rule));
@@ -295,7 +299,7 @@ class UrlManager extends Component
         // 开启路由美化
         if ($this->enablePrettyUrl) {
             /* @var $rule UrlRule */
-            // 定义的规则 进行解析
+            // rule是根据路由规则创建的UrlRule实例
             foreach ($this->rules as $rule) {
                 // 根据规则进行解析
                 $result = $rule->parseRequest($this, $request);

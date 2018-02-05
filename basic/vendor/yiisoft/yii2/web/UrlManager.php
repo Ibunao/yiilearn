@@ -237,7 +237,7 @@ class UrlManager extends Component
     }
 
     /**
-     * 创建了路由规则
+     * 解析配置的路由规则，并创建成路由规则对象  
      * Builds URL rule objects from the given rule declarations.
      * @param array $rules the rule declarations. Each array element represents a single rule declaration.
      * Please refer to [[rules]] for the acceptable rule formats.

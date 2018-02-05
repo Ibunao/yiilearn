@@ -320,7 +320,7 @@ class UrlRule extends Object implements UrlRuleInterface
             } else {
                 $this->host = $this->pattern;
             }
-        // pattern 不是空串，且不包含主机信息，两端加上 '/' ，形成一个正则
+        // pattern 不是空串，且不包含主机信息，两端加上 '/' 
         } else {
             $this->pattern = '/' . $this->pattern . '/';
         }

@@ -37,6 +37,7 @@ class UrlNormalizer extends Object
     const ACTION_NOT_FOUND = 404;
 
     /**
+     * 合并 多个/// 为一个
      * @var bool whether slashes should be collapsed, for example `site///index` will be
      * converted into `site/index`
      */

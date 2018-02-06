@@ -212,13 +212,16 @@ class Request extends \yii\base\Request
     {
         if ($this->_headers === null) {
             $this->_headers = new HeaderCollection;
-            // 使用 getallheaders() 获取请求头部，以数组形式返回
+            // 使用 getallheaders() 获取请求头部，以数组形式返回  
+            // 这个方法仅在将PHP作为Apache的一个模块运行时有效。
             if (function_exists('getallheaders')) {
                 $headers = getallheaders();
-            // 使用 http_get_request_headers() 获取请求头部，以数组形式返回
+            // 使用 http_get_request_headers() 获取请求头部，以数组形式返回  
+            // 要求PHP启用HTTP扩展。
             } elseif (function_exists('http_get_request_headers')) {
                 $headers = http_get_request_headers();
             } else {
+                // 使用 $_SERVER 获取请求头
                 foreach ($_SERVER as $name => $value) {
                     // 针对所有 $_SERVER['HTTP_*'] 元素
                     if (strncmp($name, 'HTTP_', 5) === 0) {
@@ -238,7 +241,7 @@ class Request extends \yii\base\Request
     }
 
     /**
-     * 返回当前请求的方法
+     * 返回当前请求的方式  GET, POST, HEAD, PUT, PATCH, DELETE
      * Returns the method of the current request (e.g. GET, POST, HEAD, PUT, PATCH, DELETE).
      * @return string request method, such as GET, POST, HEAD, PUT, PATCH, DELETE.
      * The value returned is turned into upper case.
@@ -326,6 +329,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 是否是ajax请求
      * Returns whether this is an AJAX (XMLHttpRequest) request.
      *
      * Note that jQuery doesn't set the header in case of cross domain
@@ -339,6 +343,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 是否是pjax请求
      * Returns whether this is a PJAX request
      * @return bool whether this is a PJAX request
      */
@@ -348,6 +353,7 @@ class Request extends \yii\base\Request
     }
 
     /**
+     * 返回是否是刷新操作
      * Returns whether this is an Adobe Flash or Flex request.
      * @return bool whether this is an Adobe Flash or Adobe Flex request.
      */
@@ -431,6 +437,7 @@ php://input 是返回整个HTTP请求中，除去HTTP头部的全部原始内容
                 if (!($parser instanceof RequestParserInterface)) {
                     throw new InvalidConfigException("The '$contentType' request parser is invalid. It must implement the yii\\web\\RequestParserInterface.");
                 }
+                // 解析请求体
                 $this->_bodyParams = $parser->parse($this->getRawBody(), $rawContentType);
             } elseif (isset($this->parsers['*'])) {
                 $parser = Yii::createObject($this->parsers['*']);
@@ -672,7 +679,7 @@ Array
     private $_baseUrl;
 
     /**
-     * 获取相对url   为空 ''
+     * 获取相对url
      * 假设域名指向的不是web 而是web的外层  
      * 则获取到的是 /web
      * Returns the relative URL for the application.
@@ -684,6 +691,7 @@ Array
     public function getBaseUrl()
     {
         if ($this->_baseUrl === null) {
+            // dirname 获取目录部分
             $this->_baseUrl = rtrim(dirname($this->getScriptUrl()), '\\/');
         }
 
@@ -704,8 +712,9 @@ Array
     private $_scriptUrl;
 
     /**
-     * 获取请求入口文件的相对路径   /index.php
-     * 
+     * 获取请求入口文件的相对路径 
+     * 如 www.bunao.me/web/index.php 获取到的是 /web/index.php
+     * www.bunao.me/index.php 和 www.bunao.me 获取到的就是 /index.php
      * Returns the relative URL of the entry script.
      * The implementation of this method referenced Zend_Controller_Request_Http in Zend Framework.
      * @return string the relative URL of the entry script.
@@ -716,7 +725,7 @@ Array
         if ($this->_scriptUrl === null) {
             // 获取执行文件
             $scriptFile = $this->getScriptFile();
-            // 获取脚本名称 入口文件 index.php
+            // 获取脚本名称 入口文件 index.php basename 返回路径中的文件名部分
             $scriptName = basename($scriptFile);
             // 如 http://www.digapge.com/path/index.php 中的 /path/index.php
             if (isset($_SERVER['SCRIPT_NAME']) && basename($_SERVER['SCRIPT_NAME']) === $scriptName) {
@@ -751,7 +760,7 @@ Array
     private $_scriptFile;
 
     /**
-     * 获取当前执行脚本的文件路径
+     * 当前脚本的实际物理路径
      * 例如
      * D:/ding/wamp64/www/learn/yii/yiilearn/basic/web/index.php
      * 
@@ -788,8 +797,8 @@ Array
     private $_pathInfo;
 
     /**
-     * 返回pathInfo
-     * 域名后问号?前的
+     * 返回真正的 pathInfo
+     * ?问号前 入口文件后的部分  
      * Returns the path info of the currently requested URL.
      * A path info refers to the part that is after the entry script and before the question mark (query string).
      * The starting and ending slashes are both removed.
@@ -827,7 +836,7 @@ Array
      */
     protected function resolvePathInfo()
     {
-        // 获取当前的url 域名后的所有
+        // 获取当前的url 域名后的所有内容
         $pathInfo = $this->getUrl();
          // 取出URL中的查询参数部分，即 ? 及之后的内容
         if (($pos = strpos($pathInfo, '?')) !== false) {
@@ -852,18 +861,18 @@ Array
         ) {
             $pathInfo = utf8_encode($pathInfo);
         }
-        // 获取当前
-        // /index.php
+        // 获取域名后的入口文件
+        // 如 /web/index.php
         $scriptUrl = $this->getScriptUrl();
-        // ""
+        // 如 web
         $baseUrl = $this->getBaseUrl();
+        // 获取真正的pathinfo
         // 以/index.php开头 截取掉 /index.php
         if (strpos($pathInfo, $scriptUrl) === 0) {
             $pathInfo = substr($pathInfo, strlen($scriptUrl));
-        // 
+        // 省略了入口文件，去除掉入口文件前面的路径
         } elseif ($baseUrl === '' || strpos($pathInfo, $baseUrl) === 0) {
             $pathInfo = substr($pathInfo, strlen($baseUrl));
-        // 去除  /index.php
         } elseif (isset($_SERVER['PHP_SELF']) && strpos($_SERVER['PHP_SELF'], $scriptUrl) === 0) {
             $pathInfo = substr($_SERVER['PHP_SELF'], strlen($scriptUrl));
         } else {
@@ -891,7 +900,7 @@ Array
     private $_url;
 
     /**
-     * 获取请求的Url  获取域名后的所有
+     * 获取请求的Url  获取域名后的部分
      * Returns the currently requested relative URL.
      * This refers to the portion of the URL that is after the [[hostInfo]] part.
      * It includes the [[queryString]] part if any.
@@ -1344,6 +1353,8 @@ Array
     }
 
     /**
+     * 返回etags内容, 在http缓存有用
+     * [参考](http://www.infoq.com/cn/articles/etags)
      * Gets the Etags.
      *
      * @return array The entity tags
@@ -1441,7 +1452,7 @@ Array
      *
      * This token is generated in a way to prevent [BREACH attacks](http://breachattack.com/). It may be passed
      * along via a hidden field of an HTML form or an HTTP header value to support CSRF validation.
-     * @param bool $regenerate whether to regenerate CSRF token. When this parameter is true, each time
+     * @param bool $regenerate whether to regenerate CSRF token. When this parameter is true, each time 是否重新生成令牌
      * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
      * @return string the token used to perform CSRF validation.
      */

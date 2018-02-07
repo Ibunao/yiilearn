@@ -129,4 +129,17 @@ class TestController extends zController
 
 		var_dump($result,$result2,$result3,$result4,$result5,$result6);
 	}
+	public function actionCookie()
+	{
+		var_dump($_COOKIE);
+	}
+	public function actionResponse()
+	{
+		Yii::$app->response->sendContentAsFile('ding', 'ding.html');
+	}
+	public function actionSession()
+	{
+		Yii::$app->session->cookieParams = ['lifetime' => 30];
+		Yii::$app->session->open();
+	}
 }

@@ -127,9 +127,9 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
         if ($this->getIsActive()) {
             return;
         }
-
+        // 注册session的处理，方便存储到其他介质
         $this->registerSessionHandler();
-
+        // 这一步是为了设置cookie存储sessionid的参数
         $this->setCookieParamsInternal();
 
         @session_start();
@@ -138,6 +138,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
             Yii::info('Session started', __METHOD__);
             $this->updateFlashCounters();
         } else {
+            // 获取最后的错误
             $error = error_get_last();
             $message = isset($error['message']) ? $error['message'] : 'Failed to start session.';
             Yii::error($message, __METHOD__);
@@ -146,7 +147,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
 
     /**
      * 注册sessionhandle
-     * ??? 没用过
+     * 接管所有的session管理工作,在DbSession和CacheSession等使用其他存储的会注册自己处理session的机制   
      * Registers session handler.
      * @throws \yii\base\InvalidConfigException
      */
@@ -370,6 +371,8 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
      */
     public function getCookieParams()
     {
+        // session_get_cookie_params 获取会话 cookie 参数 
+        // array_change_key_case 将数组中的所有键名修改为全大写或小写
         return array_merge(session_get_cookie_params(), array_change_key_case($this->_cookieParams));
     }
 
@@ -396,6 +399,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     {
         $data = $this->getCookieParams();
         if (isset($data['lifetime'], $data['path'], $data['domain'], $data['secure'], $data['httponly'])) {
+            // 设置会话 cookie 参数
             session_set_cookie_params($data['lifetime'], $data['path'], $data['domain'], $data['secure'], $data['httponly']);
         } else {
             throw new InvalidParamException('Please make sure cookieParams contains these elements: lifetime, path, domain, secure and httponly.');

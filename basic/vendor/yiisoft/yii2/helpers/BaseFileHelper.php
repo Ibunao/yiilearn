@@ -171,7 +171,7 @@ class BaseFileHelper
     public static function getMimeTypeByExtension($file, $magicFile = null)
     {
         $mimeTypes = static::loadMimeTypes($magicFile);
-
+        // 获取文件扩展名
         if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '') {
             $ext = strtolower($ext);
             if (isset($mimeTypes[$ext])) {

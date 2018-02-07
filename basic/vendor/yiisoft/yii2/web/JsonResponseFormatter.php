@@ -98,7 +98,6 @@ class JsonResponseFormatter extends Component implements ResponseFormatterInterf
 
     /**
      * 格式化返回的数据格式为jsonp
-     * ??? 怎么用？
      * Formats response data in JSONP format.
      * @param Response $response
      */

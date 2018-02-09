@@ -124,6 +124,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
      */
     public function open()
     {
+        // 如果已经开启
         if ($this->getIsActive()) {
             return;
         }
@@ -208,6 +209,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     public function destroy()
     {
         if ($this->getIsActive()) {
+            // 关闭又开启应该是为了终止没有写完的session吧
             $sessionId = session_id();
             $this->close();
             $this->setId($sessionId);
@@ -290,7 +292,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
-     * 使用新生成的一个更新当前会话ID
+     * 使用新生成的一个更新当前会话ID,并将原来的session复制一份
      * Updates the current session ID with a newly generated one.
      *
      * Please refer to <http://php.net/session_regenerate_id> for more details.
@@ -407,12 +409,14 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 返回是否用cookie存储的sessionid
      * Returns the value indicating whether cookies should be used to store session IDs.
      * @return bool|null the value indicating whether cookies should be used to store session IDs.
      * @see setUseCookies()
      */
     public function getUseCookies()
     {
+        // 是否使用cookie存储
         if (ini_get('session.use_cookies') === '0') {
             return false;
         } elseif (ini_get('session.use_only_cookies') === '1') {
@@ -434,12 +438,15 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
      */
     public function setUseCookies($value)
     {
+        // 不使用cookie存储
         if ($value === false) {
             ini_set('session.use_cookies', '0');
             ini_set('session.use_only_cookies', '0');
+        // 只使用cookie存储
         } elseif ($value === true) {
             ini_set('session.use_cookies', '1');
             ini_set('session.use_only_cookies', '1');
+        // 如果能使用cookie存储就使用cookie，如果不能则用其他的存储方式
         } else {
             ini_set('session.use_cookies', '1');
             ini_set('session.use_only_cookies', '0');
@@ -455,6 +462,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 设置回收机制参数
      * @param float $value the probability (percentage) that the GC (garbage collection) process is started on every session initialization.
      * @throws InvalidParamException if the value is not between 0 and 100.
      */
@@ -478,6 +486,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 不知道用来干嘛的
      * @param bool $value whether transparent sid support is enabled or not.
      */
     public function setUseTransparentSessionID($value)
@@ -486,6 +495,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 获取清理的时间
      * @return int the number of seconds after which data will be seen as 'garbage' and cleaned up.
      * The default value is 1440 seconds (or the value of "session.gc_maxlifetime" set in php.ini).
      */
@@ -495,6 +505,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
+     * 设置清理的时间
      * @param int $value the number of seconds after which data will be seen as 'garbage' and cleaned up
      */
     public function setTimeout($value)
@@ -672,12 +683,13 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
-     * 跟新Flash次数，并不知道什么用
+     * 跟新Flash次数，这个方法在请求结束的时候会被User中调用session时调用，会把使用过的flash信息给清除掉  
      * Updates the counters for flash messages and removes outdated flash messages.
      * This method should only be called once in [[init()]].
      */
     protected function updateFlashCounters()
     {
+        // var_dump($_SESSION);exit;
         $counters = $this->get($this->flashParam, []);
         if (is_array($counters)) {
             foreach ($counters as $key => $count) {
@@ -797,6 +809,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     public function setFlash($key, $value = true, $removeAfterAccess = true)
     {
         $counters = $this->get($this->flashParam, []);
+        // 默认为调用一次后删除
         $counters[$key] = $removeAfterAccess ? -1 : 0;
         $_SESSION[$key] = $value;
         $_SESSION[$this->flashParam] = $counters;

@@ -139,7 +139,23 @@ class TestController extends zController
 	}
 	public function actionSession()
 	{
-		Yii::$app->session->cookieParams = ['lifetime' => 30];
+		// session_start();
+		// var_dump($_SESSION);exit;
+		$session = Yii::$app->session;
+		// Yii::$app->session->cookieParams = ['lifetime' => 30];
+		// var_dump($session->setId('12223234'));
 		Yii::$app->session->open();
+		// $session->set('ding', 'ranafsdfadfadsfsddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
+		// $session->regenerateID();
+		// echo $session->getSavePath();
+		// // $session->destroy();
+		// echo $session->get('ding');
+		$session->setFlash('ding', 'ran');
+		echo $session->getFlash('ding');
+		Yii::$app->session->open();
+		// var_dump($_SESSION);
+		echo $session->getFlash('ding');
+		// echo $session->get('__ding');
+
 	}
 }

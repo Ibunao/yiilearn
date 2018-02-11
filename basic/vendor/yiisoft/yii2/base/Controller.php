@@ -399,6 +399,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public function render($view, $params = [])
     {
+        // 视图文件经过变量替换后的内容  
         $content = $this->getView()->render($view, $params, $this);
         return $this->renderContent($content);
     }
@@ -511,8 +512,10 @@ class Controller extends Component implements ViewContextInterface
     public function findLayoutFile($view)
     {
         $module = $this->module;
+        // 如果设置了
         if (is_string($this->layout)) {
             $layout = $this->layout;
+        // 如果没有设置，使用module的layout
         } elseif ($this->layout === null) {
             while ($module !== null && $module->layout === null) {
                 $module = $module->module;

@@ -158,4 +158,11 @@ class TestController extends zController
 		// echo $session->get('__ding');
 
 	}
+	public function actionController()
+	{
+		// echo $this->run('ding/default/index');
+		// echo $this->getUniqueId();
+		Yii::$app->getUser()->setReturnUrl(['admin/index', 'ref' => 1]);
+		$this->goBack();
+	}
 }

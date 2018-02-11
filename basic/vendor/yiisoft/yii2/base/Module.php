@@ -205,7 +205,7 @@ class Module extends ServiceLocator
      */
     public function init()
     {
-        // 定义控制器文件路径
+        // 定义控制器的命名空间
         if ($this->controllerNamespace === null) {
             $class = get_class($this);
             if (($pos = strrpos($class, '\\')) !== false) {
@@ -237,7 +237,7 @@ class Module extends ServiceLocator
         // 获取的是调用者所在文件的路径
         // /Users/echo-ding/Documents/ding/www/yii/learn/yiilearn/basic/vendor/yiisoft/yii2/web
         $basePath = dirname($class->getFileName());
-        // 获取的是该文件的绝对路径  
+        // 获取的是该文件的绝对路径
         // /Users/echo-ding/Documents/ding/www/yii/learn/yiilearn/basic/vendor/yiisoft/yii2/base
         $basePath = __DIR__;
 
@@ -457,7 +457,7 @@ class Module extends ServiceLocator
 
             return $module === null ? null : $module->getModule(substr($id, $pos + 1), $load);
         }
-        // 一级模块
+        // 配置的module模块
         if (isset($this->_modules[$id])) {
             if ($this->_modules[$id] instanceof Module) {
                 return $this->_modules[$id];
@@ -476,6 +476,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     *
      * Adds a sub-module to this module.
      * @param string $id module ID.
      * @param Module|array|null $module the sub-module to be added to this module. This can
@@ -518,6 +519,7 @@ class Module extends ServiceLocator
     }
 
     /**
+     * 配置在配置文件中的将会在这里进行赋值
      * Registers sub-modules in the current module.
      *
      * Each sub-module should be specified as a name-value pair, where
@@ -626,7 +628,7 @@ class Module extends ServiceLocator
             $id = $route;
             $route = '';
         }
-        // 是否存在控制器映射中
+        // 是否存在定义在module上的控制器映射中
         // module and controller map take precedence
         if (isset($this->controllerMap[$id])) {
             $controller = Yii::createObject($this->controllerMap[$id], [$id, $this]);

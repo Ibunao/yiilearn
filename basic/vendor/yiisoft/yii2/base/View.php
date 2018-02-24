@@ -111,6 +111,7 @@ class View extends Component
     public function init()
     {
         parent::init();
+        // 主题相关
         if (is_array($this->theme)) {
             if (!isset($this->theme['class'])) {
                 $this->theme['class'] = 'yii\base\Theme';

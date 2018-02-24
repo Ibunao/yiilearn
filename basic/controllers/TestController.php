@@ -9,6 +9,7 @@ use yii\di\Instance;
 use yii\db\Connection;
 class TestController extends zController
 {
+	public $enableCsrfValidation = false;
 	public function behaviors()
 	{
 		return ['app\behaviors\TestBehavior'];
@@ -113,6 +114,7 @@ class TestController extends zController
 	}
 	public function actionRequest()
 	{
+
 		$request = Yii::$app->getRequest();
 		// $result = $request->getUrl();
 		// $result = $request->getScriptUrl();
@@ -120,14 +122,17 @@ class TestController extends zController
 		// $result = $request->getHeaders();
 		// $result = $request->getPathInfo();
 		// $result = $request->getQueryString();
-		$result = $request->getServerName();
-		$result2 = $request->getUserIP();
-		$result3 = $request->getUserHost();
-		$result4 = $request->getAuthUser();
-		$result5 = $request->getAuthPassword();
-		$result6 = $request->getAuthPassword();
-
-		var_dump($result,$result2,$result3,$result4,$result5,$result6);
+		// $result = $request->getServerName();
+		// $result2 = $request->getUserIP();
+		// $result3 = $request->getUserHost();
+		// $result4 = $request->getAuthUser();
+		// $result5 = $request->getAuthPassword();
+		// $result6 = $request->getAuthPassword();
+		$result = $request->getRawBody();
+		$result = $request->getBodyParams();
+		// $result1 = $request->getHeaders();
+		// var_dump($result,$result2,$result3,$result4,$result5,$result6);
+		var_dump($result);
 	}
 	public function actionCookie()
 	{
@@ -164,5 +169,12 @@ class TestController extends zController
 		// echo $this->getUniqueId();
 		Yii::$app->getUser()->setReturnUrl(['admin/index', 'ref' => 1]);
 		$this->goBack();
+	}
+	public function actionView()
+	{
+		$app = Yii::getAlias('@app');
+		$web = Yii::getAlias('@web');
+		// var_dump($app, $web);exit;
+		return $this->render('index');
 	}
 }

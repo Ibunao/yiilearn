@@ -217,7 +217,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
-     * 创建action
+     * 创建action (action的转换规则就在这里)
      * Creates an action based on the given action ID.
      * The method first checks if the action ID has been declared in [[actions()]]. If so,
      * it will use the configuration declared there to create the action object.

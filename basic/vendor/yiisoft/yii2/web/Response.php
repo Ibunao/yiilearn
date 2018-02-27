@@ -244,6 +244,7 @@ class Response extends \yii\base\Response
 
 
     /**
+     * 初始化
      * Initializes this component.
      */
     public function init()
@@ -317,7 +318,7 @@ class Response extends \yii\base\Response
     }
 
     /**
-     * 请求头 采集器
+     * 采集器
      * Returns the header collection.
      * The header collection contains the currently registered HTTP headers.
      * @return HeaderCollection the header collection
@@ -339,8 +340,9 @@ class Response extends \yii\base\Response
         if ($this->isSent) {
             return;
         }
+        // 触发事件，设置响应头的格式信息的可以绑定该事件
         $this->trigger(self::EVENT_BEFORE_SEND);
-        // 准备发送的数据
+        // 准备发送的数据的格式
         $this->prepare();
         $this->trigger(self::EVENT_AFTER_PREPARE);
         // 设置相应头，发送cookie
@@ -378,10 +380,12 @@ class Response extends \yii\base\Response
             return;
         }
         if ($this->_headers) {
-            // 
+            // 设置响应头
             $headers = $this->getHeaders();
             foreach ($headers as $name => $values) {
+                // 实现每个单词的首字母大写
                 $name = str_replace(' ', '-', ucwords(str_replace('-', ' ', $name)));
+                // 可选参数 replace 表明是否用后面的头替换前面相同类型的头。 默认情况下会替换。如果传入 FALSE，就可以强制使相同的头信息并存。
                 // set replace for first occurrence of header but false afterwards to allow multiple
                 $replace = true;
                 foreach ($values as $value) {
@@ -390,6 +394,7 @@ class Response extends \yii\base\Response
                 }
             }
         }
+        // 设置响应码
         $statusCode = $this->getStatusCode();
         header("HTTP/{$this->version} {$statusCode} {$this->statusText}");
         // 发送cookie
@@ -397,6 +402,7 @@ class Response extends \yii\base\Response
     }
 
     /**
+     * 发送cookie
      * Sends the cookies to the client.
      */
     protected function sendCookies()
@@ -413,6 +419,7 @@ class Response extends \yii\base\Response
             }
             $validationKey = $request->cookieValidationKey;
         }
+        // 加密存入cookie
         foreach ($this->getCookies() as $cookie) {
             $value = $cookie->value;
             if ($cookie->expire != 1  && isset($validationKey)) {
@@ -434,8 +441,9 @@ class Response extends \yii\base\Response
 
             return;
         }
-
+        // 设置时间限制
         set_time_limit(0); // Reset time limit for big files
+        // 每次读8M
         $chunkSize = 8 * 1024 * 1024; // 8MB per chunk
 
         // 读取文件输出
@@ -443,12 +451,17 @@ class Response extends \yii\base\Response
             // 文件handle 开始位置 结束为止
             list ($handle, $begin, $end) = $this->stream;
             // 读取文件内容输出
+            // 定位指针
             fseek($handle, $begin);
+            // feof 测试时候读到了文件的末尾位置
+            // ftell 返回指针的位置
             while (!feof($handle) && ($pos = ftell($handle)) <= $end) {
                 if ($pos + $chunkSize > $end) {
                     $chunkSize = $end - $pos + 1;
                 }
+                // 每次读8M
                 echo fread($handle, $chunkSize);
+                // 刷新，输出到浏览器，释放内存
                 flush(); // Free up memory. Otherwise large files will trigger PHP's memory limit.
             }
             fclose($handle);
@@ -568,8 +581,8 @@ class Response extends \yii\base\Response
      * Note that this method only prepares the response for file sending. The file is not sent
      * until [[send()]] is called explicitly or implicitly. The latter is done after you return from a controller action.
      *
-     * @param resource $handle the handle of the stream to be sent.
-     * @param string $attachmentName the file name shown to the user.
+     * @param resource $handle the handle of the stream to be sent. 文件柄
+     * @param string $attachmentName the file name shown to the user. 显示给用户的文件名
      * @param array $options additional options for sending the file. The following options are supported:
      *
      *  - `mimeType`: the MIME type of the content. Defaults to 'application/octet-stream'.
@@ -593,7 +606,7 @@ class Response extends \yii\base\Response
             fseek($handle, 0, SEEK_END);
             $fileSize = ftell($handle);
         }
-        // ??? 添加断点续传
+        // 添加断点续传功能
         $range = $this->getHttpRange($fileSize);
         if ($range === false) {
             $headers->set('Content-Range', "bytes */$fileSize");
@@ -601,6 +614,7 @@ class Response extends \yii\base\Response
         }
 
         list($begin, $end) = $range;
+        // 如果没有传完，设置剩下的
         if ($begin != 0 || $end != $fileSize - 1) {
             $this->setStatusCode(206);
             $headers->set('Content-Range', "bytes $begin-$end/$fileSize");
@@ -608,7 +622,10 @@ class Response extends \yii\base\Response
             $this->setStatusCode(200);
         }
 
+        //声明响应头为：八进制的数据流(进制数据)hexet-stream十六进制，进制越大越省带宽
+        // header("Content-Type:application/octet-stream");
         $mimeType = isset($options['mimeType']) ? $options['mimeType'] : 'application/octet-stream';
+        // 设置下载头
         $this->setDownloadHeaders($attachmentName, $mimeType, !empty($options['inline']), $end - $begin + 1);
 
         $this->format = self::FORMAT_RAW;
@@ -636,13 +653,16 @@ class Response extends \yii\base\Response
             ->setDefault('Accept-Ranges', 'bytes')
             ->setDefault('Expires', '0')
             ->setDefault('Cache-Control', 'must-revalidate, post-check=0, pre-check=0')
+            // 告诉浏览器文件下载方式，以及下载的文件名
             ->setDefault('Content-Disposition', $this->getDispositionHeaderValue($disposition, $attachmentName));
 
         if ($mimeType !== null) {
+            // 声明响应头为：八进制的数据流(进制数据)hexet-stream十六进制，进制越大越省带宽
             $headers->setDefault('Content-Type', $mimeType);
         }
 
         if ($contentLength !== null) {
+            // 设置下载文件的大小
             $headers->setDefault('Content-Length', $contentLength);
         }
 
@@ -868,16 +888,20 @@ class Response extends \yii\base\Response
     {
         // 获得url
         if (is_array($url) && isset($url[0])) {
+            // 确保是绝对路径
             // ensure the route is absolute
             $url[0] = '/' . ltrim($url[0], '/');
         }
         $url = Url::to($url);
+        // 添加上当前域名
         if (strpos($url, '/') === 0 && strpos($url, '//') !== 0) {
             $url = Yii::$app->getRequest()->getHostInfo() . $url;
         }
 
         if ($checkAjax) {
+            // 如果是ajax，设置ajax跳转的请求头
             if (Yii::$app->getRequest()->getIsAjax()) {
+                // ie处理
                 if (Yii::$app->getRequest()->getHeaders()->get('X-Ie-Redirect-Compatibility') !== null && $statusCode === 302) {
                     // Ajax 302 redirect in IE does not work. Change status code to 200. See https://github.com/yiisoft/yii2/issues/9670
                     $statusCode = 200;
@@ -1049,25 +1073,25 @@ class Response extends \yii\base\Response
     }
 
     /**
-     * 准备发送数据
+     * 准备发送数据，设置响应头数据格式，格式化数据
      * Prepares for sending the response.
      * The default implementation will convert [[data]] into [[content]] and set headers accordingly.
      * @throws InvalidConfigException if the formatter for the specified format is invalid or [[format]] is not supported
      */
     protected function prepare()
     {
-        // 
+        // 已经开始传输了
         if ($this->stream !== null) {
             return;
         }
-        // 格式化处理器
+        // 根据设置的格式选用格式化处理器
         if (isset($this->formatters[$this->format])) {
             $formatter = $this->formatters[$this->format];
             if (!is_object($formatter)) {
                 $this->formatters[$this->format] = $formatter = Yii::createObject($formatter);
             }
             if ($formatter instanceof ResponseFormatterInterface) {
-                // 格式化
+                // 设置 Content-Type 格式化数据
                 $formatter->format($this);
             } else {
                 throw new InvalidConfigException("The '{$this->format}' response formatter is invalid. It must implement the ResponseFormatterInterface.");

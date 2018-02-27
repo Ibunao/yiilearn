@@ -136,6 +136,7 @@ class Theme extends Component
         // 配置的主题目录映射  将 a/b 映射成 c/e
         $pathMap = $this->pathMap;
         if (empty($pathMap)) {
+            // 如果没有设置映射则必须设置基础路径
             if (($basePath = $this->getBasePath()) === null) {
                 throw new InvalidConfigException('The "basePath" property must be set.');
             }

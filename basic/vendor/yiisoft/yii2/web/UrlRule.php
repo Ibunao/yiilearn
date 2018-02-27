@@ -320,7 +320,7 @@ class UrlRule extends Object implements UrlRuleInterface
             } else {
                 $this->host = $this->pattern;
             }
-        // pattern 不是空串，且不包含主机信息，两端加上 '/' ，形成一个正则
+        // pattern 不是空串，且不包含主机信息，两端加上 '/'
         } else {
             $this->pattern = '/' . $this->pattern . '/';
         }
@@ -431,7 +431,7 @@ class UrlRule extends Object implements UrlRuleInterface
                 // 占位符
                 $placeholder = 'a' . hash('crc32b', $name); // placeholder must begin with a letter
                 $this->placeholders[$placeholder] = $name;
-                // 如果 defaults[] 中有同名参数，如下面定义的这条规则
+                // 如果 defaults[] 中有同名参数，也就是有默认值，正则部分加?,表示可以没有，如下面定义的这条规则
                 /*
                 [
                     'pattern' => '/post/<ding:\w>/<id:\d+>/<ran>',// 请求部分
@@ -511,13 +511,15 @@ class UrlRule extends Object implements UrlRuleInterface
         // /<bunao>/<ding>/<id>/<ran>
         $this->_template = preg_replace('/<([\w._-]+):?([^>]+)?>/', '<$1>', $this->pattern);
         // 将 _template 中的特殊字符及字符串使用 tr[] 进行转换，并作为最终的pattern
+        // 也就是生成正常的正则表达式
         $this->pattern = '#^' . trim(strtr($this->_template, $tr), '/') . '$#u';
-
+        // 带上匹配 请求协议的 匹配正则
+        //  如 //www.bunao.me  这可以用https或http进行请求
         // if host starts with relative scheme, then insert pattern to match any
         if (strpos($this->host, '//') === 0) {
             $this->pattern = substr_replace($this->pattern, '[\w]+://', 2, 0);
         }
-        // 如果指定了 routePrams 还要使用 tr2[] 对 route 进行转换，
+        // 如果指定了 routeParams 还要使用 tr2[] 对 route 进行转换，
         // 并作为最终的 _routeRule
         if (!empty($this->_routeParams)) {
             $this->_routeRule = '#^' . strtr($this->route, $tr2) . '$#u';
@@ -572,11 +574,11 @@ class UrlRule extends Object implements UrlRuleInterface
         // 获取URL中入口脚本之后、查询参数 ? 号之前的全部内容
         $pathInfo = $request->getPathInfo();
         $normalized = false;
-        // 如果定义的Normalizer，对pathinfo进行规范化，没用过
+        // 如果定义的Normalizer，对pathinfo进行规范化，一般也不用
         if ($this->hasNormalizer($manager)) {
             $pathInfo = $this->getNormalizer($manager)->normalizePathInfo($pathInfo, $suffix, $normalized);
         }
-        // 有假后缀且有PATH_INFO
+        // 有假后缀且有PATH_INFO，检验路由是否只有一个假后缀
         if ($suffix !== '' && $pathInfo !== '') {
             $n = strlen($suffix);
             // 当前请求的 PATH_INFO 以该假后缀结尾，留意 -$n 的用法
@@ -595,11 +597,23 @@ class UrlRule extends Object implements UrlRuleInterface
             $pathInfo = strtolower($request->getHostInfo()) . ($pathInfo === '' ? '' : '/' . $pathInfo);
         }
         // 当前URL是否匹配规则，留意这个pattern是经过 init() 转换的
+        /* 假设 $this->pattern 为 #^post/(?P<action>\w+)(/(?P<id>\d+))?$#u
+        $pathInfo 为 post/ding/12
+一下是$matches
+array (size=6)
+  0 => string 'post/ding/12' (length=12)
+  'action' => string 'ding' (length=4)
+  1 => string 'ding' (length=4)
+  2 => string '/12' (length=3)
+  'id' => string '12' (length=2)
+  3 => string '12' (length=2)
+         */
         if (!preg_match($this->pattern, $pathInfo, $matches)) {
             return false;
         }
+        //
         $matches = $this->substitutePlaceholderNames($matches);
-
+        // 如果有默认的值，并且请求中没有，则使用默认值
         foreach ($this->defaults as $name => $value) {
             if (!isset($matches[$name]) || $matches[$name] === '') {
                 $matches[$name] = $value;
@@ -607,7 +621,9 @@ class UrlRule extends Object implements UrlRuleInterface
         }
         $params = $this->defaults;
         $tr = [];
+        //
         foreach ($matches as $name => $value) {
+            // _routeParams 如 ['action' => '<action>']
             if (isset($this->_routeParams[$name])) {
                 $tr[$this->_routeParams[$name]] = $value;
                 unset($params[$name]);
@@ -615,6 +631,10 @@ class UrlRule extends Object implements UrlRuleInterface
                 $params[$name] = $value;
             }
         }
+        // 将匹配到的进行替换，获得真正的route
+        // 如果生成路由的规则route中也用了正则的方式
+        // route 为 post/<action>
+        // _routeRule 为 '#^post/(?P<action>\w+)$#'
         if ($this->_routeRule !== null) {
             $route = strtr($this->route, $tr);
         } else {
@@ -622,7 +642,7 @@ class UrlRule extends Object implements UrlRuleInterface
         }
 
         Yii::trace("Request parsed with URL rule: {$this->name}", __METHOD__);
-
+        // 如果使用了标准化类，也标准化一下路由route
         if ($normalized) {
             // pathInfo was changed by normalizer - we need also normalize route
             return $this->getNormalizer($manager)->normalizeRoute([$route, $params]);
@@ -632,10 +652,12 @@ class UrlRule extends Object implements UrlRuleInterface
     }
 
     /**
+     * 根据规则创建url
+     *
      * Creates a URL according to the given route and parameters.
      * @param UrlManager $manager the URL manager
-     * @param string $route the route. It should not have slashes at the beginning or the end.
-     * @param array $params the parameters
+     * @param string $route the route. It should not have slashes at the beginning or the end. 如 'ding/ran'
+     * @param array $params the parameters 如 ['id' => 10, 'page' => 20]
      * @return string|bool the created URL, or `false` if this rule cannot be used for creating this URL.
      */
     public function createUrl($manager, $route, $params)
@@ -749,6 +771,8 @@ class UrlRule extends Object implements UrlRuleInterface
     }
 
     /**
+     * 把占位符替换成正常的
+     * ['absfjosdjfosd' => '<action>']
      * Iterates over [[placeholders]] and checks whether each placeholder exists as a key in $matches array.
      * When found - replaces this placeholder key with a appropriate name of matching parameter.
      * Used in [[parseRequest()]], [[createUrl()]].

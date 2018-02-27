@@ -9,6 +9,7 @@ use yii\di\Instance;
 use yii\db\Connection;
 class TestController extends zController
 {
+	public $enableCsrfValidation = false;
 	public function behaviors()
 	{
 		return ['app\behaviors\TestBehavior'];
@@ -110,5 +111,70 @@ class TestController extends zController
 		    // $users 是一个包含100条或小于100条用户表数据的数组
 		}
 
+	}
+	public function actionRequest()
+	{
+
+		$request = Yii::$app->getRequest();
+		// $result = $request->getUrl();
+		// $result = $request->getScriptUrl();
+		// $result = $request->resolve();
+		// $result = $request->getHeaders();
+		// $result = $request->getPathInfo();
+		// $result = $request->getQueryString();
+		// $result = $request->getServerName();
+		// $result2 = $request->getUserIP();
+		// $result3 = $request->getUserHost();
+		// $result4 = $request->getAuthUser();
+		// $result5 = $request->getAuthPassword();
+		// $result6 = $request->getAuthPassword();
+		$result = $request->getRawBody();
+		$result = $request->getBodyParams();
+		// $result1 = $request->getHeaders();
+		// var_dump($result,$result2,$result3,$result4,$result5,$result6);
+		var_dump($result);
+	}
+	public function actionCookie()
+	{
+		var_dump($_COOKIE);
+	}
+	public function actionResponse()
+	{
+		Yii::$app->response->sendContentAsFile('ding', 'ding.html');
+	}
+	public function actionSession()
+	{
+		// session_start();
+		// var_dump($_SESSION);exit;
+		$session = Yii::$app->session;
+		// Yii::$app->session->cookieParams = ['lifetime' => 30];
+		// var_dump($session->setId('12223234'));
+		Yii::$app->session->open();
+		// $session->set('ding', 'ranafsdfadfadsfsddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
+		// $session->regenerateID();
+		// echo $session->getSavePath();
+		// // $session->destroy();
+		// echo $session->get('ding');
+		$session->setFlash('ding', 'ran');
+		echo $session->getFlash('ding');
+		Yii::$app->session->open();
+		// var_dump($_SESSION);
+		echo $session->getFlash('ding');
+		// echo $session->get('__ding');
+
+	}
+	public function actionController()
+	{
+		// echo $this->run('ding/default/index');
+		// echo $this->getUniqueId();
+		Yii::$app->getUser()->setReturnUrl(['admin/index', 'ref' => 1]);
+		$this->goBack();
+	}
+	public function actionView()
+	{
+		$app = Yii::getAlias('@app');
+		$web = Yii::getAlias('@web');
+		// var_dump($app, $web);exit;
+		return $this->render('index');
 	}
 }

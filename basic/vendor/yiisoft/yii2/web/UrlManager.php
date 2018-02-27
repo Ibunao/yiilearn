@@ -237,7 +237,7 @@ class UrlManager extends Component
     }
 
     /**
-     * 创建了路由规则
+     * 解析配置的路由规则，并创建成路由规则对象  
      * Builds URL rule objects from the given rule declarations.
      * @param array $rules the rule declarations. Each array element represents a single rule declaration.
      * Please refer to [[rules]] for the acceptable rule formats.
@@ -288,7 +288,7 @@ class UrlManager extends Component
     }
 
     /**
-     * 解析请求
+     * 解析请求，获取路由地址
      * Parses the user request.
      * @param Request $request the request component
      * @return array|bool the route and the associated parameters. The latter is always empty
@@ -315,7 +315,7 @@ class UrlManager extends Component
                     return $result;
                 }
             }
-            // 如果定义必须按照自定义的规则，又没有则不会往下执行
+            // 如果定义必须按照自定义的规则，又没有规则可以匹配
             if ($this->enableStrictParsing) {
                 return false;
             }
@@ -351,7 +351,7 @@ class UrlManager extends Component
             } else {
                 return [$pathInfo, []];
             }
-        // 没有开启路由美化
+        // 没有开启路由美化，就简单多了
         } else {
             Yii::trace('Pretty URL not enabled. Using default URL parsing logic.', __METHOD__);
             // 定义的 路径 r 
@@ -366,6 +366,7 @@ class UrlManager extends Component
     }
 
     /**
+     * 创建url
      * Creates a URL using the given route and query parameters.
      *
      * You may specify the route as a string, e.g., `site/index`. You may also use an array
@@ -402,10 +403,11 @@ class UrlManager extends Component
 
         $route = trim($params[0], '/');
         unset($params[0]);
-
+        // 现实入口文件或者没有开启路由美化
         $baseUrl = $this->showScriptName || !$this->enablePrettyUrl ? $this->getScriptUrl() : $this->getBaseUrl();
-
+        // 如果开启了路由美化
         if ($this->enablePrettyUrl) {
+            // 拼接缓存key
             $cacheKey = $route . '?';
             foreach ($params as $key => $value) {
                 if ($value !== null) {
@@ -433,6 +435,7 @@ class UrlManager extends Component
             }
 
             if ($url !== false) {
+                // 如果生成的url 有 :// 
                 if (strpos($url, '://') !== false) {
                     if ($baseUrl !== '' && ($pos = strpos($url, '/', 8)) !== false) {
                         return substr($url, 0, $pos) . $baseUrl . substr($url, $pos) . $anchor;
@@ -462,6 +465,7 @@ class UrlManager extends Component
             return "$baseUrl/{$route}{$anchor}";
         } else {
             $url = "$baseUrl?{$this->routeParam}=" . urlencode($route);
+            // http_build_query  生成 URL-encode 之后的请求字符串
             if (!empty($params) && ($query = http_build_query($params)) !== '') {
                 $url .= '&' . $query;
             }

@@ -26,7 +26,7 @@ use yii\base\Object;
  * ```
  *
 rules数组 示例：
-其中键key 相当于请求，类似于正则，用来匹配请求   可称为请求 pattern  
+其中键key 相当于请求，类似于正则，用来匹配请求   可称为请求 pattern
 值value 表示要解析到的路径    可称为路由 route
 
  'rules' => [
@@ -46,7 +46,7 @@ rules数组 示例：
     // 需要将 Web Server 配置成可以接收 *.digpage.com 域名的请求
     'http://<user:\w+>.digpage.com/<lang:\w+>/profile' => 'user/profile',
 ]
- * 
+ *
  * @property null|int $createUrlStatus Status of the URL creation after the last [[createUrl()]] call. `null`
  * if rule does not provide info about create status. This property is read-only.
  *
@@ -94,7 +94,7 @@ class UrlRule extends Object implements UrlRuleInterface
 
     /**
      * 路由规则名称
-     * 
+     *
      * @var string the name of this rule. If not set, it will use [[pattern]] as the name.
      */
     public $name;
@@ -365,7 +365,7 @@ class UrlRule extends Object implements UrlRuleInterface
         // pattern 中含有 <参数名:参数pattern> ，
         // 其中 ':参数pattern' 部分是可选的。
 /**
-如  '/post/<ding:\w>/<id:\d+>/<ran>' 
+如  '/post/<ding:\w>/<id:\d+>/<ran>'
 结果 ： json_encode($matches)
 [
     [
@@ -456,7 +456,7 @@ class UrlRule extends Object implements UrlRuleInterface
                     // 从第一个开始的匹配到的
                     if (
                         //允许开头有斜线 /
-                        $allowAppendSlash  
+                        $allowAppendSlash
                         // 第一个且pattern是以 / 开始的  如'/<bunao:\d>/<ding:\w>/<id:\d+>/<ran>' 中的 bunao
                         && ($appendSlash || $offset === 1)
                         && (($offset - $oldOffset) === 1)
@@ -640,6 +640,7 @@ class UrlRule extends Object implements UrlRuleInterface
      */
     public function createUrl($manager, $route, $params)
     {
+        // 判断规则是否仅限于解析请求，而不适用于创建URL
         if ($this->mode === self::PARSING_ONLY) {
             $this->createStatus = self::CREATE_STATUS_PARSING_ONLY;
             return false;

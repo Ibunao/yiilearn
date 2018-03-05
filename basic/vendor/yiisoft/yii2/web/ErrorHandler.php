@@ -31,6 +31,7 @@ use yii\helpers\VarDumper;
 class ErrorHandler extends \yii\base\ErrorHandler
 {
     /**
+     * 
      * @var int maximum number of source code lines to be displayed. Defaults to 19.
      */
     public $maxSourceLines = 19;
@@ -78,6 +79,7 @@ class ErrorHandler extends \yii\base\ErrorHandler
      */
     protected function renderException($exception)
     {
+        // 获取相应对象，并简单初始化属性
         if (Yii::$app->has('response')) {
             $response = Yii::$app->getResponse();
             // reset parameters of response to avoid interference with partially created response data
@@ -89,9 +91,10 @@ class ErrorHandler extends \yii\base\ErrorHandler
         } else {
             $response = new Response();
         }
-        // 设置相应码
+        // 设置响应码
         $response->setStatusCodeByException($exception);
-
+        // 返回格式是html && (不是debug模式 || 用户自定义错误)
+        // 
         $useErrorView = $response->format === Response::FORMAT_HTML && (!YII_DEBUG || $exception instanceof UserException);
 
         if ($useErrorView && $this->errorAction !== null) {

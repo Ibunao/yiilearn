@@ -90,7 +90,7 @@ class View extends \yii\base\View
     const PH_BODY_END = '<![CDATA[YII-BLOCK-BODY-END]]>';
 
     /**
-     * 
+     *
      * @var AssetBundle[] list of the registered asset bundles. The keys are the bundle names, and the values
      * are the registered [[AssetBundle]] objects.
      * @see registerAssetBundle()
@@ -161,7 +161,7 @@ class View extends \yii\base\View
     {
         $this->trigger(self::EVENT_END_BODY);
         echo self::PH_BODY_END;
-
+        // 注册资源  
         foreach (array_keys($this->assetBundles) as $bundle) {
             $this->registerAssetFiles($bundle);
         }
@@ -215,7 +215,7 @@ class View extends \yii\base\View
         ob_start();
         // ob_implicit_flush()将打开或关闭绝对（隐式）刷送。绝对（隐式）刷送将导致在每次输出调用后有一次刷送操作，以便不再需要对 flush() 的显式调用。
         ob_implicit_flush(false);
-        // 开启ob 
+        // 开启ob
         $this->beginPage();
         // 预留头位置，以便替换
         $this->head();
@@ -310,12 +310,12 @@ class View extends \yii\base\View
             // 注册依赖
             // 获取js注册位置
             $pos = isset($bundle->jsOptions['position']) ? $bundle->jsOptions['position'] : null;
-            
+
             foreach ($bundle->depends as $dep) {
                 // 递归
                 $this->registerAssetBundle($dep, $pos);
             }
-            // 将资源对象添加到 
+            // 将资源对象添加到
             $this->assetBundles[$name] = $bundle;
         // js 出现循环依赖
         } elseif ($this->assetBundles[$name] === false) {
@@ -343,7 +343,7 @@ class View extends \yii\base\View
 
     /**
      * 注册meta标签
-     * 
+     *
      * Registers a meta tag.
      *
      * For example, a description meta tag can be added like the following:
@@ -586,7 +586,7 @@ class View extends \yii\base\View
      * 注册在body结束处的js
      * Renders the content to be inserted at the end of the body section.
      * The content is rendered using the registered JS code blocks and files.
-     * @param bool $ajaxMode whether the view is rendering in AJAX mode.  
+     * @param bool $ajaxMode whether the view is rendering in AJAX mode.
      * If true, the JS scripts registered at [[POS_READY]] and [[POS_LOAD]] positions
      * will be rendered at the end of the view like normal scripts.
      * @return string the rendered content

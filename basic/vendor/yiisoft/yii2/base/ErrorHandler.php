@@ -28,11 +28,15 @@ use yii\web\HttpException;
 abstract class ErrorHandler extends Component
 {
     /**
-     * 清除发生错误之前的输出
+     * 是否在错误显示之前丢弃现有的页面输出
      * @var bool whether to discard any existing page output before error display. Defaults to true.
      */
     public $discardExistingOutput = true;
     /**
+     * 保留内存的大小。一部分内存是预先分配的。
+    *当出现内存不足问题时，错误处理程序能够处理错误。
+    *这种保留记忆的帮助。如果将此值设置为0，则不会保留内存。
+    *默认为256 kb。
      * @var int the size of the reserved memory. A portion of memory is pre-allocated so that
      * when an out-of-memory issue occurs, the error handler is able to handle the error with
      * the help of this reserved memory. If you set this value to be 0, no memory will be reserved.
@@ -45,6 +49,7 @@ abstract class ErrorHandler extends Component
     public $exception;
 
     /**
+     * 用于为致命错误处理程序保留内存。
      * @var string Used to reserve memory for fatal error handler.
      */
     private $_memoryReserve;
@@ -60,12 +65,18 @@ abstract class ErrorHandler extends Component
      */
     public function register()
     {
-        // 关闭php 报错
+        // 关闭php报错显示
         ini_set('display_errors', false);
         // 设置用户自定义的异常处理函数
+        // [PHP异常处理函数set_exception_handler()的用法](https://www.cnblogs.com/52php/p/5659969.html)
         set_exception_handler([$this, 'handleException']);
         // 设置用户自定义的错误处理函数
+        /**
+         * [set_error_handler和set_exception_handler方法介绍](http://blog.csdn.net/zhang197093/article/details/75094816)  
+         * 只能捕捉一些非严重错误(致命错误而终止的要放在register_shutdown_function中处理)
+         */
         if (defined('HHVM_VERSION')) {
+            // HHVM是一个开源的PHP虚拟机，使用JIT的编译方式以及其他技术，让PHP代码的执行性能大幅提升。
             set_error_handler([$this, 'handleHhvmError']);
         } else {
             set_error_handler([$this, 'handleError']);
@@ -74,6 +85,13 @@ abstract class ErrorHandler extends Component
             $this->_memoryReserve = str_repeat('x', $this->memoryReserveSize);
         }
         // 注册一个会在php中止时执行的函数
+        /**
+         * [函数详解](http://blog.csdn.net/jiandanokok/article/details/75193688)
+         * PHP中止的情况有三种：
+            执行完成
+            exit/die导致的中止
+            发生致命错误中止
+         */
         register_shutdown_function([$this, 'handleFatalError']);
     }
 
@@ -104,7 +122,7 @@ abstract class ErrorHandler extends Component
         }
 
         $this->exception = $exception;
-        // 释放注册的异常处理函数,猜想：如果自定义处理异常出现了错误系统的还可以捕捉
+        // 在处理异常时禁用错误捕获以避免递归错误。
         // disable error capturing to avoid recursive errors while handling exceptions
         $this->unregister();
 
@@ -122,8 +140,9 @@ abstract class ErrorHandler extends Component
                 // 清 ob
                 $this->clearOutput();
             }
+            // 设置相应的异常数据
             $this->renderException($exception);
-            // 如果不是 test环境,将错误信息输出
+            // 如果不是 test环境,将错误信息写入到日志
             if (!YII_ENV_TEST) {
                 \Yii::getLogger()->flush(true);
                 if (defined('HHVM_VERSION')) {
@@ -144,7 +163,7 @@ abstract class ErrorHandler extends Component
     }
 
     /**
-     * 处理错误时发生错误
+     * 处理错误时发生错误调用
      * Handles exception thrown during exception processing in [[handleException()]].
      * @param \Exception|\Throwable $exception Exception that was thrown during main exception processing.
      * @param \Exception $previousException Main exception processed in [[handleException()]].

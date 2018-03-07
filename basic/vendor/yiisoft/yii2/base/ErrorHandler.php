@@ -136,6 +136,7 @@ abstract class ErrorHandler extends Component
         try {
             // 记录错误日志
             $this->logException($exception);
+            // 假设说你要看报错之前变量的信息，将这段代码注释掉
             if ($this->discardExistingOutput) {
                 // 清 ob
                 $this->clearOutput();

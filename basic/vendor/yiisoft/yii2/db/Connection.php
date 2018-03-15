@@ -241,6 +241,7 @@ class Connection extends Component
      */
     public $queryCacheDuration = 3600;
     /**
+     * 缓存组件id
      * @var Cache|string the cache object or the ID of the cache application component
      * that is used for query caching.
      * @see enableQueryCache
@@ -399,7 +400,7 @@ class Connection extends Component
      */
     public $shuffleMasters = true;
     /**
-     * 是否开启记录执行日志
+     * 是否开启记录执行sql日志
      * @var bool whether to enable logging of database queries. Defaults to true.
      * You may want to disable this option in a production environment to gain performance
      * if you do not need the information being logged.
@@ -545,6 +546,7 @@ class Connection extends Component
     }
 
     /**
+     * 返回当前查询要用的缓存信息
      * Returns the current query cache information.
      * This method is used internally by [[Command]].
      * @param int $duration the preferred caching duration. If null, it will be ignored.
@@ -560,7 +562,7 @@ class Connection extends Component
      */
     public function getQueryCacheInfo($duration, $dependency)
     {
-        // 如果不能缓存
+        // 如果没开启缓存缓存
         if (!$this->enableQueryCache) {
             return null;
         }
@@ -710,7 +712,7 @@ class Connection extends Component
         // 设置报告错误为异常
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         // 看注释吧，不太清楚
-        // 启用或禁用预处理语句的模拟。 有些驱动不支持或有限度地支持本地预处理。使用此设置强制PDO总是模拟预处理语句（如果为 TRUE ），或试着使用本地预处理语句（如果为 FALSE）。如果驱动不能成功预处理当前查询，它将总是回到模拟预处理语句上。 需要 bool 类型。 
+        // 启用或禁用预处理语句的模拟。 有些驱动不支持或有限度地支持本地预处理。使用此设置强制PDO总是模拟预处理语句（如果为 TRUE ），或试着使用本地预处理语句（如果为 FALSE）。如果驱动不能成功预处理当前查询，它将总是回到模拟预处理语句上。 需要 bool 类型。
         if ($this->emulatePrepare !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
             $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $this->emulatePrepare);
         }
@@ -953,6 +955,7 @@ array (size=3)
      */
     public function quoteSql($sql)
     {
+        // 逐个替换
         return preg_replace_callback(
             '/(\\{\\{(%?[\w\-\. ]+%?)\\}\\}|\\[\\[([\w\-\. ]+)\\]\\])/',
             function ($matches) {
@@ -980,7 +983,7 @@ array (size=3)
             if (($pos = strpos($this->dsn, ':')) !== false) {
                 $this->_driverName = strtolower(substr($this->dsn, 0, $pos));
             } else {
-                //??? 应该是已经连接上了，应该不会走到这里
+                // 配置主从了，从从库pdo获取驱动名
                 $this->_driverName = strtolower($this->getSlavePdo()->getAttribute(PDO::ATTR_DRIVER_NAME));
             }
         }

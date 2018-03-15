@@ -229,7 +229,7 @@ class Command extends Component
             $this->bindPendingParams();
             return;
         }
-
+        // 获取执行的sql，未绑定数据
         $sql = $this->getSql();
 
         if ($this->db->getTransaction()) {
@@ -931,6 +931,7 @@ class Command extends Component
         list($profile, $rawSql) = $this->logQuery('yii\db\Command::query');
 
         if ($method !== '') {
+            // 如果有缓存对象信息，从缓存中获取
             $info = $this->db->getQueryCacheInfo($this->queryCacheDuration, $this->queryCacheDependency);
             if (is_array($info)) {
                 /* @var $cache \yii\caching\Cache */

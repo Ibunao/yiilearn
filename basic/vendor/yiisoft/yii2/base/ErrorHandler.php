@@ -72,7 +72,7 @@ abstract class ErrorHandler extends Component
         set_exception_handler([$this, 'handleException']);
         // 设置用户自定义的错误处理函数
         /**
-         * [set_error_handler和set_exception_handler方法介绍](http://blog.csdn.net/zhang197093/article/details/75094816)  
+         * [set_error_handler和set_exception_handler方法介绍](http://blog.csdn.net/zhang197093/article/details/75094816)
          * 只能捕捉一些非严重错误(致命错误而终止的要放在register_shutdown_function中处理)
          */
         if (defined('HHVM_VERSION')) {
@@ -267,6 +267,7 @@ abstract class ErrorHandler extends Component
     }
 
     /**
+    * 每次程序结束后都会执行
      * Handles fatal PHP errors
      */
     public function handleFatalError()
@@ -356,6 +357,7 @@ abstract class ErrorHandler extends Component
     }
 
     /**
+     * 把异常对象转换成异常信息字符串
      * Converts an exception into a simple string.
      * @param \Exception|\Error $exception the exception being converted
      * @return string the string representation of the exception.

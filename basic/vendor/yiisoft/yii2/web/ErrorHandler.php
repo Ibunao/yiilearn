@@ -94,7 +94,6 @@ class ErrorHandler extends \yii\base\ErrorHandler
         // 设置响应码
         $response->setStatusCodeByException($exception);
         // 返回格式是html && (不是debug模式 || 用户自定义错误)
-        // 
         $useErrorView = $response->format === Response::FORMAT_HTML && (!YII_DEBUG || $exception instanceof UserException);
 
         if ($useErrorView && $this->errorAction !== null) {

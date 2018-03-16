@@ -68,12 +68,13 @@ class Command extends Component
      */
     public $pdoStatement;
     /**
-     * ???获取模式
+     * ???获取模式 查询模式
      * @var int the default fetch mode for this command.
      * @see http://www.php.net/manual/en/pdostatement.setfetchmode.php
      */
     public $fetchMode = \PDO::FETCH_ASSOC;
     /**
+     * 存放绑定的数据，用来记录sql日志时拼接的
      * @var array the parameters (name => value) that are bound to the current PDO statement.
      * This property is maintained by methods such as [[bindValue()]]. It is mainly provided for logging purpose
      * and is used to generate [[rawSql]]. Do not modify it directly.
@@ -95,11 +96,12 @@ class Command extends Component
     public $queryCacheDependency;
 
     /**
+     * 存放绑定的数据，包含数据的类型，pdo执行sql时绑定数据用的
      * @var array pending parameters to be bound to the current PDO statement.
      */
     private $_pendingParams = [];
     /**
-     * sql语句
+     * sql语句，未绑定数据的原始sql
      * @var string the SQL statement that this command represents
      */
     private $_sql;
@@ -110,6 +112,7 @@ class Command extends Component
 
 
     /**
+     * 设置Command缓存参数 暂时没用过
      * Enables query cache for this command.
      * @param int $duration the number of seconds that query result of this command can remain valid in the cache.
      * If this is not set, the value of [[Connection::queryCacheDuration]] will be used instead.
@@ -125,6 +128,7 @@ class Command extends Component
     }
 
     /**
+     * 设置Command缓存参数 暂时没用过
      * Disables query cache for this command.
      * @return $this the command object itself
      */
@@ -135,6 +139,7 @@ class Command extends Component
     }
 
     /**
+     * 获取没有绑定数据的sql
      * Returns the SQL statement for this command.
      * @return string the SQL statement to be executed
      */
@@ -166,7 +171,7 @@ class Command extends Component
     }
 
     /**
-     * 返回插入参数的sql语句
+     * 返回插入参数的sql语句， 用来记录执行sql日志的，而不是pdo执行的sql，和pdo执行sql区别是pdo绑定数据的同时指定了数据类型
      * 通过在相应的占位符中插入参数值来返回原始的SQL
      * Returns the raw SQL by inserting parameter values into the corresponding placeholders in [[sql]].
      * Note that the return value of this method should mainly be used for logging purpose.
@@ -213,7 +218,7 @@ class Command extends Component
     }
 
     /**
-     * 准备要执行的sql
+     * 准备要执行的sql，绑定数据
      * Prepares the SQL statement to be executed.
      * For complex SQL statement that is to be executed multiple times,
      * this may improve performance.
@@ -231,7 +236,7 @@ class Command extends Component
         }
         // 获取执行的sql，未绑定数据
         $sql = $this->getSql();
-
+        // 如果是事务，读写都用主库
         if ($this->db->getTransaction()) {
             // master is in a transaction. use the same connection.
             $forRead = false;
@@ -266,6 +271,9 @@ class Command extends Component
     }
 
     /**
+     * pdo绑定数据
+     * [bindParam和bindValue的区别](http://blog.csdn.net/a7442358/article/details/45268489)
+     * [bindParam和bindValue的区别](https://segmentfault.com/a/1190000002968592)
      * Binds a parameter to the SQL statement to be executed.
      * @param string|int $name parameter identifier. For a prepared statement
      * using named placeholders, this will be a parameter name of
@@ -298,6 +306,7 @@ class Command extends Component
     }
 
     /**
+     * pdo给sql绑定数据
      * Binds pending parameters that were registered via [[bindValue()]] and [[bindValues()]].
      * Note that this method requires an active [[pdoStatement]].
      */
@@ -351,8 +360,9 @@ class Command extends Component
         }
 
         $schema = $this->db->getSchema();
+        // $name 为占位符 $value 为要替换占位符的值
         foreach ($values as $name => $value) {
-            // 如果value中指定了pdo类型
+            // 如果value中指定了pdo的数据类型 如:[':profile' => [$profile, \PDO::PARAM_LOB]]
             if (is_array($value)) {
                 $this->_pendingParams[$name] = $value;
                 $this->params[$name] = $value[0];
@@ -380,6 +390,7 @@ class Command extends Component
     }
 
     /**
+     * 一次返回多条查询数据
      * Executes the SQL statement and returns ALL rows at once.
      * @param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
      * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
@@ -916,10 +927,10 @@ class Command extends Component
     }
 
     /**
-     * 执行sql
+     * 执行查询sql，绑定数据，有缓存用缓存
      * Performs the actual DB query of a SQL statement.
-     * @param string $method method of PDOStatement to be called
-     * @param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
+     * @param string $method method of PDOStatement to be called 执行方法
+     * @param int $fetchMode the result fetch mode. Please refer to [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php) 查询模式
      * for valid fetch modes. If this parameter is null, the value set in [[fetchMode]] will be used.
      * @return mixed the method execution result
      * @throws Exception if the query causes any problem
@@ -933,6 +944,7 @@ class Command extends Component
         if ($method !== '') {
             // 如果有缓存对象信息，从缓存中获取
             $info = $this->db->getQueryCacheInfo($this->queryCacheDuration, $this->queryCacheDependency);
+            // 如果开启了缓存，同样的查询会从缓存区
             if (is_array($info)) {
                 /* @var $cache \yii\caching\Cache */
                 $cache = $info[0];
@@ -951,12 +963,12 @@ class Command extends Component
                 }
             }
         }
-
+        // 给pdo的sql绑定数据
         $this->prepare(true);
 
         try {
             $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
-
+            // 执行准备查询
             $this->pdoStatement->execute();
 
             if ($method === '') {
@@ -965,7 +977,9 @@ class Command extends Component
                 if ($fetchMode === null) {
                     $fetchMode = $this->fetchMode;
                 }
+                // 以指定的方法和模式获取数据
                 $result = call_user_func_array([$this->pdoStatement, $method], (array) $fetchMode);
+                // 关闭游标
                 $this->pdoStatement->closeCursor();
             }
 
@@ -974,7 +988,7 @@ class Command extends Component
             $profile and Yii::endProfile($rawSql, 'yii\db\Command::query');
             throw $this->db->getSchema()->convertException($e, $rawSql ?: $this->getRawSql());
         }
-
+        // 缓存查询数据
         if (isset($cache, $cacheKey, $info)) {
             $cache->set($cacheKey, [$result], $info[1], $info[2]);
             Yii::trace('Saved query result in cache', 'yii\db\Command::query');

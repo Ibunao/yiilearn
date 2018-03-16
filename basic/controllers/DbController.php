@@ -12,8 +12,15 @@ class DbController extends Controller
 	public function actionIndex()
 	{
 		$db = Yii::$app->db;
-		$db->getDriverName();
-		$sql = $db->createCommand('SELECT * FROM user LIMIT 10');
-		$sql->queryAll();
+		$command = $db->createCommand('SELECT * FROM {{%agent}} LIMIT 10');
+		var_dump($command->queryAll());
+	}
+	public function actionCache()
+	{
+		$db = Yii::$app->db;
+		$db->createCommand('SELECT * FROM {{%agent}} LIMIT 10')->queryAll();
+		// $customer = $db->cache(function (Connection $db) {
+  //        	return $db->createCommand('SELECT * FROM {{%agent}} LIMIT 10')->queryAll();
+  //    	});
 	}
 }

@@ -268,7 +268,7 @@ abstract class Schema extends Object
     }
 
     /**
-     * 获取pdo对应的类型
+     * 通过php数据类型获取pdo对应的类型
      * Determines the PDO type for the given PHP data value.
      * @param mixed $data the data whose PDO type is to be determined
      * @return int the PDO type
@@ -284,6 +284,7 @@ abstract class Schema extends Object
             'resource' => \PDO::PARAM_LOB,
             'NULL' => \PDO::PARAM_NULL,
         ];
+        // 获取数据类型
         $type = gettype($data);
 
         return isset($typeMap[$type]) ? $typeMap[$type] : \PDO::PARAM_STR;
@@ -398,8 +399,9 @@ abstract class Schema extends Object
     }
 
     /**
+     * 获取最后插入的id
      * Returns the ID of the last inserted row or sequence value.
-     * @param string $sequenceName name of the sequence object (required by some DBMS)
+     * @param string $sequenceName name of the sequence object (required by some DBMS) 表名
      * @return string the row ID of the last row inserted, or the last value retrieved from the sequence object
      * @throws InvalidCallException if the DB connection is not active
      * @see http://www.php.net/manual/en/function.PDO-lastInsertId.php
@@ -493,7 +495,7 @@ abstract class Schema extends Object
     }
 
     /**
-     * 防止sql注入
+     * pdo给值加引号，防止sql注入
      * Quotes a string value for use in a query.
      * Note that if the parameter is not a string, it will be returned without change.
      * @param string $str string to be quoted
@@ -509,7 +511,7 @@ abstract class Schema extends Object
         if (($value = $this->db->getSlavePdo()->quote($str)) !== false) {
             return $value;
         } else {
-            // 把单引号 '替换成 '' ??? 
+            // 手动防注入，把单引号 '替换成 '' ??? 
             // the driver doesn't support quote (e.g. oci)
             return "'" . addcslashes(str_replace("'", "''", $str), "\000\n\r\\\032") . "'";
         }
@@ -682,7 +684,7 @@ abstract class Schema extends Object
     }
 
     /**
-     * 返回sql是否是读的sql
+     * 返回sql是否是要执行读的sql
      * Returns a value indicating whether a SQL statement is for read purpose.
      * @param string $sql the SQL statement
      * @return bool whether a SQL statement is for read purpose.

@@ -444,7 +444,7 @@ class Connection extends Component
      */
     private $_slave = false;
     /**
-     * 缓存查询信息
+     * 缓存查询信息,记录一下哪里存储的
      * @var array query cache parameters for the [[cache()]] calls
      */
     private $_queryCacheInfo = [];
@@ -461,6 +461,7 @@ class Connection extends Component
     }
 
     /**
+     * 使用查询缓存
      * Uses query cache for the queries performed with the callable.
      * When query caching is enabled ([[enableQueryCache]] is true and [[queryCache]] refers to a valid cache),
      * queries performed within the callable will be cached and their results will be fetched from cache if available.
@@ -506,6 +507,7 @@ class Connection extends Component
     }
 
     /**
+     * 不使用缓存，什么情况下用??? 目前来看不使用cache()就不会用缓存啊
      * Disables query cache temporarily.
      * Queries performed within the callable will not use query cache at all. For example,
      *
@@ -605,7 +607,7 @@ class Connection extends Component
         if ($this->pdo !== null) {
             return;
         }
-        // 配置多个主库
+        // 配置多个主库的情况
         if (!empty($this->masters)) {
             // 获取主库
             $db = $this->getMaster();
@@ -623,9 +625,11 @@ class Connection extends Component
         $token = 'Opening DB connection: ' . $this->dsn;
         try {
             Yii::info($token, __METHOD__);
+            // 记录连接性能
             Yii::beginProfile($token, __METHOD__);
             // 创建pdo实例
             $this->pdo = $this->createPdoInstance();
+            // 初始化pdo
             $this->initConnection();
             Yii::endProfile($token, __METHOD__);
         } catch (\PDOException $e) {
@@ -643,6 +647,7 @@ class Connection extends Component
     {
         if ($this->_master) {
             if ($this->pdo === $this->_master->pdo) {
+                // 设置为null即可关闭
                 $this->pdo = null;
             }
 
@@ -673,6 +678,7 @@ class Connection extends Component
      */
     protected function createPdoInstance()
     {
+        // 获取pdo类
         $pdoClass = $this->pdoClass;
         if ($pdoClass === null) {
             $pdoClass = 'PDO';
@@ -695,6 +701,7 @@ class Connection extends Component
         if (strncmp('sqlite:@', $dsn, 8) === 0) {
             $dsn = 'sqlite:' . Yii::getAlias(substr($dsn, 7));
         }
+        // 实例化pdo
         return new $pdoClass($dsn, $this->username, $this->password, $this->attributes);
     }
 
@@ -742,7 +749,7 @@ class Connection extends Component
     }
 
     /**
-     * 获取是否开启事务
+     * 获取事务
      * Returns the currently active transaction.
      * @return Transaction the currently active transaction. Null if no active transaction.
      */
@@ -872,8 +879,9 @@ class Connection extends Component
     }
 
     /**
+     * 获取最后插入的id
      * Returns the ID of the last inserted row or sequence value.
-     * @param string $sequenceName name of the sequence object (required by some DBMS)
+     * @param string $sequenceName name of the sequence object (required by some DBMS) 表名
      * @return string the row ID of the last row inserted, or the last value retrieved from the sequence object
      * @see http://php.net/manual/en/pdo.lastinsertid.php
      */
@@ -883,7 +891,7 @@ class Connection extends Component
     }
 
     /**
-     * 给字符串值添加引号
+     * 给字符串值添加引号,防注入
      * Quotes a string value for use in a query.
      * Note that if the parameter is not a string, it will be returned without change.
      * @param string $value string to be quoted
@@ -896,7 +904,7 @@ class Connection extends Component
     }
 
     /**
-     * 给table加引号或者反引号
+     * 给table加引号或者反引号,防止和数据库关键字冲突
      * Quotes a table name for use in a query.
      * If the table name contains schema prefix, the prefix will also be properly quoted.
      * If the table name is already quoted or contains special characters including '(', '[[' and '{{',
@@ -910,7 +918,7 @@ class Connection extends Component
     }
 
     /**
-     * 给字段加反引号
+     * 给字段加反引号,防止和数据库关键字冲突
      * Quotes a column name for use in a query.
      * If the column name contains prefix, the prefix will also be properly quoted.
      * If the column name is already quoted or contains special characters including '(', '[[' and '{{',
@@ -983,7 +991,7 @@ array (size=3)
             if (($pos = strpos($this->dsn, ':')) !== false) {
                 $this->_driverName = strtolower(substr($this->dsn, 0, $pos));
             } else {
-                // 配置主从了，从从库pdo获取驱动名
+                // 配置主从了，而且是多主形式，从从库pdo获取驱动名
                 $this->_driverName = strtolower($this->getSlavePdo()->getAttribute(PDO::ATTR_DRIVER_NAME));
             }
         }
@@ -1031,6 +1039,9 @@ array (size=3)
      */
     public function getMasterPdo()
     {
+        /**
+         * 如果是多主的配置open会调用getMaster，来随机获取一个主
+         */
         $this->open();
         return $this->pdo;
     }
@@ -1078,6 +1089,7 @@ array (size=3)
     }
 
     /**
+     * 使用主库查询
      * Executes the provided callback by using the master connection.
      *
      * This method is provided so that you can temporarily force using the master connection to perform

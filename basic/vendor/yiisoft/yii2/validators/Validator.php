@@ -56,6 +56,7 @@ use yii\base\NotSupportedException;
 class Validator extends Component
 {
     /**
+     * 定义的验证器
      * @var array list of built-in validators (name => class or configuration)
      */
     public static $builtInValidators = [
@@ -155,7 +156,7 @@ class Validator extends Component
      */
     public $isEmpty;
     /**
-     * 
+     * 匿名函数，返回该属性等于什么的时候才验证或不验证
      * @var callable a PHP callable whose return value determines whether this validator should be applied.
      * The signature of the callable should be `function ($model, $attribute)`, where `$model` and `$attribute`
      * refer to the model and the attribute currently being validated. The callable should return a boolean value.
@@ -164,7 +165,8 @@ class Validator extends Component
      * If this property is not set, this validator will be always applied on the server-side.
      *
      * The following example will enable the validator only when the country currently selected is USA:
-     *
+     * 当城市等于Usa的时候验证
+     * 
      * ```php
      * function ($model) {
      *     return $model->country == Country::USA;
@@ -175,6 +177,7 @@ class Validator extends Component
      */
     public $when;
     /**
+     * 客户端字段验证的条件
      * @var string a JavaScript function name whose return value determines whether this validator should be applied
      * on the client-side. The signature of the function should be `function (attribute, value)`, where
      * `attribute` is an object describing the attribute being validated (see [[clientValidateAttribute()]])
@@ -197,7 +200,7 @@ class Validator extends Component
 
 
     /**
-     * 
+     * 创建验证器
      * Creates a validator object.
      * @param string|\Closure $type the validator type. This can be either:
      *  * a built-in validator name listed in [[builtInValidators]];
@@ -221,7 +224,7 @@ class Validator extends Component
     public static function createValidator($type, $model, $attributes, $params = [])
     {
         $params['attributes'] = $attributes;
-        // 如果是你命函数 或者 模型中定义了验证方法
+        // 如果是匿名函数 或者 模型中定义了验证方法
         if ($type instanceof \Closure || $model->hasMethod($type)) {
             // method-based validator
             // 默认的验证器
@@ -309,6 +312,7 @@ class Validator extends Component
     }
 
     /**
+     * 单独验证某个值是否符合某个验证器的格式
      * Validates a given value.
      * You may use this method to validate a value out of the context of a data model.
      * @param mixed $value the data value to be validated.
@@ -461,6 +465,7 @@ class Validator extends Component
     }
 
     /**
+     * 格式化返回的消息
      * Formats a mesage using the I18N, or simple strtr if `\Yii::$app` is not available.
      * @param string $message
      * @param array $params

@@ -69,7 +69,7 @@ class Query extends Component implements QueryInterface
      */
     public $distinct;
     /**
-     * 
+     * 表名
      * @var array the table(s) to be selected from. For example, `['user', 'post']`.
      * This is used to construct the FROM clause in a SQL statement.
      * @see from()
@@ -224,6 +224,7 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * 以indexby为下标
      * Converts the raw query results into the format as specified by this query.
      * This method is internally used to convert the data fetched from database
      * into the format as required by this query.
@@ -240,6 +241,7 @@ class Query extends Component implements QueryInterface
             if (is_string($this->indexBy)) {
                 $key = $row[$this->indexBy];
             } else {
+                // 匿名函数
                 $key = call_user_func($this->indexBy, $row);
             }
             $result[$key] = $row;
@@ -623,6 +625,7 @@ class Query extends Component implements QueryInterface
     public function where($condition, $params = [])
     {
         $this->where = $condition;
+        // 绑定参数
         $this->addParams($params);
         return $this;
     }
@@ -674,6 +677,8 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * 也是添加条件的，不常用
+     * 文档例子 ： $query->andFilterCompare('value', '<=100');  
      * Adds a filtering condition for a specific column and allow the user to choose a filter operator.
      *
      * It adds an additional WHERE condition for the given field and determines the comparison operator
@@ -822,6 +827,7 @@ class Query extends Component implements QueryInterface
     }
 
     /**
+     * 分组条件
      * Sets the GROUP BY part of the query.
      * @param string|array|Expression $columns the columns to be grouped by.
      * Columns can be specified in either a string (e.g. "id, name") or an array (e.g. ['id', 'name']).

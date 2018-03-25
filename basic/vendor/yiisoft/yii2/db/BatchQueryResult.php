@@ -116,7 +116,7 @@ class BatchQueryResult extends Object implements \Iterator
      */
     public function next()
     {
-        // 第一次                      不是each遍历    是each遍历
+        // 第一次                      不是each遍历    是each遍历 && 最后一个
         if ($this->_batch === null || !$this->each || $this->each && next($this->_batch) === false) {
             $this->_batch = $this->fetchData();
             reset($this->_batch);

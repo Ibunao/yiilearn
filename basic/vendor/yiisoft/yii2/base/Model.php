@@ -64,25 +64,29 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
      */
     const SCENARIO_DEFAULT = 'default';
     /**
-     * 
+     * 验证之前的事件
      * @event ModelEvent an event raised at the beginning of [[validate()]]. You may set
      * [[ModelEvent::isValid]] to be false to stop the validation.
      */
     const EVENT_BEFORE_VALIDATE = 'beforeValidate';
     /**
+     * 验证之后的事件
      * @event Event an event raised at the end of [[validate()]]
      */
     const EVENT_AFTER_VALIDATE = 'afterValidate';
 
     /**
+     * 错误信息
      * @var array validation errors (attribute name => array of errors)
      */
     private $_errors;
     /**
+     * 验证器
      * @var ArrayObject list of validators
      */
     private $_validators;
     /**
+     * 当前场景
      * @var string current scenario
      */
     private $_scenario = self::SCENARIO_DEFAULT;
@@ -161,6 +165,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
 
     /**
      * 定义场景
+     * 返回每个场景要验证的属性
      * Returns a list of scenarios and the corresponding active attributes.
      * An active attribute is one that is subject to validation in the current scenario.
      * The returned array should be in the following format:
@@ -371,7 +376,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
         if (!$this->beforeValidate()) {
             return false;
         }
-        // 获取所有的场景
+        // 获取所有的场景对应要验证的属性
         $scenarios = $this->scenarios();
         // 当前场景
         $scenario = $this->getScenario();
@@ -380,6 +385,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
         }
         // 验证的字段
         if ($attributeNames === null) {
+            // 获取该场景下要验证的所有字段
             $attributeNames = $this->activeAttributes();
         }
         //当前场景有效的验证器 验证字段
@@ -387,6 +393,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
             // 验证
             $validator->validateAttributes($this, $attributeNames);
         }
+        // 验证后的事件
         $this->afterValidate();
 
         return !$this->hasErrors();
@@ -479,7 +486,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
         // 数组对象
         $validators = new ArrayObject;
         foreach ($this->rules() as $rule) {
-            // ??? 没遇到过
+            // 验证对象
             if ($rule instanceof Validator) {
                 // 添加到数组对象
                 $validators->append($rule);

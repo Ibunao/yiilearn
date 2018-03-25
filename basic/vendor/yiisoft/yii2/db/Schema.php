@@ -78,6 +78,7 @@ abstract class Schema extends Object
         'SQLSTATE[23' => 'yii\db\IntegrityException',
     ];
     /**
+     * 存储列属性的对象
      * @var string column schema class
      * @since 2.0.11
      */
@@ -132,15 +133,15 @@ abstract class Schema extends Object
      */
     public function getTableSchema($name, $refresh = false)
     {
-        // 如果存在 and 不让刷新
+        // 如果已经解析过，存在了 and 不让刷新
         if (array_key_exists($name, $this->_tables) && !$refresh) {
             return $this->_tables[$name];
         }
 
         $db = $this->db;
-        // 获取真实表名
+        // 获取真实表名，有表前缀加表前缀
         $realName = $this->getRawTableName($name);
-        // 使用缓存
+        // 如果允许缓存 and 不再排出缓存数组中 
         if ($db->enableSchemaCache && !in_array($name, $db->schemaCacheExclude, true)) {
             /* @var $cache Cache */
             $cache = is_string($db->schemaCache) ? Yii::$app->get($db->schemaCache, false) : $db->schemaCache;
@@ -168,7 +169,7 @@ abstract class Schema extends Object
     }
 
     /**
-     * 获取缓存key
+     * 获取schema缓存key
      * Returns the cache key for the specified table name.
      * @param string $name the table name
      * @return mixed the cache key

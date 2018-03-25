@@ -19,7 +19,7 @@ use yii\base\Object;
 class ColumnSchema extends Object
 {
     /**
-     * 列名
+     * 列名，字段名
      * @var string name of this column (without quotes).
      */
     public $name;

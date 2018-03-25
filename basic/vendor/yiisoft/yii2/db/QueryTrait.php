@@ -221,6 +221,7 @@ trait QueryTrait
     }
 
     /**
+     * 删除空的条件
      * Removes [[isEmpty()|empty operands]] from the given query condition.
      *
      * @param array $condition the original condition
@@ -306,6 +307,8 @@ trait QueryTrait
     }
 
     /**
+     * 添加orderby
+     * 
      * Sets the ORDER BY part of the query.
      * @param string|array|Expression $columns the columns (and the directions) to be ordered by.
      * Columns can be specified in either a string (e.g. `"id ASC, name DESC"`) or an array
@@ -357,6 +360,7 @@ trait QueryTrait
     }
 
     /**
+     * 格式化orderby 条件
      * Normalizes format of ORDER BY data
      *
      * @param array|string|Expression $columns the columns value to normalize. See [[orderBy]] and [[addOrderBy]].
@@ -364,8 +368,10 @@ trait QueryTrait
      */
     protected function normalizeOrderBy($columns)
     {
+        // 表达式
         if ($columns instanceof Expression) {
             return [$columns];
+        // 数组
         } elseif (is_array($columns)) {
             return $columns;
         } else {

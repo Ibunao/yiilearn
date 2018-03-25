@@ -627,6 +627,7 @@ class Security extends Component
     }
 
     /**
+     * 检验密码是否正确 验证密码是否是对应的hash值
      * Verifies a password against a hash.
      * @param string $password The password to verify.
      * @param string $hash The hash to verify the password against.
@@ -639,7 +640,7 @@ class Security extends Component
         if (!is_string($password) || $password === '') {
             throw new InvalidParamException('Password must be a string and cannot be empty.');
         }
-
+        // 要符合hash规则
         if (!preg_match('/^\$2[axy]\$(\d\d)\$[\.\/0-9A-Za-z]{22}/', $hash, $matches)
             || $matches[1] < 4
             || $matches[1] > 30
@@ -648,9 +649,10 @@ class Security extends Component
         }
 
         if (function_exists('password_verify')) {
+            // 官方方法 验证密码是否和指定的散列值匹配 
             return password_verify($password, $hash);
         }
-
+        // 计算散列
         $test = crypt($password, $hash);
         $n = strlen($test);
         if ($n !== 60) {
@@ -690,6 +692,7 @@ class Security extends Component
     }
 
     /**
+     * 对字符串进行比较
      * Performs string comparison using timing attack resistant approach.
      * @see http://codereview.stackexchange.com/questions/13512
      * @param string $expected string to compare.

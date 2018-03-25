@@ -12,6 +12,7 @@ use yii\base\NotSupportedException;
 use yii\helpers\ArrayHelper;
 
 /**
+ * 负责拼接sql语句的
  * QueryBuilder builds a SELECT SQL statement based on the specification given as a [[Query]] object.
  *
  * SQL statements are created from [[Query]] objects using the [[build()]]-method.
@@ -190,15 +191,18 @@ class QueryBuilder extends \yii\base\Object
         $placeholders = [];
         $values = ' DEFAULT VALUES';
         if ($columns instanceof \yii\db\Query) {
+            // values 为sql语句
             list($names, $values, $params) = $this->prepareInsertSelectSubQuery($columns, $schema);
         } else {
             foreach ($columns as $name => $value) {
                 $names[] = $schema->quoteColumnName($name);
+                // 如果是表达式
                 if ($value instanceof Expression) {
                     $placeholders[] = $value->expression;
                     foreach ($value->params as $n => $v) {
                         $params[$n] = $v;
                     }
+                // Query对象解析成sql语句
                 } elseif ($value instanceof \yii\db\Query) {
                     list($sql, $params) = $this->build($value, $params);
                     $placeholders[] = "($sql)";
@@ -216,6 +220,7 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
+     * 解析插入字段为Query查询
      * Prepare select-subquery and field names for INSERT INTO ... SELECT SQL statement.
      *
      * @param \yii\db\Query $columns Object, which represents select query.
@@ -228,6 +233,7 @@ class QueryBuilder extends \yii\base\Object
      */
     protected function prepareInsertSelectSubQuery($columns, $schema, $params = [])
     {
+        // 查询的Query的select不能用 * 
         if (!is_array($columns->select) || empty($columns->select) || in_array('*', $columns->select)) {
             throw new InvalidParamException('Expected select query object with enumerated (named) parameters');
         }
@@ -236,8 +242,10 @@ class QueryBuilder extends \yii\base\Object
         $names = [];
         $values = ' ' . $values;
         foreach ($columns->select as $title => $field) {
+            // 如果使用 'abc' => 'ddd' 实际效果就是 ddd as abc  
             if (is_string($title)) {
                 $names[] = $schema->quoteColumnName($title);
+            // 写了 as 语句
             } else if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)([\w\-_\.]+)$/', $field, $matches)) {
                 $names[] = $schema->quoteColumnName($matches[2]);
             } else {
@@ -286,6 +294,7 @@ class QueryBuilder extends \yii\base\Object
         foreach ($rows as $row) {
             $vs = [];
             foreach ($row as $i => $value) {
+                // 类型转换
                 if (isset($columns[$i], $columnSchemas[$columns[$i]]) && !is_array($value)) {
                     $value = $columnSchemas[$columns[$i]]->dbTypecast($value);
                 }

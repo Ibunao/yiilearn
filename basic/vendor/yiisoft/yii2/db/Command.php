@@ -274,6 +274,7 @@ class Command extends Component
      * pdo绑定数据
      * [bindParam和bindValue的区别](http://blog.csdn.net/a7442358/article/details/45268489)
      * [bindParam和bindValue的区别](https://segmentfault.com/a/1190000002968592)
+     * [文档-实用方法](http://www.yiichina.com/doc/guide/2.0/db-dao)  
      * Binds a parameter to the SQL statement to be executed.
      * @param string|int $name parameter identifier. For a prepared statement
      * using named placeholders, this will be a parameter name of

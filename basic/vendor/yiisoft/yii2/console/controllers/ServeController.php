@@ -52,7 +52,7 @@ class ServeController extends Controller
     public function actionIndex($address = 'localhost')
     {
         $documentRoot = Yii::getAlias($this->docroot);
-
+        // 带端口
         if (strpos($address, ':') === false) {
             $address = $address . ':' . $this->port;
         }
@@ -78,7 +78,8 @@ class ServeController extends Controller
             $this->stdout("Routing file is \"$this->router\"\n");
         }
         $this->stdout("Quit the server with CTRL-C or COMMAND-C.\n");
-
+        //执行的命令 "D:\ding\wamp64\bin\php\php5.6.25\php.exe" -S localhost:8080 -t "D:\ding\wamp64\www\learn\yii\yiilearn\basic/web"
+        // echo '"' . PHP_BINARY . '"' . " -S {$address} -t \"{$documentRoot}\" $this->router";exit;
         passthru('"' . PHP_BINARY . '"' . " -S {$address} -t \"{$documentRoot}\" $this->router");
     }
 

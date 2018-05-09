@@ -23,7 +23,8 @@ class ComposerAutoloaderInit4c8cf14541264db6f6c4584946aba683
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
         //注销已注册的自动加载，这样的目的可以实现第一次加载，加载一个更详细的自动加载文件，由更详细的加载文件实现具体的加载  
         spl_autoload_unregister(array('ComposerAutoloaderInit4c8cf14541264db6f6c4584946aba683', 'loadClassLoader'));
-        //如果php版本大于5.6并且未定义HHVM_VERSION常量
+        //如果php版本大于5.6并且未定义HHVM_VERSION(facebook写的虚拟机)常量
+        // zend_loader_file_encoded 如果当前文件使用Zend Guard编码，则返回TRUE，否则返回FALSE
         $useStaticLoader = PHP_VERSION_ID >= 50600 && !defined('HHVM_VERSION') && (!function_exists('zend_loader_file_encoded') || !zend_loader_file_encoded());
         if ($useStaticLoader) {
             require_once __DIR__ . '/autoload_static.php';

@@ -7,6 +7,7 @@ use app\helpers\zController;
 use yii\db\Query;
 use yii\di\Instance;
 use yii\db\Connection;
+use ding\Bunao;
 class TestController extends zController
 {
 	public $enableCsrfValidation = false;
@@ -58,8 +59,9 @@ class TestController extends zController
 	}
 	public function actionBunao()
 	{
-		var_dump($_GET);
-		echo "here";
+		new Bunao;
+		// var_dump($_GET);
+		// echo "here";
 	}
 	public function actionDingBunao()
 	{

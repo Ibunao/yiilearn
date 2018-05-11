@@ -654,7 +654,7 @@ class BaseArrayHelper
     }
 
     /**
-     * 判断是否是关联数组
+     * 判断是否是关联数组 || 关联数组的key都是string类型
      * Returns a value indicating whether the given array is an associative array.
      *
      * An array is associative if all its keys are strings. If `$allStrings` is false,
@@ -664,7 +664,7 @@ class BaseArrayHelper
      *
      * @param array $array the array being checked
      * @param bool $allStrings whether the array keys must be all strings in order for
-     * the array to be treated as associative.
+     * the array to be treated as associative. 如果是true，表示所有的key必须是string类型
      * @return bool whether the array is associative
      */
     public static function isAssociative($array, $allStrings = true)

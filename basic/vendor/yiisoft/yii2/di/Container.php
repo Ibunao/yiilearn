@@ -239,7 +239,7 @@ class Container extends Component
             // 合并参数,实例化参数的依赖
             $params = $this->resolveDependencies($this->mergeParams($class, $params));
             // 把第一个参数作为回调函数调用
-            // 回调函数 $definition 要接收三个参数
+            // 回调函数 $definition 要接收三个参数 function ($container, $params, $config)
             $object = call_user_func($definition, $this, $params, $config);
         // 如果是数组，必定还有 class 因为 set的时候依赖进行了标准化
         } elseif (is_array($definition)) {
@@ -411,12 +411,13 @@ class Container extends Component
         $this->_definitions[$class] = $this->normalizeDefinition($class, $definition);
         // 存入 参数数组
         $this->_params[$class] = $params;
-        // 删除
+        // 删除单例依赖
         unset($this->_singletons[$class]);
         return $this;
     }
 
     /**
+     * 注意一个单例依赖
      * Registers a class definition with this container and marks the class as a singleton class.
      *
      * This method is similar to [[set()]] except that classes registered via this method will only have one
@@ -721,7 +722,7 @@ class Container extends Component
         }
 
         $args = [];
-        // 判断是否是关联数组
+        // 判断关联数组key是不是string类型
         $associative = ArrayHelper::isAssociative($params);
         // 反射获取参数遍历
         foreach ($reflection->getParameters() as $param) {
@@ -823,6 +824,7 @@ class Container extends Component
     public function setDefinitions(array $definitions)
     {
         foreach ($definitions as $class => $definition) {
+            // 如果长度2 而且 数组没有key,也就是二维数组的情况
             if (count($definition) === 2 && array_values($definition) === $definition) {
                 $this->set($class, $definition[0], $definition[1]);
                 continue;

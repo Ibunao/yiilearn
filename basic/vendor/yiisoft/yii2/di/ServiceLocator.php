@@ -148,7 +148,7 @@ class ServiceLocator extends Component
         // 存在定义
         if (isset($this->_definitions[$id])) {
             $definition = $this->_definitions[$id];
-            // 如果定义是个对象，且不是Closure对象，那么直接将这个对象返回
+            // 如果定义是个对象，且不是Closure匿名函数对象，那么直接将这个对象返回
             // 通过定义创建对象，并保存到 _components
             if (is_object($definition) && !$definition instanceof Closure) {
                 return $this->_components[$id] = $definition;

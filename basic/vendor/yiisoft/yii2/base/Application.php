@@ -306,7 +306,7 @@ abstract class Application extends Module
     protected function bootstrap()
     {
         // 预先加载extensions文件中的数据
-        // 没用到不知道具体用处
+        // 加载配置文件中的别名和bootstrap
         if ($this->extensions === null) {
             $file = Yii::getAlias('@vendor/yiisoft/extensions.php');
             $this->extensions = is_file($file) ? include($file) : [];
@@ -330,7 +330,7 @@ abstract class Application extends Module
                 }
             }
         }
-        // 配置文件设置的 bootstrap 中定义的模块
+        // 配置文件设置的 bootstrap 中定义的模块,需要预先加载的
         foreach ($this->bootstrap as $class) {
             $component = null;
             if (is_string($class)) {

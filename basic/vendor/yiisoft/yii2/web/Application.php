@@ -64,12 +64,14 @@ class Application extends \yii\base\Application
     {
         // 获取Request组件
         $request = $this->getRequest();
-        // 获取根目录 D:/ding/wamp64/www/learn/yii/yiilearn/basic/web
+        // 获取index.php目录 D:/ding/wamp64/www/learn/yii/yiilearn/basic/web
         // $ding = dirname($request->getScriptFile());
         Yii::setAlias('@webroot', dirname($request->getScriptFile()));
-        // 为空 ""
-        // $ding = dirname($request->getBaseUrl());
+
+        // $ding = dirname($request->getScriptUrl());
         // 设置别名 获取入口文件相对域名的位置
+        // 假设说域名www.local.com指向的是D:/ding/wamp64/www/learn/yii/yiilearn/basic
+        // www.local.com/web/index.php 才能访问到入口，则@web 为 /web
         Yii::setAlias('@web', $request->getBaseUrl());
 
         parent::bootstrap();

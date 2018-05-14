@@ -226,7 +226,7 @@ class Module extends ServiceLocator
     }
 
     /**
-     * 获取文件目录
+     * 获取项目根目录
      * Returns the root directory of the module.
      * It defaults to the directory containing the module class file.
      * @return string the root directory of the module.

@@ -240,7 +240,7 @@ abstract class Application extends Module
         if (!isset($config['id'])) {
             throw new InvalidConfigException('The "id" configuration for the Application is required.');
         }
-        //必须设置基础路径
+        //必须设置项目根路径
         if (isset($config['basePath'])) {
             $this->setBasePath($config['basePath']);
             unset($config['basePath']);
@@ -266,6 +266,7 @@ abstract class Application extends Module
         if (isset($config['timeZone'])) {
             $this->setTimeZone($config['timeZone']);
             unset($config['timeZone']);
+        // 如果没有设置时区
         } elseif (!ini_get('date.timezone')) {
             $this->setTimeZone('UTC');
         }
@@ -403,7 +404,7 @@ abstract class Application extends Module
     public function setBasePath($path)
     {
         parent::setBasePath($path);
-        // 设置别名
+        // 设置根目录别名
         Yii::setAlias('@app', $this->getBasePath());
     }
 

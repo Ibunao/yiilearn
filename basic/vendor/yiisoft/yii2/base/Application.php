@@ -353,7 +353,7 @@ abstract class Application extends Module
             // 如果这个组件继承自 BootstrapInterface 接口，调用启动加载方法
             if ($component instanceof BootstrapInterface) {
                 Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
-                // debug 模块有用，并在里边进行了事件的绑定
+                // debug 模块有用，并在里边进行了事件的绑定和路由规则的注册
                 // 加载模块前需要预先处理的
                 $component->bootstrap($this);
             } else {

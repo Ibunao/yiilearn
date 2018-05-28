@@ -184,7 +184,7 @@ class Request extends \yii\base\Request
      */
     public function resolve()
     {
-        // 使用UrlManager类解析请求
+        // 使用UrlManager类解析请求,为了方便扩展吧
         // 获取路由地址
         $result = Yii::$app->getUrlManager()->parseRequest($this);
         if ($result !== false) {

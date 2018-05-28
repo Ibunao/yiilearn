@@ -124,7 +124,7 @@ class UrlManager extends Component
      */
     public $routeParam = 'r';
     /**
-     * 缓存路由规则
+     * 缓存路由规则的缓存组件
      * @var Cache|string the cache object or the application component ID of the cache object.
      * Compiled URL rules will be cached through this cache object, if it is available.
      *
@@ -354,7 +354,7 @@ class UrlManager extends Component
         // 没有开启路由美化，就简单多了
         } else {
             Yii::trace('Pretty URL not enabled. Using default URL parsing logic.', __METHOD__);
-            // 定义的 路径 r 
+            // 定义的 路径 r 的参数
             $route = $request->getQueryParam($this->routeParam, '');
 
             if (is_array($route)) {

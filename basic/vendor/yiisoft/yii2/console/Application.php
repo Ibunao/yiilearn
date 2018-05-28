@@ -9,7 +9,7 @@ namespace yii\console;
 
 use Yii;
 use yii\base\InvalidRouteException;
-
+// 定义流 还不太清楚
 // define STDIN, STDOUT and STDERR if the PHP SAPI did not define them (e.g. creating console application in web env)
 // http://php.net/manual/en/features.commandline.io-streams.php
 defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
@@ -104,7 +104,9 @@ class Application extends \yii\base\Application
     {
         if (!empty($_SERVER['argv'])) {
             $option = '--' . self::OPTION_APPCONFIG . '=';
+            // cli模式（命令行）下，第一个参数$_SERVER['argv'][0]是脚本名，其余的是传递给脚本的参数
             foreach ($_SERVER['argv'] as $param) {
+                // 如果指定了配置文件，则使用指定的配置文件
                 if (strpos($param, $option) !== false) {
                     $path = substr($param, strlen($option));
                     if (!empty($path) && is_file($file = Yii::getAlias($path))) {
@@ -125,6 +127,7 @@ class Application extends \yii\base\Application
     public function init()
     {
         parent::init();
+        // 使用yii自定义的核心命令
         if ($this->enableCoreCommands) {
             foreach ($this->coreCommands() as $id => $command) {
                 if (!isset($this->controllerMap[$id])) {
@@ -139,6 +142,7 @@ class Application extends \yii\base\Application
     }
 
     /**
+     * 解析请求
      * Handles the specified request.
      * @param Request $request the request to be handled
      * @return Response the resulting response

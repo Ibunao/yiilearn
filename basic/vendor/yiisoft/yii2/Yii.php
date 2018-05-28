@@ -21,7 +21,7 @@ require(__DIR__ . '/BaseYii.php');
 class Yii extends \yii\BaseYii
 {
 }
-//注册自动加载
+//注册自动加载,将Yii的自动加载注册到已经注册过的最前面
 spl_autoload_register(['Yii', 'autoload'], true, true);
 //设置类与路径的加载映射
 // 设置类路径映射可以加快自动加载的速度

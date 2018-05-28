@@ -32,8 +32,10 @@ class Request extends \yii\base\Request
     public function getParams()
     {
         if ($this->_params === null) {
+            // cli模式（命令行）下，第一个参数$_SERVER['argv'][0]是脚本名，其余的是传递给脚本的参数
             if (isset($_SERVER['argv'])) {
                 $this->_params = $_SERVER['argv'];
+                // 将数组开头的单元移出数组
                 array_shift($this->_params);
             } else {
                 $this->_params = [];
@@ -63,7 +65,7 @@ class Request extends \yii\base\Request
     {
         // 获取全部的命令行参数
         $rawParams = $this->getParams();
-        // 除了路由的参数
+        // 除了路由的参数,也就是参数是否以 -- 开始
         $endOfOptionsFound = false;
         // 获取路由
         // 第一个参数作为路由

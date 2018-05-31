@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use Yii;
+use yii\web\Request;
 use app\helpers\zController;
 use yii\db\Query;
 use yii\di\Instance;
@@ -59,7 +60,10 @@ class TestController extends zController
 	}
 	public function actionBunao()
 	{
-		new Bunao;
+		echo $_SERVER['SCRIPT_FILENAME'];
+		$request = new Request;
+		echo $request->getScriptUrl();
+		// new Bunao;
 		// var_dump($_GET);
 		// echo "here";
 	}

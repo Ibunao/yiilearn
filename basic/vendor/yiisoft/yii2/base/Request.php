@@ -66,6 +66,8 @@ abstract class Request extends Component
     public function getScriptFile()
     {
         if ($this->_scriptFile === null) {
+            // 入口脚本物理路径
+            // D:/ding/wamp64/www/learn/yii/yiilearn/basic/web/index.php
             if (isset($_SERVER['SCRIPT_FILENAME'])) {
                 $this->setScriptFile($_SERVER['SCRIPT_FILENAME']);
             } else {

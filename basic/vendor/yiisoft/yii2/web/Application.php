@@ -100,6 +100,7 @@ class Application extends \yii\base\Application
                     }
                     $url += $request->getQueryParams();
                 }
+                // 无法解析，异常跳转异常页面
                 return $this->getResponse()->redirect(Url::to($url, $e->scheme), $e->statusCode);
             }
         } else {

@@ -197,8 +197,8 @@ class UrlManager extends Component
         if ($this->cache instanceof Cache) {
             // 以当前类作为缓存的key
             $cacheKey = $this->cacheKey;
-            $hash = md5(json_encode($this->rules));
             // 获取缓存的key 并且比较hash值，看是否更改rules值
+            $hash = md5(json_encode($this->rules));
             if (($data = $this->cache->get($cacheKey)) !== false && isset($data[1]) && $data[1] === $hash) {
                 $this->rules = $data[0];
             } else {
@@ -250,6 +250,7 @@ class UrlManager extends Component
         // 请求的动词
         $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
         foreach ($rules as $key => $rule) {
+            // 同一格式
             if (is_string($rule)) {
                 // 路由规则的路由部分
                 $rule = ['route' => $rule];
@@ -274,7 +275,7 @@ class UrlManager extends Component
                 // 请求部分
                 $rule['pattern'] = $key;
             }
-            // 解析后的格式为数组
+            
             if (is_array($rule)) {
                 // 根据rule创建UrlRule类
                 $rule = Yii::createObject(array_merge($this->ruleConfig, $rule));
@@ -311,6 +312,7 @@ class UrlManager extends Component
                         'parent' => null,
                     ], __METHOD__);
                 }
+                // 如果有匹配上的直接返回
                 if ($result !== false) {
                     return $result;
                 }

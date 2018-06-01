@@ -63,6 +63,7 @@ class TestController extends zController
 		echo $_SERVER['SCRIPT_FILENAME'];
 		$request = new Request;
 		echo $request->getScriptUrl();
+		echo $request->getUserHost();
 		// new Bunao;
 		// var_dump($_GET);
 		// echo "here";

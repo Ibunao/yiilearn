@@ -353,7 +353,7 @@ class Request extends \yii\base\Request
     }
 
     /**
-     * 返回是否是刷新操作
+     * 是否是Adobe Flash 或 Adobe Flex 发出的请求，这其实也不是HTTP请求方法
      * Returns whether this is an Adobe Flash or Flex request.
      * @return bool whether this is an Adobe Flash or Adobe Flex request.
      */
@@ -1448,6 +1448,7 @@ Array
 
     /**
      * 获取csrftoken
+     * 如果cookie或session中不存在则生成csrftoken
      * Returns the token used to perform CSRF validation.
      *
      * This token is generated in a way to prevent [BREACH attacks](http://breachattack.com/). It may be passed
@@ -1503,6 +1504,7 @@ Array
     }
 
     /**
+     * 从请求头获取csrftoken
      * @return string the CSRF token sent via [[CSRF_HEADER]] by browser. Null is returned if no such header is sent.
      */
     public function getCsrfTokenFromHeader()
@@ -1543,6 +1545,7 @@ Array
     public function validateCsrfToken($clientSuppliedToken = null)
     {
         $method = $this->getMethod();
+        // 'GET', 'HEAD', 'OPTIONS' 这三种方法不验证csrf
         // only validate CSRF token on non-"safe" methods http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.1.1
         if (!$this->enableCsrfValidation || in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) {
             return true;

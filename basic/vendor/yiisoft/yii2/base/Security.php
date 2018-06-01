@@ -439,6 +439,7 @@ class Security extends Component
     private $_randomFile;
 
     /**
+     * 生成随机key
      * Generates specified number of random bytes.
      * Note that output may not be ASCII.
      * @see generateRandomString() if you need a string.

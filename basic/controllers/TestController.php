@@ -9,6 +9,7 @@ use yii\db\Query;
 use yii\di\Instance;
 use yii\db\Connection;
 use ding\Bunao;
+use yii\helpers\Url;
 class TestController extends zController
 {
 	public $enableCsrfValidation = false;
@@ -60,13 +61,19 @@ class TestController extends zController
 	}
 	public function actionBunao()
 	{
-		echo $_SERVER['SCRIPT_FILENAME'];
+		/*echo $_SERVER['SCRIPT_FILENAME'];
 		$request = new Request;
 		echo $request->getScriptUrl();
-		echo $request->getUserHost();
+		echo $request->getUserHost();*/
 		// new Bunao;
 		// var_dump($_GET);
 		// echo "here";
+		echo Url::home();
+		echo Url::home(true);
+		echo Url::home('https');
+		echo Url::base();
+		echo Url::base(true);
+		echo Url::base('https');
 	}
 	public function actionDingBunao()
 	{

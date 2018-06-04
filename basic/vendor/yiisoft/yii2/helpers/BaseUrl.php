@@ -346,12 +346,13 @@ class BaseUrl
     }
 
     /**
+     * 首页
      * Returns the home URL.
      *
      * @param bool|string $scheme the URI scheme to use for the returned URL:
      *
-     * - `false` (default): returning a relative URL.
-     * - `true`: returning an absolute base URL whose scheme is the same as that in [[\yii\web\UrlManager::$hostInfo]].
+     * - `false` (default): returning a relative URL. 返回相对地址
+     * - `true`: returning an absolute base URL whose scheme is the same as that in [[\yii\web\UrlManager::$hostInfo]]. 返回绝对地址
      * - string: returning an absolute URL with the specified scheme (either `http`, `https` or empty string
      *   for protocol-relative URL).
      *

@@ -695,7 +695,7 @@ class Module extends ServiceLocator
         $className = str_replace(' ', '', ucwords(str_replace('-', ' ', $className))) . 'Controller';
         // 拼接控制器路径
         $className = ltrim($this->controllerNamespace . '\\' . str_replace('/', '\\', $prefix)  . $className, '\\');
-        // 包含 - 或 类不存在(会自动调用autoload)
+        // 转换后如果还包含 - 或 类不存在(会自动调用autoload)
         if (strpos($className, '-') !== false || !class_exists($className)) {
             return null;
         }

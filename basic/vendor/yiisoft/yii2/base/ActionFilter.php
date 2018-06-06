@@ -69,10 +69,11 @@ class ActionFilter extends Behavior
      */
     public function beforeFilter($event)
     {
+        // 根据only和expect判断该action是否过滤
         if (!$this->isActive($event->action)) {
             return;
         }
-
+        
         $event->isValid = $this->beforeAction($event->action);
         if ($event->isValid) {
             // call afterFilter only if beforeFilter succeeds

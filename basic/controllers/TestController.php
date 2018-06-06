@@ -10,6 +10,9 @@ use yii\di\Instance;
 use yii\db\Connection;
 use ding\Bunao;
 use yii\helpers\Url;
+use yii\helpers\VarDumper;
+use yii\helpers\StringHelper;
+use yii\helpers\Markdown;
 class TestController extends zController
 {
 	public $enableCsrfValidation = false;
@@ -68,12 +71,36 @@ class TestController extends zController
 		// new Bunao;
 		// var_dump($_GET);
 		// echo "here";
-		echo Url::home();
-		echo Url::home(true);
-		echo Url::home('https');
-		echo Url::base();
-		echo Url::base(true);
-		echo Url::base('https');
+		// echo Url::home();
+		// echo Url::home(true);
+		// echo Url::home('https');
+		// echo Url::base();
+		// echo Url::base(true);
+		// echo Url::base('https');
+		/*var_dump($this);
+		echo "=================<br/>";
+		VarDumper::dump($this, 100, true);
+		echo "=================<br/>";
+		VarDumper::export($this);
+		echo "=================<br/>";
+		var_export(['ding'=>'ran']);*/
+		/*echo StringHelper::byteLength('ding');
+		echo "<br>";
+		echo StringHelper::byteLength('丁');
+		echo "<br>";
+		echo StringHelper::byteSubstr('ding', 2, 1);
+		echo "<br>";
+		echo StringHelper::byteSubstr('吧啦吧吧', 2, 1);
+		echo "<br>";
+		echo StringHelper::byteSubstr('吧啦吧吧', 3, 3);
+		echo "<br>";
+*/
+		// echo StringHelper::dirname('D://ding/ran/');
+		// echo "<br>";
+		// echo StringHelper::dirname('D://ding/ran');
+		// echo "<br>";
+		$mk = file_get_contents('./README.md');
+		echo Markdown::process($mk, 'extra');
 	}
 	public function actionDingBunao()
 	{

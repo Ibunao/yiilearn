@@ -180,6 +180,7 @@ class AssetBundle extends Object
     }
 
     /**
+     * 发布资源包
      * Publishes the asset bundle if its source code is not under Web-accessible directory.
      * It will also try to convert non-CSS or JS files (e.g. LESS, Sass) into the corresponding
      * CSS or JS files using [[AssetManager::converter|asset converter]].
@@ -187,6 +188,7 @@ class AssetBundle extends Object
      */
     public function publish($am)
     {
+        // 如果只设置了源路径
         if ($this->sourcePath !== null && !isset($this->basePath, $this->baseUrl)) {
             list ($this->basePath, $this->baseUrl) = $am->publish($this->sourcePath, $this->publishOptions);
         }

@@ -22,6 +22,8 @@ class BaseStringHelper
 {
     /**
      * 获取字节长度
+     * StringHelper::byteLength('ding'); 4
+     * StringHelper::byteLength('丁');   3
      * Returns the number of bytes in the given string.
      * This method ensures the string is treated as a byte array by using `mb_strlen()`.
      * @param string $string the string being measured for length
@@ -34,6 +36,9 @@ class BaseStringHelper
 
     /**
      * 截取字节
+     * StringHelper::byteSubstr('ding', 2, 1);  n
+     * StringHelper::byteSubstr('吧啦吧吧', 2, 1);  乱码
+     * StringHelper::byteSubstr('吧啦吧吧', 3, 3);  啦
      * Returns the portion of string specified by the start and length parameters.
      * This method ensures the string is treated as a byte array by using `mb_substr()`.
      * @param string $string the input string. Must be one character or longer.
@@ -49,7 +54,8 @@ class BaseStringHelper
     }
 
     /**
-     * 从命名空间获取类名
+     * 从路径获取最后一个文件名
+     * 可以从命名空间获取类名
      * Returns the trailing name component of a path.
      * This method is similar to the php function `basename()` except that it will
      * treat both \ and / as directory separators, independent of the operating system.
@@ -79,6 +85,9 @@ class BaseStringHelper
     }
 
     /**
+     * 返回父目录  
+     * StringHelper::dirname('D://ding/ran'); D://ding
+     * StringHelper::dirname('D://ding/ran/'); D://ding/ran
      * Returns parent directory's path.
      * This method is similar to `dirname()` except that it will treat
      * both \ and / as directory separators, independent of the operating system.

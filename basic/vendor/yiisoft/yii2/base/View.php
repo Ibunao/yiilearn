@@ -172,7 +172,7 @@ class View extends Component
         if (strncmp($view, '@', 1) === 0) {
             // e.g. "@app/views/main"
             $file = Yii::getAlias($view);
-        // 如果是以 // 开头 表示跟目录中的视图文件
+        // 如果是以 // 开头 表示跟视图目录(root/views/)中的视图文件
         } elseif (strncmp($view, '//', 2) === 0) {
             // e.g. "//layouts/main"
             $file = Yii::$app->getViewPath() . DIRECTORY_SEPARATOR . ltrim($view, '/');
@@ -185,7 +185,7 @@ class View extends Component
             } else {
                 throw new InvalidCallException("Unable to locate view file for view '$view': no active controller.");
             }
-        // $context控制器对象
+        // 小部件widget或用到
         } elseif ($context instanceof ViewContextInterface) {
             $file = $context->getViewPath() . DIRECTORY_SEPARATOR . $view;
         //??? 没用过 获取保存的view路径

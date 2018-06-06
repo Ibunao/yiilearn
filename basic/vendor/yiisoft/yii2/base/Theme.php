@@ -140,7 +140,7 @@ class Theme extends Component
             if (($basePath = $this->getBasePath()) === null) {
                 throw new InvalidConfigException('The "basePath" property must be set.');
             }
-            // 默认为 当前模块的目录 => 配置的主题目录
+            // 默认为 当前根目录 => 配置的主题目录
             $pathMap = [Yii::$app->getBasePath() => [$basePath]];
         }
         // 规范文件路径

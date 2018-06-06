@@ -303,7 +303,7 @@ class View extends \yii\base\View
         if (!isset($this->assetBundles[$name])) {
             // 获取资源管理对象
             $am = $this->getAssetManager();
-            // 获取资源对象
+            // 获取资源对象，注册源数据
             $bundle = $am->getBundle($name);
             $this->assetBundles[$name] = false;
             // register dependencies

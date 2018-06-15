@@ -81,26 +81,31 @@ class Pagination extends Object implements Linkable
     const LINK_LAST = 'last';
 
     /**
+     * url当前页的参数
      * @var string name of the parameter storing the current page index.
      * @see params
      */
     public $pageParam = 'page';
     /**
+     * url每页显示的条数参数
      * @var string name of the parameter storing the page size.
      * @see params
      */
     public $pageSizeParam = 'per-page';
     /**
+     * 如果false当page为0，则页面参数将不会放在URL中。
      * @var bool whether to always have the page parameter in the URL created by [[createUrl()]].
      * If false and [[page]] is 0, the page parameter will not be put in the URL.
      */
     public $forcePageParam = true;
     /**
+     * 路由
      * @var string the route of the controller action for displaying the paged contents.
      * If not set, it means using the currently requested route.
      */
     public $route;
     /**
+     * 存放请求和其他参数
      * @var array parameters (name => value) that should be used to obtain the current page number
      * and to create new pagination URLs. If not set, all parameters from $_GET will be used instead.
      *
@@ -124,21 +129,25 @@ class Pagination extends Object implements Linkable
      */
     public $validatePage = true;
     /**
+     * 总数
      * @var int total number of items.
      */
     public $totalCount = 0;
     /**
+     * 默认每页数据的条数
      * @var int the default page size. This property will be returned by [[pageSize]] when page size
      * cannot be determined by [[pageSizeParam]] from [[params]].
      */
     public $defaultPageSize = 20;
     /**
+     * 一页显示数量的最小和最大值
      * @var array|false the page size limits. The first array element stands for the minimal page size, and the second
      * the maximal page size. If this is false, it means [[pageSize]] should always return the value of [[defaultPageSize]].
      */
     public $pageSizeLimit = [1, 50];
 
     /**
+     * 每页展示的数量
      * @var int number of items on each page.
      * If it is less than 1, it means the page size is infinite, and thus a single page contains all items.
      */
@@ -146,6 +155,7 @@ class Pagination extends Object implements Linkable
 
 
     /**
+     * 获取总页数
      * @return int number of pages
      */
     public function getPageCount()
@@ -163,6 +173,7 @@ class Pagination extends Object implements Linkable
     private $_page;
 
     /**
+     * 获取当前页码
      * Returns the zero-based current page number.
      * @param bool $recalculate whether to recalculate the current page based on the page size and item count.
      * @return int the zero-based current page number.
@@ -203,6 +214,7 @@ class Pagination extends Object implements Linkable
     }
 
     /**
+     * 获取页面展示数量
      * Returns the number of items per page.
      * By default, this method will try to determine the page size by [[pageSizeParam]] in [[params]].
      * If the page size cannot be determined this way, [[defaultPageSize]] will be returned.
@@ -213,10 +225,12 @@ class Pagination extends Object implements Linkable
     public function getPageSize()
     {
         if ($this->_pageSize === null) {
+            // 如果没有设置条数限制
             if (empty($this->pageSizeLimit)) {
                 $pageSize = $this->defaultPageSize;
                 $this->setPageSize($pageSize);
             } else {
+                // 有条数限制
                 $pageSize = (int) $this->getQueryParam($this->pageSizeParam, $this->defaultPageSize);
                 $this->setPageSize($pageSize, true);
             }
@@ -226,6 +240,7 @@ class Pagination extends Object implements Linkable
     }
 
     /**
+     * 设置页面显示数量
      * @param int $value the number of items per page.
      * @param bool $validatePageSize whether to validate page size.
      */
@@ -235,6 +250,7 @@ class Pagination extends Object implements Linkable
             $this->_pageSize = null;
         } else {
             $value = (int) $value;
+            // 限制每页显示的最大/最小条数
             if ($validatePageSize && isset($this->pageSizeLimit[0], $this->pageSizeLimit[1]) && count($this->pageSizeLimit) === 2) {
                 if ($value < $this->pageSizeLimit[0]) {
                     $value = $this->pageSizeLimit[0];
@@ -247,6 +263,7 @@ class Pagination extends Object implements Linkable
     }
 
     /**
+     * 创建url
      * Creates the URL suitable for pagination with the specified page number.
      * This method is mainly called by pagers when creating URLs used to perform pagination.
      * @param int $page the zero-based page number that the URL should point to.
@@ -256,17 +273,28 @@ class Pagination extends Object implements Linkable
      * @see params
      * @see forcePageParam
      */
+    /**
+     * 创建url
+     * @param  [type]  $page     页码
+     * @param  [type]  $pageSize 每页显示数据
+     * @param  boolean $absolute 绝对/相对路由
+     * @return [type]            [description]
+     */
     public function createUrl($page, $pageSize = null, $absolute = false)
     {
         $page = (int) $page;
         $pageSize = (int) $pageSize;
         if (($params = $this->params) === null) {
+            // 获取 $_GET 参数
             $request = Yii::$app->getRequest();
             $params = $request instanceof Request ? $request->getQueryParams() : [];
         }
+
         if ($page > 0 || $page == 0 && $this->forcePageParam) {
+            // 记录当前页码 +1 因为0的时候其实是第一页
             $params[$this->pageParam] = $page + 1;
         } else {
+            // $page == 0 && $this->forcePageParam == false 不添加页码显示参数
             unset($params[$this->pageParam]);
         }
         if ($pageSize <= 0) {
@@ -277,6 +305,7 @@ class Pagination extends Object implements Linkable
         } else {
             unset($params[$this->pageSizeParam]);
         }
+        // 获取当前访问的路由
         $params[0] = $this->route === null ? Yii::$app->controller->getRoute() : $this->route;
         $urlManager = $this->urlManager === null ? Yii::$app->getUrlManager() : $this->urlManager;
         if ($absolute) {
@@ -287,6 +316,7 @@ class Pagination extends Object implements Linkable
     }
 
     /**
+     * 获取偏移量
      * @return int the offset of the data. This may be used to set the
      * OFFSET value for a SQL statement for fetching the current page of data.
      */
@@ -298,6 +328,7 @@ class Pagination extends Object implements Linkable
     }
 
     /**
+     * 获取条数
      * @return int the limit of the data. This may be used to set the
      * LIMIT value for a SQL statement for fetching the current page of data.
      * Note that if the page size is infinite, a value -1 will be returned.

@@ -83,7 +83,7 @@ $config = [
 ];
 
 if (YII_ENV_DEV) {
-    // 注意，debug和gii是一个模块，模块应该是比component更高一级，具有渲染功能
+    // 注意，debug和gii是一个模 块，模块应该是比component更高一级，具有渲染功能
     // configuration adjustments for 'dev' environment
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [

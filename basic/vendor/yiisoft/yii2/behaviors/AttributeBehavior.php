@@ -92,6 +92,7 @@ class AttributeBehavior extends Behavior
      */
     public function events()
     {
+        // 绑定事件的处理函数 evaluateAttributes
         return array_fill_keys(
             array_keys($this->attributes),
             'evaluateAttributes'
@@ -99,14 +100,16 @@ class AttributeBehavior extends Behavior
     }
 
     /**
+     * 事件处理方法
      * Evaluates the attribute value and assigns it to the current attributes.
      * @param Event $event
      */
     public function evaluateAttributes($event)
     {
+        // 跳过更新
         if ($this->skipUpdateOnClean
             && $event->name == ActiveRecord::EVENT_BEFORE_UPDATE
-            && empty($this->owner->dirtyAttributes)
+            && empty($this->owner->dirtyAttributes)// 没有更新的数据
         ) {
             return;
         }

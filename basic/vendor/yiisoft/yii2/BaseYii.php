@@ -200,6 +200,7 @@ class BaseYii
             }
             // 如果定义的是 @yii/ding 的形式
             foreach (static::$aliases[$root] as $name => $path) {
+                // 如果 $name 能匹配到 $alias ,则表示找到定义的根别名
                 if (strpos($alias . '/', $name . '/') === 0) {
                     return $name;
                 }

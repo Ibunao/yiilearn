@@ -219,6 +219,7 @@ abstract class Application extends Module
         //加载配置文件中的异常组件
         $this->registerErrorHandler($config);
         // 将会调用父类Object的构造函数 使用 Yii::configure($this, $config); 进行属性的赋值
+        // 跳过了Module的构造方法
         // Yii::$app->components['redis']//输出redis组件实例
         // 将定义的配置文件从的 components 数组中的组件注册到服务定位器 ServiceLocator
         // 将modules数组中的模块注册到Module中的module数组中

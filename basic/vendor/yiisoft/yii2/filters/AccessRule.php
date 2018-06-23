@@ -202,10 +202,12 @@ class AccessRule extends Component
             throw new InvalidConfigException('The user application component must be available to specify roles in AccessRule.');
         }
         foreach ($this->roles as $role) {
+            // 访客可以访问
             if ($role === '?') {
                 if ($user->getIsGuest()) {
                     return true;
                 }
+            // 访客不能访问
             } elseif ($role === '@') {
                 if (!$user->getIsGuest()) {
                     return true;

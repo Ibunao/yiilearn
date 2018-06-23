@@ -103,6 +103,9 @@ class Object implements Configurable
      */
     public function __construct($config = [])
     {
+        /**
+         * $config 配置属性的
+         */
         if (!empty($config)) {
             Yii::configure($this, $config);
         }

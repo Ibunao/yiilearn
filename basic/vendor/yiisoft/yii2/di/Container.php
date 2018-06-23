@@ -403,7 +403,7 @@ class Container extends Component
      * 注册依赖
      * @param [type] $class      类名/接口名/别名
      * @param array  $definition 依赖
-     * @param array  $params     参数
+     * @param array  $params     构造函数参数
      */
     public function set($class, $definition = [], array $params = [])
     {

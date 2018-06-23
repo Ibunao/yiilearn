@@ -171,6 +171,7 @@ abstract class Application extends Module
      */
     public $extensions;
     /**
+     * 
      * @var array list of components that should be run during the application [[bootstrap()|bootstrapping process]].
      *
      * Each component may be specified in one of the following formats:
@@ -183,6 +184,9 @@ abstract class Application extends Module
      * During the bootstrapping process, each component will be instantiated. If the component class
      * implements [[BootstrapInterface]], its [[BootstrapInterface::bootstrap()|bootstrap()]] method
      * will be also be called.
+     */
+    /**
+     * 如果你希望一个 模块 自定义 URL 规则， 你可以将模块ID加入到bootstrap数组中。比如debug和gii模块
      */
     public $bootstrap = [];
     /**
@@ -237,18 +241,18 @@ abstract class Application extends Module
      */
     public function preInit(&$config)
     {
-        //必须设置id
+        // 必须设置id,来标示module的id，$app就是一个父module
         if (!isset($config['id'])) {
             throw new InvalidConfigException('The "id" configuration for the Application is required.');
         }
-        //必须设置项目根路径
+        // 必须设置项目根路径
         if (isset($config['basePath'])) {
             $this->setBasePath($config['basePath']);
             unset($config['basePath']);
         } else {
             throw new InvalidConfigException('The "basePath" configuration for the Application is required.');
         }
-        //设置vendor目录路径  // set "@vendor"
+        // 设置vendor目录路径  // set "@vendor"
         if (isset($config['vendorPath'])) {
             $this->setVendorPath($config['vendorPath']);
             unset($config['vendorPath']);

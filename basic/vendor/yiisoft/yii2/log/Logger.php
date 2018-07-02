@@ -125,6 +125,7 @@ class Logger extends Component
         parent::init();
         // 注册PHP结束要执行的方法
         register_shutdown_function(function () {
+            // 刷新数据到日志
             // make regular flush before other shutdown functions, which allows session data collection and so on
             $this->flush();
             // make sure log entries written by shutdown functions are also flushed

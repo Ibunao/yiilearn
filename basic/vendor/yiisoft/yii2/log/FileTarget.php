@@ -115,6 +115,7 @@ class FileTarget extends Target
         if (($fp = @fopen($this->logFile, 'a')) === false) {
             throw new InvalidConfigException("Unable to append to log file: {$this->logFile}");
         }
+        // 文件锁
         @flock($fp, LOCK_EX);
         if ($this->enableRotation) {
             // clear stat cache to ensure getting the real current file size and not a cached one

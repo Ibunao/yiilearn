@@ -182,6 +182,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
      */
     public function bootstrap($app)
     {
+        // 设置
         $this->logTarget = Yii::$app->getLog()->targets['debug'] = new LogTarget($this);
 
         // delay attaching event handler to the view component after it is fully configured
@@ -189,7 +190,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
             $app->getView()->on(View::EVENT_END_BODY, [$this, 'renderToolbar']);
             $app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'setDebugHeaders']);
         });
-        // 添加路由规则
+        // 添加debug路由规则
         $app->getUrlManager()->addRules([
             [
                 'class' => 'yii\web\UrlRule',

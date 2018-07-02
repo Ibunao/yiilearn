@@ -81,6 +81,7 @@ class EmailTarget extends Target
             $this->message['subject'] = 'Application Log';
         }
         $messages = array_map([$this, 'formatMessage'], $this->messages);
+        // 70个字符一行
         $body = wordwrap(implode("\n", $messages), 70);
         $this->composeMessage($body)->send($this->mailer);
     }

@@ -372,6 +372,7 @@ class View extends Component
     }
 
     /**
+     * debug Module的renderToolbar有用到这个
      * Renders dynamic content returned by the given PHP statements.
      * This method is mainly used together with content caching (fragment caching and page caching)
      * when some portions of the content (called *dynamic content*) should not be cached.

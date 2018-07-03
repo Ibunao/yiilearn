@@ -72,6 +72,7 @@ class LogTarget extends Target
      */
     private function updateIndexFile($indexFile, $summary)
     {
+        // 修改文件的时间，如果文件不存在则创建
         touch($indexFile);
         if (($fp = @fopen($indexFile, 'r+')) === false) {
             throw new InvalidConfigException("Unable to open debug data index file: $indexFile");
@@ -104,6 +105,7 @@ class LogTarget extends Target
     }
 
     /**
+     * 记录日志，所有级别的日志他都记录
      * Processes the given log messages.
      * This method will filter the given messages with [[levels]] and [[categories]].
      * And if requested, it will also export the filtering result to specific medium (e.g. email).
@@ -158,6 +160,7 @@ class LogTarget extends Target
         ];
 
         if (isset($this->module->panels['mail'])) {
+            // 发送的邮件数量
             $summary['mailCount'] = count($this->module->panels['mail']->getMessages());
         }
 

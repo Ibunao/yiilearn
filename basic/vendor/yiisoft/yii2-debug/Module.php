@@ -182,12 +182,12 @@ class Module extends \yii\base\Module implements BootstrapInterface
      */
     public function bootstrap($app)
     {
-        // 设置
+        // 添加记录日志的对象，在记录日志的时候也会使用它记录
         $this->logTarget = Yii::$app->getLog()->targets['debug'] = new LogTarget($this);
-
+        // 绑定声明周期事件
         // delay attaching event handler to the view component after it is fully configured
         $app->on(Application::EVENT_BEFORE_REQUEST, function () use ($app) {
-            $app->getView()->on(View::EVENT_END_BODY, [$this, 'renderToolbar']);
+            $app->getView()->on(View::EVENT_END_BODY, [$this, 'renderToolbar']);// 前端页面注册debug小工具图标
             $app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'setDebugHeaders']);
         });
         // 添加debug路由规则
@@ -210,6 +210,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
      */
     public function beforeAction($action)
     {
+        // var_dump($action->id);exit;
         if (!$this->enableDebugLogs) {
             foreach (Yii::$app->getLog()->targets as $target) {
                 $target->enabled = false;
@@ -236,6 +237,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
     }
 
     /**
+     * ajax请求设置请求头
      * Setting headers to transfer debug data in AJAX requests
      * without interfering with the request itself.
      *
@@ -277,6 +279,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
     }
 
     /**
+     * 前端页面注册debug小图标
      * Renders mini-toolbar at the end of page body.
      *
      * @param \yii\base\Event $event
@@ -309,6 +312,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
             }
         }
         foreach ($this->allowedHosts as $hostname) {
+            // 返回主机名对应的 IPv4地址
             $filter = gethostbyname($hostname);
             if ($filter === $ip) {
                 return true;

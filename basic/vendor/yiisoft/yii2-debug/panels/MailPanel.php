@@ -42,6 +42,7 @@ class MailPanel extends Panel
     public function init()
     {
         parent::init();
+        // 监听邮件的发送数量
         Event::on(BaseMailer::className(), BaseMailer::EVENT_AFTER_SEND, function ($event) {
 
             /* @var $message MessageInterface */

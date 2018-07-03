@@ -57,6 +57,7 @@ class DefaultController extends Controller
     public function actionIndex()
     {
         $searchModel = new Debug();
+        // var_dump($this->getManifest());exit;
         $dataProvider = $searchModel->search($_GET, $this->getManifest());
 
         // load latest request
@@ -117,7 +118,11 @@ class DefaultController extends Controller
     }
 
     private $_manifest;
-
+    /**
+     * 获取记录的请求
+     * @param  boolean $forceReload [description]
+     * @return [type]               [description]
+     */
     protected function getManifest($forceReload = false)
     {
         if ($this->_manifest === null || $forceReload) {

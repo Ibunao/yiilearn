@@ -247,7 +247,7 @@ class User extends Component
      */
     /**
      * 登陆
-     * @param  IdentityInterface $identity 
+     * @param  IdentityInterface $identity 验证对象
      * @param  integer           $duration 自动登陆时间
      * @return [type]                      [description]
      */
@@ -256,7 +256,9 @@ class User extends Component
         if ($this->beforeLogin($identity, false, $duration)) {
             // 切换验证信息，添加cookie
             $this->switchIdentity($identity, $duration);
+            // 获取用户id
             $id = $identity->getId();
+            // 获取用户ip
             $ip = Yii::$app->getRequest()->getUserIP();
             if ($this->enableSession) {
                 $log = "User '$id' logged in from $ip with duration $duration.";

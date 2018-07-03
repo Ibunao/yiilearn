@@ -51,6 +51,7 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
     }
 
     /**
+     * 根据登陆名查找到对应数据的model
      * Finds user by username
      *
      * @param string $username

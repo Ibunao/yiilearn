@@ -39,6 +39,7 @@ class DbTarget extends Target
      */
     public $db = 'db';
     /**
+     * 记录日志的表
      * @var string name of the DB table to store cache content. Defaults to "log".
      */
     public $logTable = '{{%log}}';

@@ -69,6 +69,12 @@ $config = [
                 ],
             ],
         ],
+        // 'authManager' => [
+        //     'class' => 'yii\rbac\PhpManager', // 使用文件管理，就无法使用yii2-admin模块
+        // ]
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager', // 使用数据库管理配置文件
+        ]
     ],
     'params' => $params,
     'modules' => [
@@ -78,7 +84,10 @@ $config = [
             'class' => 'app\modules\ding\Ding',
 
         ],
-
+        'admin' => [
+            'class' => 'mdm\admin\Module',
+             'layout' => 'left-menu',//yii2-admin的导航菜单
+        ]
     ],
 ];
 

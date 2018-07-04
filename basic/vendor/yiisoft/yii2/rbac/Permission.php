@@ -8,6 +8,7 @@
 namespace yii\rbac;
 
 /**
+ * 权限对象
  * For more details and usage information on Permission, see the [guide article on security authorization](guide:security-authorization).
  *
  * @author Qiang Xue <qiang.xue@gmail.com>

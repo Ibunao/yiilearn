@@ -95,6 +95,7 @@ abstract class BaseManager extends Component implements ManagerInterface
     abstract protected function updateRule($name, $rule);
 
     /**
+     * 创建角色
      * @inheritdoc
      */
     public function createRole($name)
@@ -105,6 +106,7 @@ abstract class BaseManager extends Component implements ManagerInterface
     }
 
     /**
+     * 创建权限
      * @inheritdoc
      */
     public function createPermission($name)

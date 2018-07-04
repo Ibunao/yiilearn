@@ -99,6 +99,7 @@ class AccessControl extends ActionFilter
         if ($this->user !== false) {
             $this->user = Instance::ensure($this->user, User::className());
         }
+        // 生成规则对象
         foreach ($this->rules as $i => $rule) {
             if (is_array($rule)) {
                 $this->rules[$i] = Yii::createObject(array_merge($this->ruleConfig, $rule));
@@ -120,6 +121,7 @@ class AccessControl extends ActionFilter
         foreach ($this->rules as $rule) {
             if ($allow = $rule->allows($action, $user, $request)) {
                 return true;
+            // 如果拒绝访问，执行拒绝流程
             } elseif ($allow === false) {
                 if (isset($rule->denyCallback)) {
                     call_user_func($rule->denyCallback, $rule, $action);
@@ -148,6 +150,7 @@ class AccessControl extends ActionFilter
      */
     protected function denyAccess($user)
     {
+        // 跳转到登陆页
         if ($user !== false && $user->getIsGuest()) {
             $user->loginRequired();
         } else {

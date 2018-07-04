@@ -160,6 +160,7 @@ class AccessRule extends Component
     }
 
     /**
+     * 判断action是否属于当前rule
      * @param Action $action the action
      * @return bool whether the rule applies to the action
      */
@@ -213,9 +214,11 @@ class AccessRule extends Component
                     return true;
                 }
             } else {
+                // 
                 if (!isset($roleParams)) {
                     $roleParams = $this->roleParams instanceof Closure ? call_user_func($this->roleParams, $this) : $this->roleParams;
                 }
+                // 
                 if ($user->can($role, $roleParams)) {
                     return true;
                 }
@@ -260,6 +263,7 @@ class AccessRule extends Component
     }
 
     /**
+     * 匿名函数检查过滤
      * @param Action $action the action to be performed
      * @return bool whether the rule should be applied
      */

@@ -124,6 +124,7 @@ class ActionFilter extends Behavior
      */
     protected function getActionId($action)
     {
+        // ??? 没遇到过时module的
         if ($this->owner instanceof Module) {
             $mid = $this->owner->getUniqueId();
             $id = $action->getUniqueId();
@@ -138,6 +139,7 @@ class ActionFilter extends Behavior
     }
 
     /**
+     * 是否验证这个action
      * Returns a value indicating whether the filter is active for the given action.
      * @param Action $action the action being filtered
      * @return bool whether the filter is active for the given action.

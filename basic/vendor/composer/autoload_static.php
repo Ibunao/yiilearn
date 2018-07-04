@@ -29,6 +29,10 @@ class ComposerStaticInit4c8cf14541264db6f6c4584946aba683
         array (
             'phpDocumentor\\Reflection\\' => 25,
         ),
+        'm' => 
+        array (
+            'mdm\\admin\\' => 10,
+        ),
         'c' => 
         array (
             'cebe\\markdown\\' => 14,
@@ -109,6 +113,10 @@ class ComposerStaticInit4c8cf14541264db6f6c4584946aba683
             0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
             1 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
             2 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
+        ),
+        'mdm\\admin\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mdmsoft/yii2-admin',
         ),
         'cebe\\markdown\\' => 
         array (
@@ -700,7 +708,6 @@ class ComposerStaticInit4c8cf14541264db6f6c4584946aba683
 
     public static function getInitializer(ClassLoader $loader)
     {
-        //绑定匿名函数，可以使用类中的私有变量
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInit4c8cf14541264db6f6c4584946aba683::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInit4c8cf14541264db6f6c4584946aba683::$prefixDirsPsr4;

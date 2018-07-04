@@ -292,7 +292,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     }
 
     /**
-     * 使用新生成的一个更新当前会话ID,并将原来的session复制一份
+     * 使用新生成的一个更新当前会话ID,也会更新浏览器cookie的PHPSESSID值,并将原来的session复制一份
      * Updates the current session ID with a newly generated one.
      *
      * Please refer to <http://php.net/session_regenerate_id> for more details.

@@ -684,6 +684,7 @@ class PhpManager extends BaseManager
     }
 
     /**
+     * 添加权限
      * @inheritdoc
      */
     protected function addItem($item)
@@ -721,6 +722,7 @@ class PhpManager extends BaseManager
         $rules = $this->loadFromFile($this->ruleFile);
 
         foreach ($items as $name => $item) {
+            // 判断是权限还是角色类型
             $class = $item['type'] == Item::TYPE_PERMISSION ? Permission::className() : Role::className();
 
             $this->items[$name] = new $class([
@@ -798,6 +800,7 @@ class PhpManager extends BaseManager
     }
 
     /**
+     * 让脚本缓存失效
      * Invalidates precompiled script cache (such as OPCache or APC) for the given file.
      * @param string $file the file path.
      * @since 2.0.9
@@ -813,6 +816,7 @@ class PhpManager extends BaseManager
     }
 
     /**
+     * 保存
      * Saves items data into persistent storage.
      */
     protected function saveItems()

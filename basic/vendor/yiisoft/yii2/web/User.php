@@ -411,6 +411,7 @@ class User extends Component
     }
 
     /**
+     * 跳转到登陆页
      * Redirects the user browser to the login page.
      *
      * Before the redirection, the current URL (if it's not an AJAX url) will be kept as [[returnUrl]] so that

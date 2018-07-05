@@ -36,6 +36,7 @@ class Route extends \yii\base\Object
         foreach ($routes as $route) {
             try {
                 $r = explode('&', $route);
+                // 创建权限对象
                 $item = $manager->createPermission($this->getPermissionName($route));
                 if (count($r) > 1) {
                     $action = '/' . trim($r[0], '/');
@@ -172,6 +173,7 @@ class Route extends \yii\base\Object
     }
 
     /**
+     * 获取模块下的路由
      * Get list of application routes
      * @return array
      */
@@ -198,6 +200,7 @@ class Route extends \yii\base\Object
     }
 
     /**
+     * 获取模块下的路由
      * Get route(s) recursive
      * @param \yii\base\Module $module
      * @param array $result
@@ -267,6 +270,7 @@ class Route extends \yii\base\Object
     }
 
     /**
+     * 获取控制器下的action
      * Get list action of controller
      * @param mixed $type
      * @param string $id
@@ -290,6 +294,7 @@ class Route extends \yii\base\Object
     }
 
     /**
+     * 获取action
      * Get route of action
      * @param \yii\base\Controller $controller
      * @param array $result all controller action.

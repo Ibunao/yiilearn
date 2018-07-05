@@ -8,6 +8,7 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 
 /**
+ * 路由列表，权限
  * Description of RuleController
  *
  * @author Misbahul D Munir <misbahuldmunir@gmail.com>

@@ -10,6 +10,7 @@ namespace yii\rbac;
 use yii\base\Object;
 
 /**
+ * 权限和角色统称为条目吧
  * For more details and usage information on Item, see the [guide article on security authorization](guide:security-authorization).
  *
  * @author Qiang Xue <qiang.xue@gmail.com>

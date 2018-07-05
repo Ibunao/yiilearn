@@ -39,6 +39,7 @@ use yii\di\Instance;
 class DbManager extends BaseManager
 {
     /**
+     * 数据库组件id
      * @var Connection|array|string the DB connection object or the application component ID of the DB connection.
      * After the DbManager object is created, if you want to change this property, you should only assign it
      * with a DB connection object.
@@ -46,18 +47,22 @@ class DbManager extends BaseManager
      */
     public $db = 'db';
     /**
+     * 授权条目表 角色和权限
      * @var string the name of the table storing authorization items. Defaults to "auth_item".
      */
     public $itemTable = '{{%auth_item}}';
     /**
+     * 授权条目关系表
      * @var string the name of the table storing authorization item hierarchy. Defaults to "auth_item_child".
      */
     public $itemChildTable = '{{%auth_item_child}}';
     /**
+     * 授权条目指派用户关系表
      * @var string the name of the table storing authorization item assignments. Defaults to "auth_assignment".
      */
     public $assignmentTable = '{{%auth_assignment}}';
     /**
+     * 规则表
      * @var string the name of the table storing rules. Defaults to "auth_rule".
      */
     public $ruleTable = '{{%auth_rule}}';
@@ -219,6 +224,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 根据名字获取角色或权限
      * @inheritdoc
      */
     protected function getItem($name)
@@ -243,6 +249,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 数据库是否支持级联更新和删除，有外键会用联动删除
      * Returns a value indicating whether the database supports cascading update and delete.
      * The default implementation will return false for SQLite database and true for all other databases.
      * @return bool whether the database supports cascading update and delete.
@@ -253,6 +260,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 添加条目 权限或角色
      * @inheritdoc
      */
     protected function addItem($item)
@@ -266,10 +274,10 @@ class DbManager extends BaseManager
         }
         $this->db->createCommand()
             ->insert($this->itemTable, [
-                'name' => $item->name,
-                'type' => $item->type,
-                'description' => $item->description,
-                'rule_name' => $item->ruleName,
+                'name' => $item->name, // 名称
+                'type' => $item->type,// 类型
+                'description' => $item->description, // 描述
+                'rule_name' => $item->ruleName, // 规则名
                 'data' => $item->data === null ? null : serialize($item->data),
                 'created_at' => $item->createdAt,
                 'updated_at' => $item->updatedAt,
@@ -339,6 +347,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 添加规则
      * @inheritdoc
      */
     protected function addRule($rule)
@@ -619,6 +628,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 获取规则条目(role\permission)的规则
      * @inheritdoc
      */
     public function getRule($name)
@@ -635,6 +645,7 @@ class DbManager extends BaseManager
             return null;
         }
         $data = $row['data'];
+        // 是否是资源类型，读取资源
         if (is_resource($data)) {
             $data = stream_get_contents($data);
         }
@@ -724,22 +735,24 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 角色添加权限/子角色||权限添加子权限
      * @inheritdoc
      */
     public function addChild($parent, $child)
     {
+        // 父子名称不能相同
         if ($parent->name === $child->name) {
             throw new InvalidParamException("Cannot add '{$parent->name}' as a child of itself.");
         }
-
+        // 父如果是权限子不能是角色
         if ($parent instanceof Permission && $child instanceof Role) {
             throw new InvalidParamException('Cannot add a role as a child of a permission.');
         }
-
+        // 是否出现死循环
         if ($this->detectLoop($parent, $child)) {
             throw new InvalidCallException("Cannot add '{$child->name}' as a child of '{$parent->name}'. A loop has been detected.");
         }
-
+        // 创建
         $this->db->createCommand()
             ->insert($this->itemChildTable, ['parent' => $parent->name, 'child' => $child->name])
             ->execute();
@@ -789,6 +802,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 查询一个条目的子
      * @inheritdoc
      */
     public function getChildren($name)
@@ -807,6 +821,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 检查父子关系是否有死循环
      * Checks whether there is a loop in the authorization item hierarchy.
      * @param Item $parent the parent item
      * @param Item $child the child item to be added to the hierarchy
@@ -817,6 +832,7 @@ class DbManager extends BaseManager
         if ($child->name === $parent->name) {
             return true;
         }
+        // 检查子的后代是否包含父
         foreach ($this->getChildren($child->name) as $grandchild) {
             if ($this->detectLoop($parent, $grandchild)) {
                 return true;
@@ -826,6 +842,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 绑定人和角色/权限
      * @inheritdoc
      */
     public function assign($role, $userId)
@@ -875,6 +892,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 删除所有rbac数据
      * @inheritdoc
      */
     public function removeAll()
@@ -887,6 +905,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 删除所有权限
      * @inheritdoc
      */
     public function removeAllPermissions()
@@ -895,6 +914,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 删除所有角色
      * @inheritdoc
      */
     public function removeAllRoles()
@@ -903,11 +923,13 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 删除所有item
      * Removes all auth items of the specified type.
      * @param int $type the auth item type (either Item::TYPE_PERMISSION or Item::TYPE_ROLE)
      */
     protected function removeAllItems($type)
     {
+        // 如果不支持外键联动删除，逐个表删除
         if (!$this->supportsCascadeUpdate()) {
             $names = (new Query)
                 ->select(['name'])
@@ -917,10 +939,12 @@ class DbManager extends BaseManager
             if (empty($names)) {
                 return;
             }
+            // 删除子权限或父角色
             $key = $type == Item::TYPE_PERMISSION ? 'child' : 'parent';
             $this->db->createCommand()
                 ->delete($this->itemChildTable, [$key => $names])
                 ->execute();
+            // 删除用户绑定的role或权限
             $this->db->createCommand()
                 ->delete($this->assignmentTable, ['item_name' => $names])
                 ->execute();
@@ -933,6 +957,7 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 删除所有规则
      * @inheritdoc
      */
     public function removeAllRules()
@@ -949,13 +974,17 @@ class DbManager extends BaseManager
     }
 
     /**
+     * 删除所有角色绑定
      * @inheritdoc
      */
     public function removeAllAssignments()
     {
         $this->db->createCommand()->delete($this->assignmentTable)->execute();
     }
-
+    /**
+     * 删除缓存和内存数据
+     * @return [type] [description]
+     */
     public function invalidateCache()
     {
         if ($this->cache !== null) {

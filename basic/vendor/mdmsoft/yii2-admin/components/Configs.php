@@ -136,6 +136,7 @@ class Configs extends \yii\base\Object
     public static function instance()
     {
         if (self::$_instance === null) {
+            // 获取配置参数中mdm.admin.configs配置的参数(用户表、)
             $type = ArrayHelper::getValue(Yii::$app->params, 'mdm.admin.configs', []);
             if (is_array($type) && !isset($type['class'])) {
                 $type['class'] = static::className();

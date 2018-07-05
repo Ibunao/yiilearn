@@ -58,7 +58,9 @@ class AuthItem extends Model
     public function search($params)
     {
         /* @var \yii\rbac\Manager $authManager */
+        // 这里是配置文件配置的authManager组件  
         $authManager = Configs::authManager();
+        // 获取角色
         if ($this->type == Item::TYPE_ROLE) {
             $items = $authManager->getRoles();
         } else {

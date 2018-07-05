@@ -95,7 +95,7 @@ abstract class BaseManager extends Component implements ManagerInterface
     abstract protected function updateRule($name, $rule);
 
     /**
-     * 创建角色
+     * 创建角色对象
      * @inheritdoc
      */
     public function createRole($name)
@@ -106,7 +106,7 @@ abstract class BaseManager extends Component implements ManagerInterface
     }
 
     /**
-     * 创建权限
+     * 创建权限对象
      * @inheritdoc
      */
     public function createPermission($name)
@@ -117,17 +117,21 @@ abstract class BaseManager extends Component implements ManagerInterface
     }
 
     /**
+     * 添加
      * @inheritdoc
      */
     public function add($object)
     {
+        // 如果是条目类型 role或 permission
         if ($object instanceof Item) {
+            // 如果是有规则rule，保存规则
             if ($object->ruleName && $this->getRule($object->ruleName) === null) {
                 $rule = \Yii::createObject($object->ruleName);
                 $rule->name = $object->ruleName;
                 $this->addRule($rule);
             }
             return $this->addItem($object);
+        // 保存规则
         } elseif ($object instanceof Rule) {
             return $this->addRule($object);
         } else {
@@ -169,6 +173,7 @@ abstract class BaseManager extends Component implements ManagerInterface
     }
 
     /**
+     * 获取角色对象
      * @inheritdoc
      */
     public function getRole($name)

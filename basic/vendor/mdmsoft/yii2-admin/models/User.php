@@ -31,6 +31,7 @@ class User extends ActiveRecord implements IdentityInterface
     const STATUS_ACTIVE = 10;
 
     /**
+     * 用户表
      * @inheritdoc
      */
     public static function tableName()

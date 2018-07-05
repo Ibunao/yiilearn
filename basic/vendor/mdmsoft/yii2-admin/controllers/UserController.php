@@ -48,6 +48,7 @@ class UserController extends Controller
     public function beforeAction($action)
     {
         if (parent::beforeAction($action)) {
+            // 替换邮箱模板
             if (Yii::$app->has('mailer') && ($mailer = Yii::$app->getMailer()) instanceof BaseMailer) {
                 /* @var $mailer BaseMailer */
                 $this->_oldMailPath = $mailer->getViewPath();
@@ -63,6 +64,7 @@ class UserController extends Controller
      */
     public function afterAction($action, $result)
     {
+        // 替换会原来的邮件模板
         if ($this->_oldMailPath !== null) {
             Yii::$app->getMailer()->setViewPath($this->_oldMailPath);
         }

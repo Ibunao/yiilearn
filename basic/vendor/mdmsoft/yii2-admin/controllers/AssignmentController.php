@@ -30,9 +30,12 @@ class AssignmentController extends Controller
     public function init()
     {
         parent::init();
+        // 设置用户组件验证类
         if ($this->userClassName === null) {
             $this->userClassName = Yii::$app->getUser()->identityClass;
-            $this->userClassName = $this->userClassName ? : 'mdm\admin\models\User';
+            // $this->userClassName = $this->userClassName ? : 'mdm\admin\models\User';
+            // 直接用admin自带的吧
+            $this->userClassName = 'mdm\admin\models\User';
         }
     }
 

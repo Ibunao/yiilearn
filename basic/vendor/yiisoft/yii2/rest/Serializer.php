@@ -261,6 +261,7 @@ class Serializer extends Component
     }
 
     /**
+     * 格式化错误信息
      * Serializes the validation errors in a model.
      * @param Model $model
      * @return array the array representation of the errors

@@ -66,7 +66,6 @@ abstract class Cache extends Component implements \ArrayAccess
      */
     public $keyPrefix;
     /**
-     * 自定义的序列化方法
      * @var null|array|false the functions used to serialize and unserialize cached data. Defaults to null, meaning
      * using the default PHP `serialize()` and `unserialize()` functions. If you want to use some more efficient
      * serializer (e.g. [igbinary](http://pecl.php.net/package/igbinary)), you may configure this property with
@@ -75,6 +74,12 @@ abstract class Cache extends Component implements \ArrayAccess
      * cache component without any serialization or deserialization. You should not turn off serialization if
      * you are using [[Dependency|cache dependency]], because it relies on data serialization. Also, some
      * implementations of the cache can not correctly save and retrieve data different from a string type.
+     */
+    /**
+     * null：使用serialize和unserialize进行数据序列化
+     * false: 不使用序列化
+     * []: 0=> 自定义序列化方法， 1=>自定义反序列化方法
+     * @var [type]
      */
     public $serializer;
     /**
@@ -104,7 +109,7 @@ abstract class Cache extends Component implements \ArrayAccess
     public function buildKey($key)
     {
         if (is_string($key)) {
-            //做字母和数字字符检测 否全部为字母和(或)数字字符  and 字符的长度小=于32
+            //做字母和数字字符检测(是否全部为字母或数字字符) and 字符的长度小=于32
             $key = ctype_alnum($key) && StringHelper::byteLength($key) <= 32 ? $key : md5($key);
         } else {
             $key = md5(json_encode($key));
@@ -254,6 +259,7 @@ abstract class Cache extends Component implements \ArrayAccess
      */
     public function set($key, $value, $duration = null, $dependency = null)
     {
+        // 默认缓存时间，如果不配置则是永久
         if ($duration === null) {
             $duration = $this->defaultDuration;
         }

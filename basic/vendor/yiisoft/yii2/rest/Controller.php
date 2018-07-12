@@ -33,10 +33,12 @@ use yii\filters\VerbFilter;
 class Controller extends \yii\web\Controller
 {
     /**
+     * 格式化返回数据
      * @var string|array the configuration for creating the serializer that formats the response data.
      */
     public $serializer = 'yii\rest\Serializer';
     /**
+     * 关闭csrf认证
      * @inheritdoc
      */
     public $enableCsrfValidation = false;
@@ -48,6 +50,7 @@ class Controller extends \yii\web\Controller
     public function behaviors()
     {
         return [
+            // 设置相应格式和语言的
             'contentNegotiator' => [
                 'class' => ContentNegotiator::className(),
                 'formats' => [
@@ -55,13 +58,16 @@ class Controller extends \yii\web\Controller
                     'application/xml' => Response::FORMAT_XML,
                 ],
             ],
+            // 验证action的请求方法是否允许
             'verbFilter' => [
                 'class' => VerbFilter::className(),
                 'actions' => $this->verbs(),
             ],
+            // 验证过滤器
             'authenticator' => [
                 'class' => CompositeAuth::className(),
             ],
+            // 限制速率，需要配合user模块
             'rateLimiter' => [
                 'class' => RateLimiter::className(),
             ],
@@ -69,6 +75,7 @@ class Controller extends \yii\web\Controller
     }
 
     /**
+     * 格式化返回数据
      * @inheritdoc
      */
     public function afterAction($action, $result)
@@ -88,6 +95,7 @@ class Controller extends \yii\web\Controller
     }
 
     /**
+     * 格式化返回数据
      * Serializes the specified data.
      * The default implementation will create a serializer based on the configuration given by [[serializer]].
      * It then uses the serializer to serialize the given data.

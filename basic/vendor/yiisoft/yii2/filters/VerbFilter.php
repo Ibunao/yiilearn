@@ -95,7 +95,7 @@ class VerbFilter extends Behavior
         } else {
             return $event->isValid;
         }
-
+        // 验证请求方法是否是允许的
         $verb = Yii::$app->getRequest()->getMethod();
         $allowed = array_map('strtoupper', $verbs);
         if (!in_array($verb, $allowed)) {

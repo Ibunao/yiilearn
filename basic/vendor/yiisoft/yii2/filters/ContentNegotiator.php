@@ -170,6 +170,7 @@ class ContentNegotiator extends ActionFilter implements BootstrapInterface
      */
     protected function negotiateContentType($request, $response)
     {
+        // 如果请求中包含希望返回的格式，并且符合已规定的格式类型则设置相应格式
         if (!empty($this->formatParam) && ($format = $request->get($this->formatParam)) !== null) {
             if (in_array($format, $this->formats)) {
                 $response->format = $format;
@@ -180,7 +181,7 @@ class ContentNegotiator extends ActionFilter implements BootstrapInterface
                 throw new UnsupportedMediaTypeHttpException('The requested response format is not supported: ' . $format);
             }
         }
-
+        // 解析请求头里的格式
         $types = $request->getAcceptableContentTypes();
         if (empty($types)) {
             $types['*/*'] = [];

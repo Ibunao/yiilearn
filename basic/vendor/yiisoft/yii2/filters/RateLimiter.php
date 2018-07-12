@@ -80,6 +80,7 @@ class RateLimiter extends ActionFilter
      */
     public function beforeAction($action)
     {
+        // 需要配合user模块
         if ($this->user === null && Yii::$app->getUser()) {
             $this->user = Yii::$app->getUser()->getIdentity(false);
         }
@@ -107,15 +108,16 @@ class RateLimiter extends ActionFilter
     public function checkRateLimit($user, $request, $response, $action)
     {
         $current = time();
-
+        // 获取速率限制 最大数量 时间段
         list ($limit, $window) = $user->getRateLimit($request, $action);
+        // 允许请求数量 上次访问的时间戳
         list ($allowance, $timestamp) = $user->loadAllowance($request, $action);
-
+        // 允许访问的 加上 两次请求之间时间段要释放的请求量
         $allowance += (int) (($current - $timestamp) * $limit / $window);
         if ($allowance > $limit) {
             $allowance = $limit;
         }
-
+        // 请求量用完了
         if ($allowance < 1) {
             $user->saveAllowance($request, $action, 0, $current);
             $this->addRateLimitHeaders($response, $limit, 0, $window);
@@ -137,9 +139,9 @@ class RateLimiter extends ActionFilter
     {
         if ($this->enableRateLimitHeaders) {
             $response->getHeaders()
-                ->set('X-Rate-Limit-Limit', $limit)
-                ->set('X-Rate-Limit-Remaining', $remaining)
-                ->set('X-Rate-Limit-Reset', $reset);
+                ->set('X-Rate-Limit-Limit', $limit)// 同一个时间段所允许的请求的最大数目;
+                ->set('X-Rate-Limit-Remaining', $remaining)// 在当前时间段内剩余的请求的数量;
+                ->set('X-Rate-Limit-Reset', $reset);// 为了得到最大请求数所等待的秒数。
         }
     }
 }

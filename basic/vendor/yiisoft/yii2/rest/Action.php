@@ -70,6 +70,7 @@ class Action extends \yii\base\Action
     }
 
     /**
+     * 查询单个
      * Returns the data model based on the primary key given.
      * If the data model is not found, a 404 HTTP exception will be raised.
      * @param string $id the ID of the model to be loaded. If the model has a composite primary key,

@@ -40,15 +40,18 @@ use yii\web\ForbiddenHttpException;
 class ActiveController extends Controller
 {
     /**
+     * 模型类
      * @var string the model class name. This property must be set.
      */
     public $modelClass;
     /**
+     * 场景
      * @var string the scenario used for updating a model.
      * @see \yii\base\Model::scenarios()
      */
     public $updateScenario = Model::SCENARIO_DEFAULT;
     /**
+     * 场景
      * @var string the scenario used for creating a model.
      * @see \yii\base\Model::scenarios()
      */
@@ -106,6 +109,7 @@ class ActiveController extends Controller
     }
 
     /**
+     * 设置action允许的请求方法
      * @inheritdoc
      */
     protected function verbs()
@@ -120,6 +124,7 @@ class ActiveController extends Controller
     }
 
     /**
+     * 检查权限
      * Checks the privilege of the current user.
      *
      * This method should be overridden to check whether the current user has the privilege

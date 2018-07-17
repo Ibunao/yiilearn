@@ -183,7 +183,7 @@ class Connection extends Component
      */
     public $attributes;
     /**
-     * 存放当前Connection对象连接的pdo对象,第一个只会存放主库的
+     * 存放当前Connection对象连接的pdo对象
      * @var PDO the PHP PDO instance associated with this DB connection.
      * This property is mainly managed by [[open()]] and [[close()]] methods.
      * When a DB connection is active, this property will represent a PDO instance;
@@ -618,6 +618,7 @@ class Connection extends Component
                 throw new InvalidConfigException('None of the master DB servers is available.');
             }
         }
+        
         // 设置了dsn
         if (empty($this->dsn)) {
             throw new InvalidConfigException('Connection::dsn cannot be empty.');

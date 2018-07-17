@@ -439,6 +439,7 @@ class Command extends Component
     }
 
     /**
+     * 查询结果的第一列
      * Executes the SQL statement and returns the first column of the result.
      * This method is best used when only the first column of result (i.e. the first element in each row)
      * is needed for a query.
@@ -955,7 +956,7 @@ class Command extends Component
                     $fetchMode,
                     $this->db->dsn,
                     $this->db->username,
-                    $rawSql ?: $rawSql = $this->getRawSql(),
+                    $rawSql ?: $rawSql = $this->getRawSql(),// 这写法省力
                 ];
                 $result = $cache->get($cacheKey);
                 if (is_array($result) && isset($result[0])) {
@@ -968,6 +969,7 @@ class Command extends Component
         $this->prepare(true);
 
         try {
+            // 开启性能分析
             $profile and Yii::beginProfile($rawSql, 'yii\db\Command::query');
             // 执行准备查询
             $this->pdoStatement->execute();

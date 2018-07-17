@@ -68,6 +68,10 @@ trait ArrayableTrait
      * @return array the list of field names or field definitions.
      * @see toArray()
      */
+    /**
+     * 定义返回的字段
+     * @return [type] [description]
+     */
     public function fields()
     {
         $fields = array_keys(Yii::getObjectVars($this));
@@ -92,12 +96,17 @@ trait ArrayableTrait
      * @see toArray()
      * @see fields()
      */
+    /**
+     * 定义去除的字段
+     * @return [type] [description]
+     */
     public function extraFields()
     {
         return [];
     }
 
     /**
+     * 转换model为array
      * Converts the model into an array.
      *
      * This method will first identify which fields to be included in the resulting array by calling [[resolveFields()]].
@@ -119,7 +128,7 @@ trait ArrayableTrait
         foreach ($this->resolveFields($fields, $expand) as $field => $definition) {
             $data[$field] = is_string($definition) ? $this->$definition : call_user_func($definition, $this, $field);
         }
-
+        // restful 需要
         if ($this instanceof Linkable) {
             $data['_links'] = Link::serialize($this->getLinks());
         }
@@ -128,6 +137,7 @@ trait ArrayableTrait
     }
 
     /**
+     * 计算需要返回的字段
      * Determines which fields can be returned by [[toArray()]].
      * This method will check the requested fields against those declared in [[fields()]] and [[extraFields()]]
      * to determine which fields can be returned.

@@ -108,6 +108,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function __construct($modelClass, $config = [])
     {
+        // model的类名
         $this->modelClass = $modelClass;
         parent::__construct($config);
     }

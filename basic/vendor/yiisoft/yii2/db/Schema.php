@@ -38,6 +38,7 @@ use yii\caching\TagDependency;
 abstract class Schema extends Object
 {
     // 映射关系， 不同的数据库根据这些值映射成数据库自己的类型 ，见 QueryBuilder 中的$typeMap
+    // 来统一PHP与DBMS，以及各DBMS之间数据类型 的差异。这16种类型与DBMS无关，在具体到特定的DBMS时，Yii会自动转换成合适的数据库字段类型 
     // The following are the supported abstract column data types.
     const TYPE_PK = 'pk';
     const TYPE_UPK = 'upk';
@@ -496,7 +497,7 @@ abstract class Schema extends Object
     }
 
     /**
-     * pdo给值加引号，防止sql注入
+     * pdo/手工 给值加引号，防止sql注入
      * Quotes a string value for use in a query.
      * Note that if the parameter is not a string, it will be returned without change.
      * @param string $str string to be quoted

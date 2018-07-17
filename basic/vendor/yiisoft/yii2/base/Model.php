@@ -56,6 +56,7 @@ use yii\validators\Validator;
  */
 class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayable
 {
+    // 使用trait特性
     use ArrayableTrait;
 
     /**

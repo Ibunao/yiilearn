@@ -146,7 +146,7 @@ class BatchQueryResult extends Object implements \Iterator
     {
         if ($this->_dataReader === null) {
             $this->_dataReader = $this->query->createCommand($this->db)->query();
-            var_dump($this->_dataReader);exit;
+            // var_dump($this->_dataReader);exit;
         }
 
         $rows = [];

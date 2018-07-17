@@ -112,7 +112,9 @@ trait ActiveQueryTrait
     protected function createModels($rows)
     {
         $models = [];
+        // 如果使用了asArray() 返回数组
         if ($this->asArray) {
+            // 设置了indexBy
             if ($this->indexBy === null) {
                 return $rows;
             }

@@ -76,9 +76,6 @@ use yii\helpers\StringHelper;
  * @author Carsten Brandt <mail@cebe.cc>
  * @since 2.0
  */
-/**
- AR事务的研究并没有太多的文献，暂时也看不出特别的作用  
- */
 class ActiveRecord extends BaseActiveRecord
 {
     /**

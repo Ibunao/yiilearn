@@ -13,6 +13,9 @@ use yii\helpers\Url;
 use yii\helpers\VarDumper;
 use yii\helpers\StringHelper;
 use yii\helpers\Markdown;
+use app\models\Country;
+use app\models\Orders;
+use app\models\Customer;
 class TestController extends zController
 {
 	public $enableCsrfValidation = false;
@@ -22,6 +25,18 @@ class TestController extends zController
 	}
 	public function actionTest()
 	{
+		// $order = Orders::find()->one();
+		// $order->customer;
+		// var_dump($order);exit;
+
+		// SELECT * FROM `customer` WHERE `id` = 123
+		$customer = Customer::findOne(1);
+
+		// SELECT * FROM `order` WHERE `customer_id` = 123
+		// $orders 是由 Order 类组成的数组
+		$orders = $customer->orders;
+		var_dump($orders);exit;
+		// Country::find()->one();
 		// $ding = [1,2,3];
 		// //获取类名
 		// echo $this->className();//app\controllers\TestController

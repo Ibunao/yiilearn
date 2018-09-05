@@ -457,7 +457,7 @@ class Module extends ServiceLocator
 
             return $module === null ? null : $module->getModule(substr($id, $pos + 1), $load);
         }
-        // 配置的module模块
+        // 配置的module模块,或在module中配置的子模块
         if (isset($this->_modules[$id])) {
             if ($this->_modules[$id] instanceof Module) {
                 return $this->_modules[$id];

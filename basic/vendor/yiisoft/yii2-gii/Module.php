@@ -42,10 +42,12 @@ use yii\web\ForbiddenHttpException;
 class Module extends \yii\base\Module implements BootstrapInterface
 {
     /**
+     * 控制器命名空间
      * @inheritdoc
      */
     public $controllerNamespace = 'yii\gii\controllers';
     /**
+     * 允许的IP
      * @var array the list of IPs that are allowed to access this module.
      * Each array element represents a single IP filter which can be either an IP address
      * or an address with wildcard (e.g. 192.168.0.*) to represent a network segment.
@@ -80,16 +82,19 @@ class Module extends \yii\base\Module implements BootstrapInterface
 
 
     /**
+     * 
      * @inheritdoc
      */
     public function bootstrap($app)
     {
+        // 如果是web应用，添加路由规则用来访问gii
         if ($app instanceof \yii\web\Application) {
             $app->getUrlManager()->addRules([
                 ['class' => 'yii\web\UrlRule', 'pattern' => $this->id, 'route' => $this->id . '/default/index'],
                 ['class' => 'yii\web\UrlRule', 'pattern' => $this->id . '/<id:\w+>', 'route' => $this->id . '/default/view'],
                 ['class' => 'yii\web\UrlRule', 'pattern' => $this->id . '/<controller:[\w\-]+>/<action:[\w\-]+>', 'route' => $this->id . '/<controller>/<action>'],
             ], false);
+        // 使用终端生成
         } elseif ($app instanceof \yii\console\Application) {
             $app->controllerMap[$this->id] = [
                 'class' => 'yii\gii\console\GenerateController',
@@ -107,11 +112,11 @@ class Module extends \yii\base\Module implements BootstrapInterface
         if (!parent::beforeAction($action)) {
             return false;
         }
-
+        // 检查是否是允许的IP
         if (Yii::$app instanceof \yii\web\Application && !$this->checkAccess()) {
             throw new ForbiddenHttpException('You are not allowed to access this page.');
         }
-
+        // 创建核心生成器
         foreach (array_merge($this->coreGenerators(), $this->generators) as $id => $config) {
             if (is_object($config)) {
                 $this->generators[$id] = $config;

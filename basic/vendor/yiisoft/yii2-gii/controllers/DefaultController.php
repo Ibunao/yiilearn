@@ -34,7 +34,11 @@ class DefaultController extends Controller
 
         return $this->render('index');
     }
-
+    /**
+     * 显示各个生成器页面
+     * @param  [type] $id [description]
+     * @return [type]     [description]
+     */
     public function actionView($id)
     {
         $generator = $this->loadGenerator($id);

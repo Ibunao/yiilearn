@@ -555,12 +555,13 @@ class Module extends ServiceLocator
 
     /**
      * 执行路由的动作
+     * 
      * Runs a controller action specified by a route.
      * This method parses the specified route and creates the corresponding child module(s), controller and action
      * instances. It then calls [[Controller::runAction()]] to run the action with the given parameters.
      * If the route is empty, the method will use [[defaultRoute]].
-     * @param string $route the route that specifies the action.
-     * @param array $params the parameters to be passed to the action
+     * @param string $route the route that specifies the action. 路由
+     * @param array $params the parameters to be passed to the action action action的参数
      * @return mixed the result of the action.
      * @throws InvalidRouteException if the requested route cannot be resolved into an action successfully.
      */
@@ -571,7 +572,8 @@ class Module extends ServiceLocator
         if (is_array($parts)) {
             /* @var $controller Controller */
             list($controller, $actionID) = $parts;
-            // 暂用Yii::$app->controller
+            // 暂用Yii::$app->controller 
+            // 这种情况应该就是控制器里调用runAction
             $oldController = Yii::$app->controller;
             Yii::$app->controller = $controller;
             $result = $controller->runAction($actionID, $params);

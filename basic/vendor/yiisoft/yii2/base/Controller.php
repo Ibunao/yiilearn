@@ -180,6 +180,10 @@ class Controller extends Component implements ViewContextInterface
 
     /**
      * 运行路由指向的action
+     * 三种路由形式
+     * 1. 单独一个actionid    执行相对当前控制器下的action
+     * 2. controllerid/actionid 执行相对当前module
+     * 3. /module/controllerid/actionid 绝对路由
      * Runs a request specified in terms of a route.
      * The route can be either an ID of an action within this controller or a complete route consisting
      * of module IDs, controller ID and action ID. If the route starts with a slash '/', the parsing of
@@ -236,7 +240,7 @@ class Controller extends Component implements ViewContextInterface
         // 获取控制器中在 actions() 方法中配置的 Action对象
         $actionMap = $this->actions();
         if (isset($actionMap[$id])) {
-            // 创建
+            // 创建独立action对象
             return Yii::createObject($actionMap[$id], [$id, $this]);
         // 检查action是否符合规则，符合则创建
         } elseif (preg_match('/^[a-z0-9\\-_]+$/', $id) && strpos($id, '--') === false && trim($id, '-') === $id) {
@@ -246,7 +250,7 @@ class Controller extends Component implements ViewContextInterface
             if (method_exists($this, $methodName)) {
                 $method = new \ReflectionMethod($this, $methodName);
                 if ($method->isPublic() && $method->getName() === $methodName) {
-                    // 创建action 对象 可能是为了和 actions 中的统一吧
+                    // 创建action 对象 为了和 actions 中的统一
                     return new InlineAction($id, $this, $methodName);
                 }
             }

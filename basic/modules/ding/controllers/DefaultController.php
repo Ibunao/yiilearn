@@ -15,6 +15,7 @@ class DefaultController extends Controller
      */
     public function actionIndex()
     {
+        echo $this->module->getBasePath();exit;
         $this->layout = 'main';
         // return 'ding';
         return $this->render('index');

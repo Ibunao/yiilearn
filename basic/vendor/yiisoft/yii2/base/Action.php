@@ -87,7 +87,7 @@ class Action extends Component
         if (!method_exists($this, 'run')) {
             throw new InvalidConfigException(get_class($this) . ' must define a "run()" method.');
         }
-        // 请求参数
+        // 用到的请求参数
         $args = $this->controller->bindActionParams($this, $params);
         Yii::trace('Running action: ' . get_class($this) . '::run()', __METHOD__);
         if (Yii::$app->requestedParams === null) {

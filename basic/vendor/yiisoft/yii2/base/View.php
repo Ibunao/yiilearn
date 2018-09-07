@@ -185,7 +185,7 @@ class View extends Component
             } else {
                 throw new InvalidCallException("Unable to locate view file for view '$view': no active controller.");
             }
-        // 小部件widget或用到
+        // 相对位置
         } elseif ($context instanceof ViewContextInterface) {
             $file = $context->getViewPath() . DIRECTORY_SEPARATOR . $view;
         //??? 没用过 获取保存的view路径
@@ -372,6 +372,7 @@ class View extends Component
     }
 
     /**
+     * 部分不缓存的时候用到
      * debug Module的renderToolbar有用到这个
      * Renders dynamic content returned by the given PHP statements.
      * This method is mainly used together with content caching (fragment caching and page caching)
@@ -519,7 +520,7 @@ class View extends Component
     }
 
     /**
-     * 开始
+     * 开始，不晓得嵌套一个这有何用处
      * Marks the beginning of a page.
      */
     public function beginPage()

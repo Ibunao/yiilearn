@@ -75,6 +75,7 @@ class Module extends ServiceLocator
      */
     public $layout;
     /**
+     * 用id映射到指定的控制器，这可以实现跨module， 使用别的module的控制器
      * @var array mapping from controller ID to controller configurations.
      * Each name-value pair specifies the configuration of a single controller.
      * A controller configuration can be either a string or an array.
@@ -95,6 +96,7 @@ class Module extends ServiceLocator
      */
     public $controllerMap = [];
     /**
+     * module下控制器的目录
      * @var string the namespace that controller classes are in.
      * This namespace will be used to load controller classes by prepending it to the controller
      * class name.
@@ -108,6 +110,7 @@ class Module extends ServiceLocator
      */
     public $controllerNamespace;
     /**
+     * 默认的路由
      * @var string the default route of this module. Defaults to `default`.
      * The route may consist of child module ID, controller ID, and/or action ID.
      * For example, `help`, `post/create`, `admin/post/create`.
@@ -205,7 +208,7 @@ class Module extends ServiceLocator
      */
     public function init()
     {
-        // 定义控制器的命名空间
+        // 如果没定以控制器目录，则根据module类名生成默认的目录
         if ($this->controllerNamespace === null) {
             $class = get_class($this);
             if (($pos = strrpos($class, '\\')) !== false) {
@@ -235,11 +238,11 @@ class Module extends ServiceLocator
     {
         $class = new \ReflectionClass($this);
         // 获取的是调用者所在文件的路径
-        // /Users/echo-ding/Documents/ding/www/yii/learn/yiilearn/basic/vendor/yiisoft/yii2/web
+        // D:\ding\wamp64\www\learn\yii\yiilearn\basic\modules\ding
         $basePath = dirname($class->getFileName());
         // 获取的是该文件的绝对路径
         // /Users/echo-ding/Documents/ding/www/yii/learn/yiilearn/basic/vendor/yiisoft/yii2/base
-        $basePath = __DIR__;
+        // echo $basePath = __DIR__;
 
         if ($this->_basePath === null) {
             // 反射获取文件目录

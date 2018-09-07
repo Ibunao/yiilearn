@@ -206,10 +206,12 @@ class Module extends \yii\base\Module implements BootstrapInterface
     }
 
     /**
+     * 当使用debug模块的时候之前会调用
      * @inheritdoc
      */
     public function beforeAction($action)
     {
+        // 请求debug模块将不会记录日志
         // var_dump($action->id);exit;
         if (!$this->enableDebugLogs) {
             foreach (Yii::$app->getLog()->targets as $target) {
@@ -220,7 +222,7 @@ class Module extends \yii\base\Module implements BootstrapInterface
         if (!parent::beforeAction($action)) {
             return false;
         }
-
+        // 请求debug模块解绑事件，因为不用渲染右下角小图标
         // do not display debug toolbar when in debug view mode
         Yii::$app->getView()->off(View::EVENT_END_BODY, [$this, 'renderToolbar']);
         Yii::$app->getResponse()->off(Response::EVENT_AFTER_PREPARE, [$this, 'setDebugHeaders']);

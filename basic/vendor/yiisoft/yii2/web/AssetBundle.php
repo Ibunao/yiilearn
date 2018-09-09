@@ -203,6 +203,7 @@ class AssetBundle extends Object
                         $this->js[$i] = $js;
                     }
                 } elseif (Url::isRelative($js)) {
+                    // 执行终端命令，进行代码类型转换 如less 转换成css  
                     $this->js[$i] = $converter->convert($js, $this->basePath);
                 }
             }

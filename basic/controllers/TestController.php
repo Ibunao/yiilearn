@@ -233,4 +233,18 @@ class TestController extends zController
 		// var_dump($app, $web);exit;
 		return $this->render('index');
 	}
+	public function actionSecurity()
+	{
+		echo $token = Yii::$app->security->maskToken("123456");
+		echo '<br/>';
+		echo $token1 = Yii::$app->security->maskToken("123456");
+		echo '<br/>';
+		echo Yii::$app->security->unmaskToken($token);// 结果为 123456
+		echo '<br/>';
+		echo Yii::$app->security->unmaskToken($token1);// 结果为 123456
+		echo "<br/>";
+		var_dump(Yii::$app->security->unmaskToken('VzcVtjxedQ8Doj1fWGmWWMmRNlxut3HYPKOlwhPMlGRFYEOeUG-jqSmtEXlTxJYkgngE9461iIFKN35PYIwUnw==')  == '%12WV%28l1%D6%A6%2A%0F%2C%26%0B%AD%00%7CK%E92%AB%E0%02%F9Yv%94%DB%8Ds%40%80%FB');// 结果为 123456
+		var_dump($token = Yii::$app->request->loadCsrfToken());
+		$ding['ran'];
+	}
 }

@@ -382,7 +382,7 @@ class Security extends Component
     }
 
     /**
-     * 加密数据
+     * 加密数据 防篡改
      * 写cookie的时候使用 和 validateData 配对使用
      * 
      * Prefixes data with a keyed hash value so that it can later be detected if it is tampered.
@@ -729,6 +729,9 @@ class Security extends Component
     }
 
     /**
+     * 生成token 提供一个源token可以生成一些列加密的token，可以通过生成的token逆转出来源token  
+     * csrf使用这个  
+     * 和 unmaskToken 配对使用
      * Masks a token to make it uncompressible.
      * Applies a random mask to the token and prepends the mask used to the result making the string always unique.
      * Used to mitigate BREACH attack by randomizing how token is outputted on each request.
@@ -744,8 +747,9 @@ class Security extends Component
     }
 
     /**
+     * 解码
      * Unmasks a token previously masked by `maskToken`.
-     * @param string $maskedToken A masked token.
+     * @param string $maskedToken A masked token. 加密的token
      * @return string An unmasked token, or an empty string in case of token format is invalid.
      * @since 2.0.12
      */

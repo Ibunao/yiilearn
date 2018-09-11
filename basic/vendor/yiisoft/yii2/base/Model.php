@@ -732,7 +732,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
     {
         $values = [];
         if ($names === null) {
-            // 返回左右的public属性
+            // 返回所有的public属性
             $names = $this->attributes();
         }
         foreach ($names as $name) {
@@ -748,7 +748,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
 
     /**
      * 将数据赋值到模型
-     * 
+     * load 是对是对她的封装，默认只赋值给安全属性值
      * Sets the attribute values in a massive way.
      * @param array $values attribute values (name => value) to be assigned to the model.
      * @param bool $safeOnly whether the assignments should only be done to the safe attributes.
@@ -770,7 +770,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
             foreach ($values as $name => $value) {
                 if (isset($attributes[$name])) {
                     $this->$name = $value;
-                // 给非安全的属性赋值，debug模式下报错
+                // 有人尝试给非安全的属性赋值，debug模式下报错
                 } elseif ($safeOnly) {
                     $this->onUnsafeAttribute($name, $value);
                 }
@@ -832,7 +832,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
         }
         $attributes = [];
         foreach ($scenarios[$scenario] as $attribute) {
-            // 不是以 ! 开头的属性
+            // 不是以 ! 开头的属性, 以 ! 开头的非安全属性，只验证不赋值
             if ($attribute[0] !== '!' && !in_array('!' . $attribute, $scenarios[$scenario])) {
                 $attributes[] = $attribute;
             }

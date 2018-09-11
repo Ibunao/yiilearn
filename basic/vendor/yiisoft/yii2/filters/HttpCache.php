@@ -126,6 +126,7 @@ class HttpCache extends ActionFilter
 
         $lastModified = $etag = null;
         if ($this->lastModified !== null) {
+            // 获取计算后的时间戳
             $lastModified = call_user_func($this->lastModified, $action, $this->params);
         }
         if ($this->etagSeed !== null) {
@@ -165,6 +166,9 @@ class HttpCache extends ActionFilter
      */
     protected function validateCache($lastModified, $etag)
     {
+        /**
+         *  为了遵循 RFC 7232（HTTP 1.1 协议）， 如果同时配置了 ETag 和 Last-Modified 头，HttpCache 将会同时发送它们。 并且如果客户端同时发送 If-None-Match 头和 If-Modified-Since 头， 则只有前者会被接受。
+         */
         if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
             // HTTP_IF_NONE_MATCH takes precedence over HTTP_IF_MODIFIED_SINCE
             // http://tools.ietf.org/html/rfc7232#section-3.3

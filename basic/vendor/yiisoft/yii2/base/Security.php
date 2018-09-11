@@ -565,7 +565,7 @@ class Security extends Component
     }
 
     /**
-     * 生成指定长度的随机字符串
+     * 生成指定长度的随机字符串  这个令牌是独一无二且难以猜测的
      * Generates a random string of specified length.
      * The string generated matches [A-Za-z0-9_-]+ and is transparent to URL-encoding.
      *

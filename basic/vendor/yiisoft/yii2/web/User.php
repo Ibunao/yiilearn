@@ -648,7 +648,7 @@ class User extends Component
         $session = Yii::$app->getSession();
         //??? 不是test环境
         if (!YII_ENV_TEST) {
-            // 如果之前session已经开启，丢弃，重新生成sessionid
+            // 如果之前session已经开启，重新生成sessionid
             $session->regenerateID(true);
         }
         $session->remove($this->idParam);

@@ -235,7 +235,7 @@ class Validator extends Component
             if (isset(static::$builtInValidators[$type])) {
                 $type = static::$builtInValidators[$type];
             }
-            // 自定义的验证器，需要有类名
+            // 如果是配置数组的格式
             if (is_array($type)) {
                 $params = array_merge($type, $params);
             // 自带的验证器
@@ -282,11 +282,11 @@ class Validator extends Component
         }
         // 
         foreach ($attributes as $attribute) {
-            // 是否跳过 
+            // 配置的验证已有错误是否跳过后续验证 
+            // 配置的属性为空值是否跳过 
             $skip = $this->skipOnError && $model->hasErrors($attribute)
                 || $this->skipOnEmpty && $this->isEmpty($model->$attribute);
             if (!$skip) {
-                //??? when 到底是什么，没用过啊
                 if ($this->when === null || call_user_func($this->when, $model, $attribute)) {
                     $this->validateAttribute($model, $attribute);
                 }

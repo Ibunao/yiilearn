@@ -116,10 +116,10 @@ trait ArrayableTrait
      * If the model implements the [[Linkable]] interface, the resulting array will also have a `_link` element
      * which refers to a list of links as specified by the interface.
      *
-     * @param array $fields the fields being requested. If empty, all fields as specified by [[fields()]] will be returned.
-     * @param array $expand the additional fields being requested for exporting. Only fields declared in [[extraFields()]]
+     * @param array $fields the fields being requested. If empty, all fields as specified by [[fields()]] will be returned. 将要返回的字段
+     * @param array $expand the additional fields being requested for exporting. Only fields declared in [[extraFields()]] 排除的字段
      * will be considered.
-     * @param bool $recursive whether to recursively return array representation of embedded objects.
+     * @param bool $recursive whether to recursively return array representation of embedded objects. 
      * @return array the array representation of the object
      */
     public function toArray(array $fields = [], array $expand = [], $recursive = true)

@@ -126,7 +126,7 @@ abstract class Target extends Component
             if (($context = $this->getContextMessage()) !== '') {
                 $this->messages[] = [$context, Logger::LEVEL_INFO, 'application', YII_BEGIN_TIME];
             }
-            // 保证没写入完成，不会再写，类似于加锁了
+            // 如果值太小，而记录有很快的话，应该会出现并发问题
             // set exportInterval to 0 to avoid triggering export again while exporting
             $oldExportInterval = $this->exportInterval;
             $this->exportInterval = 0;
@@ -229,9 +229,9 @@ abstract class Target extends Component
      * @param  [type]  $messages   记录的日志消息数组
      * 日志信息     等级   种类     时间      文件追溯  内存
      * [[$message, $level, $category, $time, $traces, memory_get_usage()]]
-     * @param  integer $levels     记录的级别
-     * @param  array   $categories 记录的类型
-     * @param  array   $except     不记录的
+     * @param  integer $levels     配置的记录的级别
+     * @param  array   $categories 配置的记录的类型
+     * @param  array   $except     配置的不记录的
      * @return [type]              [description]
      */
     public static function filterMessages($messages, $levels = 0, $categories = [], $except = [])

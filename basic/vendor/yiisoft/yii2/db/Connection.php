@@ -689,6 +689,7 @@ class Connection extends Component
             } elseif (($pos = strpos($this->dsn, ':')) !== false) {
                 $driver = strtolower(substr($this->dsn, 0, $pos));
             }
+            // 兼容sqlserver
             if (isset($driver)) {
                 if ($driver === 'mssql' || $driver === 'dblib') {
                     $pdoClass = 'yii\db\mssql\PDO';
@@ -707,7 +708,7 @@ class Connection extends Component
     }
 
     /**
-     * 初始化
+     * 初始化, 初始化pdo
      * Initializes the DB connection.
      * This method is invoked right after the DB connection is established.
      * The default implementation turns on `PDO::ATTR_EMULATE_PREPARES`

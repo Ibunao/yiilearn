@@ -74,6 +74,16 @@ class ActiveController extends Controller
      */
     public function actions()
     {
+        /**
+         * 下面是请求方法对应action
+        'PUT,PATCH {id}' => 'update',
+        'DELETE {id}' => 'delete',
+        'GET,HEAD {id}' => 'view',
+        'POST' => 'create',
+        'GET,HEAD' => 'index',
+        '{id}' => 'options',
+        '' => 'options',
+         */
         return [
             'index' => [
                 'class' => 'yii\rest\IndexAction',

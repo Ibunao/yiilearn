@@ -62,14 +62,19 @@ use yii\web\UrlRuleInterface;
 class UrlRule extends CompositeUrlRule
 {
     /**
+     * 设置前缀，通常用来指定module
      * @var string the common prefix string shared by all patterns.
      */
     public $prefix;
     /**
+     * 设置后缀名
      * @var string the suffix that will be assigned to [[\yii\web\UrlRule::suffix]] for every generated rule.
      */
     public $suffix;
     /**
+     * 指定控制器
+     * 可以用别名形式  
+     * ['u' => 'user'] 访问user时用u即可
      * @var string|array the controller ID (e.g. `user`, `post-comment`) that the rules in this composite rule
      * are dealing with. It should be prefixed with the module ID if the controller is within a module (e.g. `admin/user`).
      *
@@ -83,18 +88,22 @@ class UrlRule extends CompositeUrlRule
      */
     public $controller;
     /**
+     * 只接收的action
      * @var array list of acceptable actions. If not empty, only the actions within this array
      * will have the corresponding URL rules created.
      * @see patterns
      */
     public $only = [];
     /**
+     * 不接受的action
      * @var array list of actions that should be excluded. Any action found in this array
      * will NOT have its URL rules created.
      * @see patterns
      */
     public $except = [];
     /**
+     * 自定义特别的匹配
+     * 如： ['GET ding' => 'ran'] 如果get 方法请求ding 将会执行 ran方法
      * @var array patterns for supporting extra actions in addition to those listed in [[patterns]].
      * The keys are the patterns and the values are the corresponding action IDs.
      * These extra patterns will take precedence over [[patterns]].
@@ -109,6 +118,7 @@ class UrlRule extends CompositeUrlRule
         '{id}' => '<id:\\d[\\d,]*>',
     ];
     /**
+     * 规则 => action
      * @var array list of possible patterns and the corresponding actions for creating the URL rules.
      * The keys are the patterns and the values are the corresponding actions.
      * The format of patterns is `Verbs Pattern`, where `Verbs` stands for a list of HTTP verbs separated
@@ -132,6 +142,7 @@ class UrlRule extends CompositeUrlRule
         'class' => 'yii\web\UrlRule',
     ];
     /**
+     * 如果没指定
      * @var bool whether to automatically pluralize the URL names for controllers.
      * If true, a controller ID will appear in plural form in URLs. For example, `user` controller
      * will appear as `users` in URLs.
@@ -145,12 +156,14 @@ class UrlRule extends CompositeUrlRule
      */
     public function init()
     {
+        // 必须配置controller
         if (empty($this->controller)) {
             throw new InvalidConfigException('"controller" must be set.');
         }
 
         $controllers = [];
         foreach ((array) $this->controller as $urlName => $controller) {
+            // 如果没设置别名，使用控制器id的复数形式
             if (is_int($urlName)) {
                 $urlName = $this->pluralize ? Inflector::pluralize($controller) : $controller;
             }
@@ -164,10 +177,12 @@ class UrlRule extends CompositeUrlRule
     }
 
     /**
+     * 创建规则
      * @inheritdoc
      */
     protected function createRules()
     {
+
         $only = array_flip($this->only);
         $except = array_flip($this->except);
         $patterns = $this->extraPatterns + $this->patterns;
@@ -175,6 +190,7 @@ class UrlRule extends CompositeUrlRule
         foreach ($this->controller as $urlName => $controller) {
             $prefix = trim($this->prefix . '/' . $urlName, '/');
             foreach ($patterns as $pattern => $action) {
+                // 符合配置的才添加到规则
                 if (!isset($except[$action]) && (empty($only) || isset($only[$action]))) {
                     $rules[$urlName][] = $this->createRule($pattern, $prefix, $controller . '/' . $action);
                 }
@@ -194,7 +210,20 @@ class UrlRule extends CompositeUrlRule
     protected function createRule($pattern, $prefix, $action)
     {
         $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
+        // 正则匹配
         if (preg_match("/^((?:($verbs),)*($verbs))(?:\\s+(.*))?$/", $pattern, $matches)) {
+            /**
+             * verbs 请求的方法
+             * $pattern 要匹配的action  
+             * 例1 
+             * PUT,PATCH {id}
+             * varbs = ['PUT', 'PATCH']
+             * $pattern = '{id}'
+             * 例2
+             * GET search
+             * varbs = ['GET']
+             * $pattern = 'search'
+             */
             $verbs = explode(',', $matches[1]);
             $pattern = isset($matches[4]) ? $matches[4] : '';
         } else {
@@ -203,9 +232,11 @@ class UrlRule extends CompositeUrlRule
 
         $config = $this->ruleConfig;
         $config['verb'] = $verbs;
+        // 替换 '{id}' => '<id:\\d[\\d,]*>',
         $config['pattern'] = rtrim($prefix . '/' . strtr($pattern, $this->tokens), '/');
         $config['route'] = $action;
         if (!empty($verbs) && !in_array('GET', $verbs)) {
+            // 指定url规则的mode属性
             $config['mode'] = WebUrlRule::PARSING_ONLY;
         }
         $config['suffix'] = $this->suffix;
@@ -214,6 +245,7 @@ class UrlRule extends CompositeUrlRule
     }
 
     /**
+     * 解析请求
      * @inheritdoc
      */
     public function parseRequest($manager, $request)

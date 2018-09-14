@@ -328,7 +328,7 @@ class UrlManager extends Component
             // 获取路径信息
             $pathInfo = $request->getPathInfo();
             $normalized = false;
-            // 标准化url 标准化配置，没用过
+            // 标准化url 标准化配置
             if ($this->normalizer !== false) {
                 $pathInfo = $this->normalizer->normalizePathInfo($pathInfo, $suffix, $normalized);
             }

@@ -63,7 +63,7 @@ class Command extends Component
      */
     public $db;
     /**
-     * 关联的pdo对象
+     * 关联的pdo预处理对象，已经预处理过sql的pdo
      * @var \PDOStatement the PDOStatement object that this command is associated with
      */
     public $pdoStatement;
@@ -160,7 +160,7 @@ class Command extends Component
         if ($sql !== $this->_sql) {
             // 更改执行状态为取消执行
             $this->cancel();
-            // 加反引号
+            // 加反引号,把yii自定义的格式替换成规范格式
             $this->_sql = $this->db->quoteSql($sql);
             $this->_pendingParams = [];
             $this->params = [];
@@ -230,6 +230,7 @@ class Command extends Component
      */
     public function prepare($forRead = null)
     {
+        // pdo预处理对象
         if ($this->pdoStatement) {
             $this->bindPendingParams();
             return;
@@ -251,6 +252,7 @@ class Command extends Component
         }
 
         try {
+            // pdo 预处理sql
             $this->pdoStatement = $pdo->prepare($sql);
             $this->bindPendingParams();
         } catch (\Exception $e) {
@@ -314,6 +316,7 @@ class Command extends Component
     protected function bindPendingParams()
     {
         foreach ($this->_pendingParams as $name => $value) {
+            // 绑定字段 的值 和 格式
             $this->pdoStatement->bindValue($name, $value[0], $value[1]);
         }
         $this->_pendingParams = [];
@@ -883,7 +886,7 @@ class Command extends Component
         if ($sql == '') {
             return 0;
         }
-
+        // 预处理
         $this->prepare(false);
 
         try {

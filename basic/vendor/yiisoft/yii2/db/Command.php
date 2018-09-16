@@ -978,6 +978,7 @@ class Command extends Component
             $this->pdoStatement->execute();
 
             if ($method === '') {
+                // query方法，暂时不直接获取结果，相当于返回了一个pdo处理过的sql的pdo对象
                 $result = new DataReader($this);
             } else {
                 if ($fetchMode === null) {

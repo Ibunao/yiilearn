@@ -131,6 +131,7 @@ trait ActiveQueryTrait
             $class = $this->modelClass;
             if ($this->indexBy === null) {
                 foreach ($rows as $row) {
+                    // 创建AR对象并赋值
                     $model = $class::instantiate($row);
                     $modelClass = get_class($model);
                     $modelClass::populateRecord($model, $row);

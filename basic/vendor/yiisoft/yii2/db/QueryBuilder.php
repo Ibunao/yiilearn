@@ -257,6 +257,7 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
+     * 构造批量插入sql
      * Generates a batch INSERT SQL statement.
      * For example,
      *
@@ -322,7 +323,7 @@ class QueryBuilder extends \yii\base\Object
     }
 
     /**
-     * 更新语句
+     * 构造更新语句
      * Creates an UPDATE SQL statement.
      * For example,
      *

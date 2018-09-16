@@ -206,8 +206,9 @@ class ActiveQuery extends Query implements ActiveQueryInterface
         if (empty($rows)) {
             return [];
         }
-
+        // 将结果创建成对象
         $models = $this->createModels($rows);
+        // 如果有连接，查出的生成的AR对象就会有重复的值，删除重复的AR对象
         if (!empty($this->join) && $this->indexBy === null) {
             $models = $this->removeDuplicatedModels($models);
         }

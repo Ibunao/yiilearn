@@ -1556,7 +1556,7 @@ Array
         if ($clientSuppliedToken !== null) {
             return $this->validateCsrfTokenInternal($clientSuppliedToken, $trueToken);
         }
-        // 如果post请求将会进行验证
+        // 获取请求数据或者header头中的数据进行验证
         return $this->validateCsrfTokenInternal($this->getBodyParam($this->csrfParam), $trueToken)
             || $this->validateCsrfTokenInternal($this->getCsrfTokenFromHeader(), $trueToken);
     }

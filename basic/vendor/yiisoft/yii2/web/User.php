@@ -102,7 +102,7 @@ class User extends Component
      */
     public $identityCookie = ['name' => '_identity', 'httpOnly' => true];
     /**
-     * 用户允许登陆时长，存在session，每次登陆会重新更新这个事件
+     * 用户允许登陆时长，存在session，每次登陆会重新更新这个时间
      * @var int the number of seconds in which the user will be logged out automatically if he
      * remains inactive. If this property is not set, the user will be logged out after
      * the current session expires (c.f. [[Session::timeout]]).
@@ -190,6 +190,7 @@ class User extends Component
      */
     public function getIdentity($autoRenew = true)
     {
+        // 全等于false，也就是初始值时
         if ($this->_identity === false) {
             // 如果使用了session，允许了自动登陆
             if ($this->enableSession && $autoRenew) {
@@ -253,6 +254,7 @@ class User extends Component
      */
     public function login(IdentityInterface $identity, $duration = 0)
     {
+        // 登录之前发送事件
         if ($this->beforeLogin($identity, false, $duration)) {
             // 切换验证信息，添加cookie
             $this->switchIdentity($identity, $duration);
@@ -617,7 +619,7 @@ class User extends Component
     }
 
     /**
-     * 登陆
+     * 登陆/退出
      * Switches to a new identity for the current user.
      *
      * When [[enableSession]] is true, this method may use session and/or cookie to store the user identity information,
@@ -646,17 +648,18 @@ class User extends Component
         }
 
         $session = Yii::$app->getSession();
-        //??? 不是test环境
+        //??? 不是test环境, 为什么要换session_id???
         if (!YII_ENV_TEST) {
             // 如果之前session已经开启，重新生成sessionid
             $session->regenerateID(true);
         }
         $session->remove($this->idParam);
         $session->remove($this->authTimeoutParam);
-
+        // 如果是登录
         if ($identity) {
             // 设置身份id
             $session->set($this->idParam, $identity->getId());
+            // 设置超时时间
             if ($this->authTimeout !== null) {
                 $session->set($this->authTimeoutParam, time() + $this->authTimeout);
             }

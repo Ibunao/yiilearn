@@ -124,7 +124,6 @@ class ActionFilter extends Behavior
      */
     protected function getActionId($action)
     {
-        // ??? 没遇到过时module的
         if ($this->owner instanceof Module) {
             $mid = $this->owner->getUniqueId();
             $id = $action->getUniqueId();

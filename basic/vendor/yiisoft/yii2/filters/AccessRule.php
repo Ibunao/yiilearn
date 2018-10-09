@@ -214,11 +214,11 @@ class AccessRule extends Component
                     return true;
                 }
             } else {
-                // 
+                // 自定义的验证方法
                 if (!isset($roleParams)) {
                     $roleParams = $this->roleParams instanceof Closure ? call_user_func($this->roleParams, $this) : $this->roleParams;
                 }
-                // 
+                // rbac验证
                 if ($user->can($role, $roleParams)) {
                     return true;
                 }

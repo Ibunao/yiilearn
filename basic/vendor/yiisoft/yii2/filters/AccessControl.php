@@ -96,6 +96,7 @@ class AccessControl extends ActionFilter
     public function init()
     {
         parent::init();
+        // 获取user组件
         if ($this->user !== false) {
             $this->user = Instance::ensure($this->user, User::className());
         }

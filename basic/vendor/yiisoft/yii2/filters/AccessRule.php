@@ -214,7 +214,7 @@ class AccessRule extends Component
                     return true;
                 }
             } else {
-                // 自定义的验证方法
+                // 角色参数
                 if (!isset($roleParams)) {
                     $roleParams = $this->roleParams instanceof Closure ? call_user_func($this->roleParams, $this) : $this->roleParams;
                 }

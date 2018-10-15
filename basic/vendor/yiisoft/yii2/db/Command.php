@@ -502,7 +502,7 @@ class Command extends Component
      * Also note that the created command is not executed until [[execute()]] is called.
      *
      * @param string $table the table that new rows will be inserted into.
-     * @param array $columns the column names
+     * @param array $columns the column anmes
      * @param array $rows the rows to be batch inserted into the table
      * @return $this the command object itself
      */
@@ -897,7 +897,7 @@ class Command extends Component
             $n = $this->pdoStatement->rowCount();
 
             $profile and Yii::endProfile($rawSql, __METHOD__);
-
+            // 刷新改过表结构的
             $this->refreshTableSchema();
 
             return $n;

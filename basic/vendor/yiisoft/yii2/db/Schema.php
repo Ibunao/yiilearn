@@ -309,7 +309,7 @@ abstract class Schema extends Object
     }
 
     /**
-     * 刷新
+     * 删除表的结构缓存
      * Refreshes the particular table schema.
      * This method cleans up cached table schema so that it can be re-created later
      * to reflect the database schema change.

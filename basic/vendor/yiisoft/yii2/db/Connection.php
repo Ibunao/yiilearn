@@ -192,7 +192,7 @@ class Connection extends Component
      */
     public $pdo;
     /**
-     * 是否允许schema缓存
+     * 是否允许schema缓存,也就是表结构信息等
      * @var bool whether to enable schema caching.
      * Note that in order to enable truly schema caching, a valid cache component as specified
      * by [[schemaCache]] must be enabled and [[enableSchemaCache]] must be set true.
@@ -209,7 +209,7 @@ class Connection extends Component
      */
     public $schemaCacheDuration = 3600;
     /**
-     * 不允许缓存的表元素
+     * 不允许缓存表元素的表
      * @var array list of tables whose metadata should NOT be cached. Defaults to empty array.
      * The table names may contain schema prefix, if any. Do not quote the table names.
      * @see enableSchemaCache
@@ -233,6 +233,7 @@ class Connection extends Component
      */
     public $enableQueryCache = true;
     /**
+     * 默认的缓存时间
      * @var int the default number of seconds that query results can remain valid in cache.
      * Defaults to 3600, meaning 3600 seconds, or one hour. Use 0 to indicate that the cached data will never expire.
      * The value of this property will be used when [[cache()]] is called without a cache duration.
@@ -409,6 +410,7 @@ class Connection extends Component
      */
     public $enableLogging = true;
     /**
+     * 是否开启性能分析
      * @var bool whether to enable profiling of database queries. Defaults to true.
      * You may want to disable this option in a production environment to gain performance
      * if you do not need the information being logged.
@@ -494,6 +496,7 @@ class Connection extends Component
     {
         $this->_queryCacheInfo[] = [$duration === null ? $this->queryCacheDuration : $duration, $dependency];
         try {
+            // 回调函数用用要执行的sql,在执行的时候会获取_queryCacheInfo的数据
             $result = call_user_func($callable, $this);
             array_pop($this->_queryCacheInfo);
             return $result;
@@ -507,7 +510,7 @@ class Connection extends Component
     }
 
     /**
-     * 不使用缓存，什么情况下用??? 目前来看不使用cache()就不会用缓存啊
+     * 不使用缓存，在使用缓存时额外不需要缓存的
      * Disables query cache temporarily.
      * Queries performed within the callable will not use query cache at all. For example,
      *

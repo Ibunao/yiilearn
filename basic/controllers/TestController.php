@@ -19,10 +19,10 @@ use app\models\Customer;
 class TestController extends zController
 {
 	public $enableCsrfValidation = false;
-	public function behaviors()
-	{
-		return ['app\behaviors\TestBehavior'];
-	}
+	// public function behaviors()
+	// {
+	// 	return ['app\behaviors\TestBehavior'];
+	// }
 	public function actionTest()
 	{
 		// $order = Orders::find()->one();
@@ -30,12 +30,14 @@ class TestController extends zController
 		// var_dump($order);exit;
 
 		// SELECT * FROM `customer` WHERE `id` = 123
-		$customer = Customer::findOne(1);
-
+		// $customer = Customer::findOne(10000001);
 		// SELECT * FROM `order` WHERE `customer_id` = 123
 		// $orders 是由 Order 类组成的数组
-		$orders = $customer->orders;
-		var_dump($orders);exit;
+		// $orders = $customer->orders;
+		// var_dump($orders);exit;
+		$customers = Customer::find()->with('orders')->where(['customer_id' => [10000001, 10000002]])->all();
+		var_dump($customers[0]->orders);
+		var_dump($customers);exit;
 		// Country::find()->one();
 		// $ding = [1,2,3];
 		// //获取类名

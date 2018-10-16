@@ -17,7 +17,7 @@ class Customer extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'customer';
+        return 'meet_customer';
     }
 
     /**
@@ -42,6 +42,6 @@ class Customer extends \yii\db\ActiveRecord
     }
     public function getOrders()
     {
-        return $this->hasMany(Orders::className(), ['customer_id' => 'id']);
+        return $this->hasMany(Orders::className(), ['customer_id' => 'customer_id']);
     }
 }

@@ -519,12 +519,13 @@ class ActiveRecord extends BaseActiveRecord
         }
         // 获取脏数据，改动过的
         $values = $this->getDirtyAttributes($attributes);
-        // 插入
+        // 插入并获取到主键
         if (($primaryKeys = static::getDb()->schema->insert(static::tableName(), $values)) === false) {
             return false;
         }
         foreach ($primaryKeys as $name => $value) {
             $id = static::getTableSchema()->columns[$name]->phpTypecast($value);
+            // 保存主键到属性
             $this->setAttribute($name, $id);
             $values[$name] = $id;
         }

@@ -213,7 +213,7 @@ abstract class Application extends Module
         //赋值$app
         Yii::$app = $this;
         //将对象填充到Yii::$app->loadedModules[]数组
-        // Yii::$app->loadedModules['yii\web\Application'] == Yii::$app
+        // Yii::$app->loadedModules['yii\web\Application'] = Yii::$app
         static::setInstance($this);
         //设置$app状态
         $this->state = self::STATE_BEGIN;
@@ -323,7 +323,7 @@ abstract class Application extends Module
                     Yii::setAlias($name, $path);
                 }
             }
-            //创建配置中bootstrap的对象
+            //创建extensions中需要 bootstrap的对象
             if (isset($extension['bootstrap'])) {
                 $component = Yii::createObject($extension['bootstrap']);
                 if ($component instanceof BootstrapInterface) {

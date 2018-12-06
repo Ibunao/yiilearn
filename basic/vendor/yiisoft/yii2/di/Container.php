@@ -263,7 +263,7 @@ class Container extends Component
         } else {
             throw new InvalidConfigException('Unexpected object definition type: ' . gettype($definition));
         }
-        // 存入单利数组 _singletons
+        // 更新单利数组 _singletons
         if (array_key_exists($class, $this->_singletons)) {
             // singleton
             $this->_singletons[$class] = $object;

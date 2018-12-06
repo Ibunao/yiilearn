@@ -16,6 +16,7 @@ use yii\helpers\Markdown;
 use app\models\Country;
 use app\models\Orders;
 use app\models\Customer;
+use yii\web\Controller;
 class TestController extends zController
 {
 	public $enableCsrfValidation = false;
@@ -23,6 +24,11 @@ class TestController extends zController
 	// {
 	// 	return ['app\behaviors\TestBehavior'];
 	// }
+	public function actionIndex()
+	{
+		// 检查是否绑定该事件
+		var_dump($this->hasEventHandlers(Controller::EVENT_AFTER_ACTION));
+	}
 	public function actionTest()
 	{
 		// $order = Orders::find()->one();

@@ -417,7 +417,7 @@ class Module extends ServiceLocator
     }
 
     /**
-     * 检查是否存在module 可以检查多级的
+     * 检查是否存在module 递归检查多级的
      * Checks whether the child module of the specified ID exists.
      * This method supports checking the existence of both child and grand child modules.
      * @param string $id module ID. For grand child modules, use ID path relative to this module (e.g. `admin/content`).

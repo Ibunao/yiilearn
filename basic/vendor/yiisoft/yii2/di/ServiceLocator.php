@@ -284,6 +284,10 @@ class ServiceLocator extends Component
      *
      * @param array $components component definitions or instances
      */
+    /**
+     * 保存配置文件中的组件
+     * @param [type] $components [description]
+     */
     public function setComponents($components)
     {
         foreach ($components as $id => $component) {

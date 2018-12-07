@@ -212,6 +212,7 @@ class UrlManager extends Component
     }
 
     /**
+     * 添加规则，模块在bootstrap启动的会后有的需要注册自己规则的通过这个添加，如gii、debug模块就用到
      * Adds additional URL rules.
      *
      * This method will call [[buildRules()]] to parse the given rule declarations and then append or insert
@@ -250,7 +251,7 @@ class UrlManager extends Component
         // 请求的动词
         $verbs = 'GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS';
         foreach ($rules as $key => $rule) {
-            // 同一格式
+            // 统一成数组格式
             if (is_string($rule)) {
                 // 路由规则的路由部分
                 $rule = ['route' => $rule];
@@ -265,7 +266,7 @@ class UrlManager extends Component
                     // 允许的请求方式
                     $rule['verb'] = explode(',', $matches[1]);
                     // rules that do not apply for GET requests should not be use to create urls
-                    // 如果不允许get请求则只能解析???
+                    // 如果不允许get请求则设置成解析模式
                     if (!in_array('GET', $rule['verb'])) {
                         $rule['mode'] = UrlRule::PARSING_ONLY;
                     }

@@ -43,6 +43,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public $id;
     /**
+     * 该控制器所属的module对象。
      * @var Module the module that this controller belongs to.
      */
     public $module;
@@ -336,6 +337,7 @@ class Controller extends Component implements ViewContextInterface
     {
         $modules = [$this->module];
         $module = $this->module;
+        // 每个module都存放有上一级module
         while ($module->module !== null) {
             array_unshift($modules, $module->module);
             $module = $module->module;

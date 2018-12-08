@@ -27,7 +27,8 @@ class TestController extends zController
 	public function actionIndex()
 	{
 		// 检查是否绑定该事件
-		var_dump($this->hasEventHandlers(Controller::EVENT_AFTER_ACTION));
+		// var_dump($this->hasEventHandlers(Controller::EVENT_AFTER_ACTION));
+		VarDumper::export($this->module);
 	}
 	public function actionTest()
 	{
@@ -231,7 +232,10 @@ class TestController extends zController
 	{
 		// echo $this->run('ding/default/index');
 		// echo $this->getUniqueId();
-		Yii::$app->getUser()->setReturnUrl(['admin/index', 'ref' => 1]);
+		// 记录链接
+		Url::remember(['admin/index', 'ref' => 1]);
+		// 记录链接，和上面一样。
+		// Yii::$app->getUser()->setReturnUrl(['admin/index', 'ref' => 1]);
 		$this->goBack();
 	}
 	public function actionView()

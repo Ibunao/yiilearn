@@ -12,6 +12,7 @@ class Ding extends \yii\base\Module
      */
     public $controllerNamespace = 'app\modules\ding\controllers';
 
+    public $layout = 'ding.php';
     /**
      * @inheritdoc
      */

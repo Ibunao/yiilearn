@@ -16,7 +16,7 @@ use IteratorAggregate;
 use yii\helpers\Inflector;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
-
+    
 /**
  * Model is the base class for data models.
  *

@@ -287,6 +287,7 @@ class Validator extends Component
             $skip = $this->skipOnError && $model->hasErrors($attribute)
                 || $this->skipOnEmpty && $this->isEmpty($model->$attribute);
             if (!$skip) {
+                // 如果定义了 when 类名函数，则执行结果为true才进行验证  
                 if ($this->when === null || call_user_func($this->when, $model, $attribute)) {
                     $this->validateAttribute($model, $attribute);
                 }

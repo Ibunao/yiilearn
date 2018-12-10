@@ -857,7 +857,7 @@ class Model extends Component implements IteratorAggregate, ArrayAccess, Arrayab
         }
         // 当前场景验证的属性
         $attributes = $scenarios[$scenario];
-        // 过滤掉以 ! 开头的非安全属性，只验证不赋值
+        // 以 ! 开头的非安全属性，只验证不赋值
         foreach ($attributes as $i => $attribute) {
             if ($attribute[0] === '!') {
                 $attributes[$i] = substr($attribute, 1);

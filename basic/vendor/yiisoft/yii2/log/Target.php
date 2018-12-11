@@ -116,7 +116,7 @@ abstract class Target extends Component
      */
     public function collect($messages, $final)
     {
-        // 获取需要记录的日志
+        // 获取需要记录的日志  一个生命周期中的日志信息，为了节约资源，是达到一定的数量才真正的写入  
         $this->messages = array_merge($this->messages, static::filterMessages($messages, $this->getLevels(), $this->categories, $this->except));
         // 日志条数
         $count = count($this->messages);

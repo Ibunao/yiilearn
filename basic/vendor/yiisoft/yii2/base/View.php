@@ -168,15 +168,15 @@ class View extends Component
      */
     protected function findViewFile($view, $context = null)
     {
-        // 如果是别名
+        // 如果是别名,相当于绝对路径
         if (strncmp($view, '@', 1) === 0) {
             // e.g. "@app/views/main"
             $file = Yii::getAlias($view);
-        // 如果是以 // 开头 表示跟视图目录(root/views/)中的视图文件
+        // 如果是以 // 开头 表示跟视图目录(@app/views/)中的视图文件 
         } elseif (strncmp($view, '//', 2) === 0) {
             // e.g. "//layouts/main"
             $file = Yii::$app->getViewPath() . DIRECTORY_SEPARATOR . ltrim($view, '/');
-        // 如果是 / 开头，正常的
+        // 如果是 / 开头，获取当前模块下的视图文件
         } elseif (strncmp($view, '/', 1) === 0) {
             // e.g. "/site/index"
             if (Yii::$app->controller !== null) {
@@ -185,10 +185,10 @@ class View extends Component
             } else {
                 throw new InvalidCallException("Unable to locate view file for view '$view': no active controller.");
             }
-        // 相对位置
+        // 这是常用的情况
         } elseif ($context instanceof ViewContextInterface) {
             $file = $context->getViewPath() . DIRECTORY_SEPARATOR . $view;
-        //??? 没用过 获取保存的view路径
+        //在视图view中调用render 获取的是当前控制器
         } elseif (($currentViewFile = $this->getViewFile()) !== false) {
             $file = dirname($currentViewFile) . DIRECTORY_SEPARATOR . $view;
         } else {
@@ -520,7 +520,7 @@ class View extends Component
     }
 
     /**
-     * 开始，不晓得嵌套一个这有何用处
+     * 开始
      * Marks the beginning of a page.
      */
     public function beginPage()

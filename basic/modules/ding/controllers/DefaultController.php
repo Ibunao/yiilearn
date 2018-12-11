@@ -2,6 +2,7 @@
 
 namespace app\modules\ding\controllers;
 
+use Yii;
 use yii\web\Controller;
 use yii\helpers\VarDumper;
 
@@ -21,5 +22,22 @@ class DefaultController extends Controller
         // $this->layout = 'main';
         // return 'ding';
         return $this->render('index');
+    }
+    /**
+     * 测试日志
+     * @return [type] [description]
+     */
+    public function actionLog()
+    {
+        Yii::warning('test', 'ding');
+    }
+    public function actionDb()
+    {
+        $command = Yii::$app->db->createCommand('select [[level_id]], [[level_name]] from {{%level}} where level_name = :name', [':name' => '主力款']);
+        // 获取要执行的sql
+        echo $command->getRawSql();
+        // 查询
+        $temp = $command->queryOne();
+        VarDumper::dump($temp);
     }
 }

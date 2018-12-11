@@ -38,6 +38,7 @@ $config = [
             'useFileTransport' => true,
         ],
         'log' => [
+            // 错误信息往上追溯几级
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
                 [

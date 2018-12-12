@@ -47,6 +47,7 @@ class DefaultController extends Controller
      */
     public function actionLock($id)
     {
+        // 指定布局文件
         $this->layout = '@app/views/layouts/main';
         $model = Clocking::findOne($id);
         try {

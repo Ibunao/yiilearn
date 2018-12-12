@@ -97,7 +97,7 @@ trait ArrayableTrait
      * @see fields()
      */
     /**
-     * 定义去除的字段
+     * 定义额外可用字段
      * @return [type] [description]
      */
     public function extraFields()

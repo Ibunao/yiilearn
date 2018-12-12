@@ -40,8 +40,8 @@ class Customer extends \yii\db\ActiveRecord
             'name' => Yii::t('app', 'Name'),
         ];
     }
-    public function getOrders()
-    {
-        return $this->hasMany(Orders::className(), ['customer_id' => 'customer_id']);
-    }
+    // public function getOrders()
+    // {
+    //     return $this->hasMany(Orders::className(), ['customer_id' => 'customer_id']);
+    // }
 }

@@ -8,6 +8,7 @@ use yii\db\Query;
 use yii\di\Instance;
 use yii\db\Connection;
 use app\models\Orders;
+use yii\helpers\VarDumper;
 class DbController extends Controller
 {
 	public function actionIndex()
@@ -36,5 +37,18 @@ class DbController extends Controller
 		// ->asArray()
 	 //    ->one();
 		->batch(10);
+	}
+	public function actionLink()
+	{
+		// 延迟加载,将会执行两条sql
+		// SELECT * FROM `meet_order` WHERE `order_id`='2017031497575098'
+		$order = Orders::findOne('2017031497575098');
+		// SELECT * FROM `meet_customer` WHERE `customer_id`='10000001'
+		$temp = $order->customer;
+		// 这条就不执行了，执行过一次数据就有了，这里也没必要再执行了
+		$temp = $order->customer;
+
+
+		VarDumper::dump($temp);
 	}
 }

@@ -5,7 +5,8 @@ namespace app\modules\ding\controllers;
 use Yii;
 use yii\web\Controller;
 use yii\helpers\VarDumper;
-
+use app\models\Clocking;
+use yii\db\StaleObjectException;
 /**
  * Default controller for the `ding` module
  */
@@ -39,5 +40,27 @@ class DefaultController extends Controller
         // 查询
         $temp = $command->queryOne();
         VarDumper::dump($temp);
+    }
+    /**
+     * 乐观锁测试
+     * @return [type] [description]
+     */
+    public function actionLock($id)
+    {
+        $this->layout = '@app/views/layouts/main';
+        $model = Clocking::findOne($id);
+        try {
+            if (Yii::$app->request->getIsPost() && $model->load(Yii::$app->request->post()) && $model->save()) {
+                echo "更新成功";
+                return;
+            } else {
+                return $this->render('lock', [
+                    'model' => $model,
+                ]);
+            }
+        } catch (StaleObjectException $e) {
+            echo "更新失败";
+            // 解决冲突的代码
+        }
     }
 }

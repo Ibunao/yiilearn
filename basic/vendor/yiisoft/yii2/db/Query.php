@@ -479,7 +479,6 @@ class Query extends Component implements QueryInterface
      * @param  [type] $columns 查询的字段
      * 可以是数组形式，也可以是字符串形式，字符串形式多个用逗号隔开，最后都是转换成数组。建议用数组  
      * 如果是字符串形式，CONCAT(first_name, ' ', last_name)这就会发生分割错误，如果单单是怕分割错误，要借助于Expression对象
-     * 所有不希望添加反转号的都要借助于 Expression 对象
      * 
      * @param  [type] $option  数据库查询的额外选项
      * @return [type]          [description]

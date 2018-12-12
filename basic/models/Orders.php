@@ -44,8 +44,8 @@ class Orders extends \yii\db\ActiveRecord
             'subtotal' => Yii::t('app', 'Subtotal'),
         ];
     }
-    // public function getCustomer()
-    // {
-    //     return $this->hasOne(Customer::className(), ['id' => 'customer_id']);
-    // }
+    public function getCustomer()
+    {
+        return $this->hasOne(Customer::className(), ['customer_id' => 'customer_id']);
+    }
 }

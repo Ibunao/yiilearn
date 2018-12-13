@@ -12,7 +12,7 @@ class m181212_075038_locking extends Migration
             'id' => Schema::TYPE_PK,
             'title' => Schema::TYPE_STRING . ' NOT NULL',
             'ver' => Schema::TYPE_BIGINT . ' DEFAULT 0',
-        ]);
+        ], ' ENGINE=InnoDB DEFAULT CHARSET=utf8');
         // 添加一条数据
         $this->insert('clocking', [
             'title' => 'test',
@@ -21,9 +21,7 @@ class m181212_075038_locking extends Migration
 
     public function safeDown()
     {
-        echo "m181212_075038_locking cannot be reverted.\n";
-
-        return false;
+        return $this->dropTable('clocking');
     }
 
     /*

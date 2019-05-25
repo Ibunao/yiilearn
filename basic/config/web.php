@@ -52,7 +52,8 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                ['class' => 'yii\rest\UrlRule', 'controller' => ['user']],// 使用restful 风格
+                // ['class' => 'yii\rest\UrlRule', 'controller' => ['user']],// 使用restful 风格
+                '<controller:(test)>/<action:(view)>/<id:\d+>' => '<controller>/<action>'
             ],
         ],
         'i18n' => [

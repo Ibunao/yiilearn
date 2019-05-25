@@ -240,9 +240,11 @@ class TestController extends zController
 	}
 	public function actionView()
 	{
-		$app = Yii::getAlias('@app');
-		$web = Yii::getAlias('@web');
+		$id = Yii::$app->request->get('id');
+		// $app = Yii::getAlias('@app');
+		// $web = Yii::getAlias('@web');
 		// var_dump($app, $web);exit;
+		var_dump($id);exit;
 		return $this->render('index');
 	}
 	public function actionSecurity()
